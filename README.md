@@ -200,20 +200,36 @@ tarjeta de prueba para poder enseñarla al instante).
 
 ## 8. Desplegar (HTTPS gratis)
 
-Es estática: vale cualquier hosting de archivos.
+Es estática: vale cualquier hosting de archivos. Incluye `.nojekyll` (Pages) y `vercel.json`
+(cabeceras de caché: `no-cache` en `sw.js`, `index.html` y `manifest`).
+
+### GitHub Pages (ya activado)
+
+🔗 **https://vmateu-tesa.github.io/palmar-nit-alba/**
+
+Configurado como *Deploy from a branch* → `main` / root. **Cada `git push` a `main` redepliega** en
+~1 min. (Settings → Pages para verlo.)
+
+### Vercel (despliegue + auto-deploy desde GitHub)
+
+Vinculación por panel (autoriza la app de Vercel en GitHub, no se puede automatizar desde aquí):
+
+1. Entra en [vercel.com/new](https://vercel.com/new) con tu cuenta de GitHub.
+2. **Import** el repo `palmar-nit-alba`.
+3. *Framework Preset*: **Other** · *Build Command*: vacío · *Output Directory*: `.` (raíz). Es estático,
+   no hay build. `vercel.json` ya está en el repo.
+4. **Deploy**. A partir de ahí, cada push a `main` despliega solo.
+
+O por CLI (requiere login una vez):
 
 ```bash
-# Netlify
-npx netlify deploy --prod --dir .
-# Vercel
-npx vercel --prod
+npm i -g vercel
+vercel        # primera vez: vincula el proyecto
+vercel --prod # despliegue a producción
 ```
 
-**GitHub Pages**: Settings → Pages → *Deploy from a branch* → `main` / root. URL del tipo
-`https://USUARIO.github.io/palmar-nit-alba/`.
-
-> Recuerda añadir la URL pública a **Supabase Auth → Redirect URLs** (para la recuperación de contraseña)
-> y, si usas Stripe, como dominio permitido.
+> Tras desplegar, añade la URL pública (Pages y/o Vercel) a **Supabase Auth → Redirect URLs** (para la
+> recuperación de contraseña) y, si usas Stripe, como dominio permitido.
 
 ---
 

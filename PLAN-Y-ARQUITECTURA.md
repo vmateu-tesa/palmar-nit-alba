@@ -21,20 +21,29 @@ La **Nit de l'Albà** (noche del 13 al 14 de agosto, víspera de la Asunción) l
 
 ### Capa pública (gratis, sin login)
 
-- Mapa de Elche con **todas las palmeres** registradas.
-- Ficha de cada palmera: tipo, hora de encendido, nota familiar y comentarios.
-- **Simulación** de cualquier palmera sobre el plano.
-- **Modo AR**: apuntar al cielo con la cámara y ver palmeres simuladas.
+- Mapa de Elche con **todas las palmeres** registradas, incluidas las **oficiales del Ayuntamiento**
+  (lugares y horas reales, marcador ★): Basílica de Santa María (*Palmera de la Mare de Déu*, 00:00),
+  Glorieta, Pont del Bimil·lenari, Parc Municipal, Pont Nou…
+- Ficha de cada palmera: tipo, hora, nota, **descripción**, **dedicatoria**, **galería de fotos/vídeos**
+  y comentarios.
+- **Simulación** a pantalla completa con la **silueta de la Basílica de Santa María** en sombra.
+- **Modo AR**: cámara al cielo + **brújula GPS/giroscopio** que orienta con una flecha hacia la palmera
+  más cercana (distancia + "la tens davant"). Sin cámara → cielo estrellado.
+- **Compartir** cualquier palmera en redes (WhatsApp · Instagram · Facebook · X) con **enlace directo**
+  (deep-link) que la abre en el mapa.
 - Cuenta atrás para la próxima Nit de l'Albà.
 - Selector de idioma **castellano / valencià**.
 
-### Capa premium (login + pago único)
+### Capa de usuario (login + pago único)
 
-- **Registrar tu palmera**: ubicación en el mapa, **hora de encendido**, **tipo** elegido en un carrusel de animaciones, **nota familiar** (dedicatoria).
+- **Cuentas** bajo correo electrónico: registro, login, logout, **recuperación de contraseña** por correo.
+- **Perfil individual**: avatar (foto subible o inicial), nombre editable, correo, contador de palmeres,
+  gestión de *Les meues palmeres* (compartir/editar/eliminar) y cierre de sesión.
+- **Registrar tu palmera** (asistente de 3 pasos): **tipo** en un carrusel animado, **ubicación** en el
+  mapa, **hora de encendido**, **nota / descripción / dedicatoria** y **fotos/vídeos**.
 - **Pago** mediante Stripe (Checkout) antes de publicarla.
 - **Simulación personalizada** sobre el plano de Elche tras el alta.
-- **Interacción social**: comentar y reaccionar a las palmeres de otras familias.
-- Gestión de tus palmeres (editar, eliminar).
+- **Interacción social**: comentar (con **avatar** del autor) y reaccionar a las palmeres de otras familias.
 
 ---
 
@@ -92,26 +101,45 @@ flowchart TD
 
 | Tabla | Campos clave | Acceso |
 |-------|--------------|--------|
-| `profiles` | `id` (=auth.uid), `display_name`, `lang` | Dueño |
-| `palmeras` | `id`, `owner_id`, `name`, `family_note`, `firework_type`, `lat`, `lng`, `ignite_at`, `color`, `is_paid`, `created_at` | **Lectura pública** · escritura dueño |
-| `comments` | `id`, `palmera_id`, `author_id`, `author_name`, `body`, `created_at` | **Lectura pública** · escritura autenticada |
+| `profiles` | `id` (=auth.uid), `display_name`, **`avatar_url`**, `lang` | Dueño |
+| `palmeras` | `id`, `owner_id`, `owner_name`, `name`, `family_note`, **`description`**, **`dedication`**, **`media`** (jsonb), `firework_type`, `lat`, `lng`, `ignite_at`, `color`, **`is_official`**, `is_paid`, `created_at` | **Lectura pública** · escritura dueño |
+| `comments` | `id`, `palmera_id`, `author_id`, `author_name`, **`author_avatar`**, `body`, `created_at` | **Lectura pública** · escritura autenticada |
 | `reactions` | `id`, `palmera_id`, `user_id`, `emoji` | **Lectura pública** · escritura autenticada |
 | `orders` | `id`, `user_id`, `palmera_id`, `stripe_session_id`, `status`, `amount` | Dueño + Edge Function |
 
-La SQL completa con `CREATE TABLE`, políticas **RLS** y datos de ejemplo está en `supabase/schema.sql`.
+- **`media`** = array `[{ type:'image'|'video', url }]`. Imágenes comprimidas en cliente a JPEG ≤1280px;
+  vídeos ≤3 MB; avatar a 256px. Hoy se guardan como **data URLs**; migrar a **Supabase Storage** para
+  producción a escala (mejora futura).
+- **`is_official`** marca las palmeres del Ayuntamiento (marcador ★, no editables por usuarios).
+
+La SQL completa con `CREATE TABLE`, `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` (idempotente), políticas
+**RLS** y datos de ejemplo está en `supabase/schema.sql`. En modo demo se replica en `localStorage`.
 
 ---
 
 ## 6. Flujos de usuario
 
 **A. Visitante (gratis)**
-Abre la app → ve el mapa de Elche con palmeres → toca una → ve ficha, nota y comentarios → pulsa *Simular* o *Modo AR* → disfruta. Sin registro.
+Abre la app → ve el mapa de Elche con palmeres → toca una → ve ficha, galería, descripción, dedicatoria y comentarios → pulsa *Simular*, *Modo AR* o *Compartir* → disfruta. Sin registro.
 
-**B. Registrar palmera (premium)**
-Login → *Añadir palmera* → elige tipo en el **carrusel** → marca ubicación en el mapa → fija **hora de encendido** → escribe **nota familiar** → **pago Stripe** → al confirmar, se publica y se lanza la **simulación** sobre el plano.
+**B. Cuenta y perfil**
+*Entrar* → registro/login con correo (o *Has oblidat la contrasenya?* → recuperación por correo). Al
+entrar, el botón superior abre **el perfil**: avatar editable (foto o inicial), nombre, correo, contador,
+*Les meues palmeres* y cerrar sesión.
 
-**C. Modo AR**
-*Modo AR* → permiso de cámara → apunta al cielo → toca para lanzar palmeres → giroscopio ancla la escena. Sin cámara, fondo de cielo estrellado.
+**C. Registrar palmera**
+Perfil/hero → *Apadrina la teua palmera* → elige tipo en el **carrusel** → marca ubicación en el mapa →
+fija **hora**, **nota/descripción/dedicatoria** y **sube fotos/vídeos** → **pago Stripe** (o simulado) →
+al confirmar, se publica y se lanza la **simulación** sobre el plano.
+
+**D. Compartir**
+Botón *Compartir* (ficha) o ↗ (*Les meues palmeres*) → API nativa del móvil o panel con WhatsApp /
+Instagram / Facebook / X + **copiar enlace**. El enlace `?palmera=ID` abre esa palmera en el mapa.
+
+**E. Modo AR**
+*Modo AR* → permisos de cámara y GPS → apunta al cielo → toca para lanzar palmeres. El **giroscopio**
+ancla la escena y la **brújula** dibuja una flecha hacia la palmera más cercana con su distancia; se pone
+verde al alinearte. Sin cámara, fondo de cielo estrellado; sin GPS, cielo libre.
 
 ---
 
@@ -139,29 +167,32 @@ Login → *Añadir palmera* → elige tipo en el **carrusel** → marca ubicaci�
 ## 9. Estructura de archivos
 
 ```
-APP Fuegos artificiales/
+palmar-nit-alba/
 ├── PLAN-Y-ARQUITECTURA.md      ← este documento
-├── README.md                   ← puesta en marcha
-├── index.html                  ← app principal
+├── README.md                   ← puesta en marcha y guía completa
+├── CHANGELOG.md                ← historial de versiones
+├── index.html                  ← app principal (assets versionados ?v=N)
 ├── manifest.webmanifest
-├── sw.js                       ← service worker (offline)
+├── sw.js                       ← service worker (offline, cache palmar-vN)
 ├── css/
 │   └── styles.css              ← diseño nocturno
 ├── js/
 │   ├── config.js               ← claves Supabase + Stripe (placeholders)
 │   ├── i18n.js                 ← textos castellano/valencià
-│   ├── fireworks.js            ← motor de palmeres (canvas)
-│   ├── map.js                  ← mapa Leaflet
-│   ├── ar.js                   ← modo AR cámara
-│   ├── data.js                 ← Supabase + fallback local
+│   ├── fireworks.js            ← motor de palmeres (canvas) + silueta Basílica + sonido
+│   ├── map.js                  ← mapa Leaflet + marcadores + selector de ubicación
+│   ├── ar.js                   ← modo AR: cámara + brújula GPS/giroscopio
+│   ├── data.js                 ← capa de datos (Supabase | local) + seed + generador de infografías
 │   ├── payments.js             ← Stripe + fallback simulado
-│   └── app.js                  ← orquestación / UI
+│   └── app.js                  ← orquestación / UI (perfil, alta, compartir, comentarios…)
 ├── icons/                      ← iconos PWA (192, 512, maskable)
 └── supabase/
-    ├── schema.sql              ← tablas + RLS + ejemplos
+    ├── schema.sql              ← tablas + RLS + ejemplos (idempotente)
     └── functions/
-        └── create-checkout/
-            └── index.ts        ← Edge Function de Stripe
+        ├── create-checkout/
+        │   └── index.ts        ← Edge Function: crea la sesión de Stripe
+        └── stripe-webhook/
+            └── index.ts        ← Edge Function: confirma el pago y publica
 ```
 
 ---
@@ -170,10 +201,11 @@ APP Fuegos artificiales/
 
 | Fase | Entregable | Estado |
 |------|-----------|--------|
-| **0 — Prototipo** | PWA funcional con datos locales + pago simulado | ✅ Este entregable |
-| **1 — Backend real** | Conectar Supabase (auth + datos compartidos) | Claves en `config.js` + `schema.sql` listo |
-| **2 — Pago real** | Stripe modo test con Edge Function | Código listo, requiere cuenta Stripe |
-| **3 — Producción** | Dominio, HTTPS, webhook, modo live de Stripe | Pendiente |
+| **0 — Prototipo** | PWA funcional con datos locales + pago simulado | ✅ Hecho |
+| **0+ — Funcionalidad ampliada** | Perfil + avatar, recuperación de contraseña, fotos/vídeos, descripción/dedicatoria, compartir en redes + deep-link, AR con brújula GPS, palmeres oficiales, silueta de la Basílica, comentarios con avatar | ✅ Hecho |
+| **1 — Backend real** | Conectar Supabase (auth + datos compartidos) | Código listo: claves en `config.js` + `schema.sql` |
+| **2 — Pago real** | Stripe modo test con Edge Functions (checkout + webhook) | Código listo, requiere cuenta Stripe |
+| **3 — Producción** | Dominio, HTTPS, modo live de Stripe, medios en Supabase Storage, RGPD | Pendiente |
 | **4 — Crecimiento** | Notificaciones push la noche de l'Albà, ranking, fotos reales | Futuro |
 
 ---

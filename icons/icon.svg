@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a0e2a"/>
+      <stop offset="0.55" stop-color="#1a1648"/>
+      <stop offset="1" stop-color="#2a1a52"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.5">
+      <stop offset="0" stop-color="#ffe9a8" stop-opacity="0.9"/>
+      <stop offset="0.4" stop-color="#ffcf5c" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffcf5c" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="frond" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#fff3c4"/>
+      <stop offset="1" stop-color="#ffb43c"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="112" fill="url(#sky)"/>
+
+  <!-- estrellas -->
+  <g fill="#ffffff" opacity="0.7">
+    <circle cx="70" cy="90" r="2.5"/><circle cx="430" cy="70" r="2"/>
+    <circle cx="120" cy="160" r="1.6"/><circle cx="400" cy="150" r="2.4"/>
+    <circle cx="60" cy="300" r="1.8"/><circle cx="455" cy="320" r="1.6"/>
+    <circle cx="340" cy="60" r="1.4"/><circle cx="200" cy="80" r="1.6"/>
+  </g>
+
+  <!-- resplandor de la explosión -->
+  <circle cx="256" cy="205" r="180" fill="url(#glow)"/>
+
+  <!-- rastro del cohete -->
+  <g stroke="#ffd45c" stroke-width="4" stroke-linecap="round" opacity="0.55">
+    <line x1="256" y1="470" x2="256" y2="220"/>
+  </g>
+  <g fill="#ffe9a8" opacity="0.7">
+    <circle cx="256" cy="440" r="2.4"/><circle cx="256" cy="400" r="2.4"/>
+    <circle cx="256" cy="360" r="2.4"/><circle cx="256" cy="320" r="2.4"/>
+  </g>
+
+  <!-- palmera: fronds dorados que caen -->
+  <g fill="none" stroke="url(#frond)" stroke-width="8" stroke-linecap="round" opacity="0.95">
+    <path d="M256 205 Q150 105 96 300"/>
+    <path d="M256 205 Q185 118 132 332"/>
+    <path d="M256 205 Q214 135 176 352"/>
+    <path d="M256 205 Q240 150 216 364"/>
+    <path d="M256 205 Q362 105 416 300"/>
+    <path d="M256 205 Q327 118 380 332"/>
+    <path d="M256 205 Q298 135 336 352"/>
+    <path d="M256 205 Q272 150 296 364"/>
+    <path d="M256 205 Q256 140 244 366"/>
+    <path d="M256 205 Q256 140 268 366"/>
+  </g>
+  <!-- brillo interior de los fronds -->
+  <g fill="none" stroke="#fff7d6" stroke-width="3" stroke-linecap="round" opacity="0.9">
+    <path d="M256 205 Q150 105 96 300"/>
+    <path d="M256 205 Q214 135 176 352"/>
+    <path d="M256 205 Q362 105 416 300"/>
+    <path d="M256 205 Q298 135 336 352"/>
+    <path d="M256 205 Q256 140 244 366"/>
+    <path d="M256 205 Q256 140 268 366"/>
+  </g>
+
+  <!-- chispas en las puntas -->
+  <g fill="#fff7d6">
+    <circle cx="96" cy="300" r="6"/><circle cx="132" cy="332" r="5"/>
+    <circle cx="176" cy="352" r="5"/><circle cx="216" cy="364" r="5"/>
+    <circle cx="416" cy="300" r="6"/><circle cx="380" cy="332" r="5"/>
+    <circle cx="336" cy="352" r="5"/><circle cx="296" cy="364" r="5"/>
+    <circle cx="244" cy="366" r="5"/><circle cx="268" cy="366" r="5"/>
+  </g>
+
+  <!-- núcleo brillante -->
+  <circle cx="256" cy="205" r="16" fill="#fff7d6"/>
+  <circle cx="256" cy="205" r="8" fill="#ffffff"/>
+</svg>

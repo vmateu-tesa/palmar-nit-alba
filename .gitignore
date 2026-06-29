@@ -1,0 +1,18 @@
+# Imágenes de prueba generadas durante el desarrollo
+infografia-basilica.png
+perfil.png
+comentarios.png
+
+# Config local del editor / agente
+.claude/
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# Dependencias / build (por si se añaden en el futuro)
+node_modules/
+dist/
+.env
+.env.local

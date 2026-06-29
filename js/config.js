@@ -9,7 +9,11 @@ window.PalmarConfig = {
   SUPABASE_ANON_KEY: "",       // clave pública anon
 
   // === Stripe — déjalo vacío para usar el pago simulado (demo) ===
-  STRIPE_PUBLISHABLE_KEY: "",  // pk_test_...
+  // ¿A QUÉ CUENTA LLEGAN LOS PAGOS? A la cuenta de Stripe cuya clave SECRETA
+  // (STRIPE_SECRET_KEY) se configura en la Edge Function de Supabase
+  // (supabase secrets set STRIPE_SECRET_KEY=sk_live_...). La clave de aquí abajo
+  // es solo la PÚBLICA. Mientras estén vacías, NO se cobra nada: pago simulado.
+  STRIPE_PUBLISHABLE_KEY: "",  // pk_test_... / pk_live_...
   CHECKOUT_FUNCTION_URL: "",   // URL de la Edge Function "create-checkout"
 
   // === Negocio ===

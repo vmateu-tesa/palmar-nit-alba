@@ -307,7 +307,7 @@
       if (!pickCtl) pickCtl = PalmarMap.initPicker('pick-map');
       if (pickCtl) { pickCtl.refresh(); pickCtl.setColor(Fireworks.TYPES[selectedIndex].color); }
     }
-    if (n === 3) buildSummary();
+    if (n === 3) { buildSummary(); updateCheckoutUI(); }
   }
 
   function buildSummary() {
@@ -403,25 +403,71 @@
     }
   }
 
+  // ---- geolocalización: capturar tu ubicación en el alta ----
+  function useMyLocation() {
+    if (!navigator.geolocation) return toast(I18N.t('msg.geo_error'));
+    if (!pickCtl) pickCtl = PalmarMap.initPicker('pick-map');
+    toast(I18N.t('msg.locating'));
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (pickCtl) {
+          pickCtl.setColor(Fireworks.TYPES[selectedIndex].color);
+          pickCtl.setLatLng(pos.coords.latitude, pos.coords.longitude, 16);
+        }
+        toast(I18N.t('msg.geo_ok'));
+      },
+      () => toast(I18N.t('msg.geo_error')),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 }
+    );
+  }
+
+  // ---- cuota: 2 primeras palmeres gratis por usuario ----
+  const FREE_LIMIT = 2;
+  function ownedCount() {
+    const u = DB.user(); if (!u) return 0;
+    return palmeras.filter((p) => p.owner_id === u.id).length;
+  }
+  const isFreeNow = () => ownedCount() < FREE_LIMIT;
+
+  function updateCheckoutUI() {
+    const free = isFreeNow();
+    const remaining = Math.max(0, FREE_LIMIT - ownedCount());
+    $('#price-amount').textContent = free ? I18N.t('add.free_price') : Payments.priceLabel();
+    $('#pay-btn').textContent = I18N.t(free ? 'add.publish_free' : 'add.pay');
+    $('.legal').textContent = free
+      ? I18N.t('add.free_note', { n: remaining })
+      : I18N.t('add.legal');
+  }
+
+  async function finalizeCreated(created) {
+    closeSheet('add-sheet');
+    if (pickCtl) pickCtl.reset();
+    $('#f-name').value = ''; $('#f-note').value = '';
+    $('#f-desc').value = ''; $('#f-dedication').value = '';
+    draftMedia = []; renderMediaThumbs();
+    await loadPalmeras();
+    if (created.lat) PalmarMap.flyTo(created.lat, created.lng, 16);
+    setTimeout(() => { openSim(created); toast(I18N.t('msg.palmera_published')); }, 500);
+  }
+
   async function doPay() {
     const draft = collectDraft();
     if (!draft.name) { toast(I18N.t('msg.name_required')); return gotoStep(2); }
     if (draft.lat == null) { toast(I18N.t('msg.pick_location')); return gotoStep(2); }
+
+    // 2 primeras gratis: se publican sin pasar por el pago
+    if (isFreeNow()) {
+      try { await finalizeCreated(await DB.createPalmera(draft)); }
+      catch (e) { toast('Error: ' + (e.message || e)); }
+      return;
+    }
+
     toast(I18N.t('msg.paying'));
     const res = await Payments.checkout(draft);
     if (res.redirect) return;                 // Stripe real redirige
     if (res.paid) {
-      try {
-        const created = await DB.createPalmera(draft);
-        closeSheet('add-sheet');
-        if (pickCtl) pickCtl.reset();
-        $('#f-name').value = ''; $('#f-note').value = '';
-        $('#f-desc').value = ''; $('#f-dedication').value = '';
-        draftMedia = []; renderMediaThumbs();
-        await loadPalmeras();
-        if (created.lat) PalmarMap.flyTo(created.lat, created.lng, 16);
-        setTimeout(() => { openSim(created); toast(I18N.t('msg.palmera_published')); }, 500);
-      } catch (e) { toast('Error: ' + (e.message || e)); }
+      try { await finalizeCreated(await DB.createPalmera(draft)); }
+      catch (e) { toast('Error: ' + (e.message || e)); }
     } else {
       toast(I18N.t('msg.pay_cancel'));
     }
@@ -748,6 +794,7 @@
 
     $('#media-add-btn').onclick = () => $('#media-input').click();
     $('#media-input').onchange = (e) => { handleMediaFiles([...e.target.files]); e.target.value = ''; };
+    $('#use-location').onclick = useMyLocation;
 
     $('#scrim').onclick = () => { $$('.sheet.open').forEach((s) => closeSheet(s.id)); };
 

@@ -63,16 +63,18 @@
     const map = L.map(elId, { zoomControl: true, attributionControl: false })
       .setView([ELCHE.lat, ELCHE.lng], 14);
     L.tileLayer(TILE, { subdomains: 'abcd', maxZoom: 19 }).addTo(map);
-    let marker = null, chosen = null;
-    map.on('click', (e) => {
-      chosen = { lat: e.latlng.lat, lng: e.latlng.lng };
-      if (marker) marker.setLatLng(e.latlng);
-      else marker = L.marker(e.latlng, { icon: markerIcon('#ffce5c') }).addTo(map);
-    });
+    let marker = null, chosen = null, curColor = '#ffce5c';
+    function place(lat, lng) {
+      chosen = { lat, lng };
+      if (marker) marker.setLatLng([lat, lng]);
+      else marker = L.marker([lat, lng], { icon: markerIcon(curColor) }).addTo(map);
+    }
+    map.on('click', (e) => place(e.latlng.lat, e.latlng.lng));
     return {
       map,
       getLatLng: () => chosen,
-      setColor: (c) => { if (marker) marker.setIcon(markerIcon(c)); },
+      setColor: (c) => { curColor = c || curColor; if (marker) marker.setIcon(markerIcon(curColor)); },
+      setLatLng: (lat, lng, zoom) => { place(lat, lng); map.setView([lat, lng], zoom || 16); },
       reset: () => { if (marker) { map.removeLayer(marker); marker = null; } chosen = null; },
       refresh: () => setTimeout(() => map.invalidateSize(), 60)
     };

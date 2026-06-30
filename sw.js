@@ -1,5 +1,5 @@
 /* PalmAR — Service Worker (offline app-shell) */
-const CACHE = 'palmar-v12';
+const CACHE = 'palmar-v13';
 
 const CORE = [
   './',

@@ -174,8 +174,8 @@
   };
 
   const LABEL = { va: 'VAL', cas: 'CAS' };
-  let lang = localStorage.getItem('palmar_lang') || 'va';
-  if (!DICT[lang]) lang = 'va';
+  let lang = localStorage.getItem('palmar_lang') || 'cas';   // castellà per defecte
+  if (!DICT[lang]) lang = 'cas';
 
   function t(key, params) {
     let s = (DICT[lang] && DICT[lang][key]) || (DICT.cas[key]) || key;

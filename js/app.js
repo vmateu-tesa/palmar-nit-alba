@@ -421,8 +421,8 @@
     );
   }
 
-  // ---- cuota: 2 primeras palmeres gratis por usuario ----
-  const FREE_LIMIT = 2;
+  // ---- cuota: primeras palmeres gratis por usuario (configurable) ----
+  const FREE_LIMIT = (cfg.FREE_PALMERES != null ? cfg.FREE_PALMERES : 2);
   function ownedCount() {
     const u = DB.user(); if (!u) return 0;
     return palmeras.filter((p) => p.owner_id === u.id).length;
@@ -435,7 +435,7 @@
     $('#price-amount').textContent = free ? I18N.t('add.free_price') : Payments.priceLabel();
     $('#pay-btn').textContent = I18N.t(free ? 'add.publish_free' : 'add.pay');
     $('.legal').textContent = free
-      ? I18N.t('add.free_note', { n: remaining })
+      ? I18N.t('add.free_note', { n: remaining, total: FREE_LIMIT })
       : I18N.t('add.legal');
   }
 
@@ -740,7 +740,33 @@
     if (target.getTime() < now.getTime()) target = new Date(y + 1, (cfg.ALBA_MONTH || 8) - 1, cfg.ALBA_DAY || 13, cfg.ALBA_HOUR || 22, cfg.ALBA_MIN || 0, 0);
     return target;
   }
+
+  // ¿Estamos "en directo" en la Nit de l'Albà? (demo: cada día lo está)
+  function isAlbaLive() {
+    if (cfg.DEMO_ALWAYS_ALBA) return true;
+    const now = new Date();
+    const start = new Date(now.getFullYear(), (cfg.ALBA_MONTH || 8) - 1, cfg.ALBA_DAY || 13, cfg.ALBA_HOUR || 22, cfg.ALBA_MIN || 0, 0);
+    const end = new Date(start.getTime() + 4 * 3600 * 1000);   // ~4 h de fiesta
+    return now >= start && now <= end;
+  }
+
+  let cdOriginalHTML = null, liveRendered = false;
+  function renderLive() {
+    liveRendered = true;
+    const cd = $('#countdown');
+    cd.classList.add('is-live');
+    cd.innerHTML =
+      '<button type="button" id="alba-live-btn" class="alba-live">' +
+      '<span class="live-dot"></span>' +
+      '<span class="live-text"><b>' + esc(I18N.t('cd.live')) + '</b>' +
+      '<small>' + esc(I18N.t('cd.live_tap')) + '</small></span></button>';
+    cd.querySelector('#alba-live-btn').onclick = () => { setNav('sim'); openSim(null); };
+  }
   function tickCountdown() {
+    const cd = $('#countdown');
+    if (cdOriginalHTML == null) cdOriginalHTML = cd.innerHTML;
+    if (isAlbaLive()) { if (!liveRendered) renderLive(); return; }
+    if (liveRendered) { cd.classList.remove('is-live'); cd.innerHTML = cdOriginalHTML; liveRendered = false; }
     const diff = nextAlba().getTime() - Date.now();
     const s = Math.max(0, Math.floor(diff / 1000));
     const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600),
@@ -803,6 +829,7 @@
       setAuthMode(authMode);
       $('#price-amount').textContent = Payments.priceLabel();
       if (carouselBuilt) $('#carousel-name').textContent = Fireworks.typeName(selectedType(), I18N.get());
+      liveRendered = false;   // re-renderiza el "en directe" en el nuevo idioma
     });
   }
 

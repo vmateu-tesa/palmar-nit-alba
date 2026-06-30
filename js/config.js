@@ -19,10 +19,16 @@ window.PalmarConfig = {
   // === Negocio ===
   PRICE_EUR: 2.99,
   CURRENCY: "EUR",
+  FREE_PALMERES: 2,   // nº de palmeras gratis por usuario (0 = ninguna, todas de pago)
 
   // === Nit de l'Albà: noche del 13 al 14 de agosto ===
   ALBA_MONTH: 8,   // agosto
   ALBA_DAY: 13,
   ALBA_HOUR: 22,
-  ALBA_MIN: 0
+  ALBA_MIN: 0,
+
+  // === DEMO: tratar CADA DÍA como la Nit de l'Albà (para probar el modo "en directo") ===
+  // true = la app está siempre "en directe" (cuenta atrás en 0, palmeres encendiéndose).
+  // Pon false para producción (cuenta atrás real al 13 de agosto).
+  DEMO_ALWAYS_ALBA: true
 };

@@ -1,0 +1,330 @@
+{
+  "_README": "v3 - Horas del programa OFICIAL (VisitElche). Coordenadas de puntos, cortes, perimetros y miradors PROVISIONALES pendientes de confirmar con el Ajuntament. Los miradors (viewpoints) proceden de las recomendaciones publicas habituales: Pont del Bimil-lenari, Pont de la Generalitat i llit del Vinalopo.",
+  "version": 3,
+  "event": {
+    "name": "Nit de l'Albà",
+    "city": "Elx",
+    "date": "2026-08-13",
+    "timezone": "Europe/Madrid",
+    "utc_offset": "+02:00",
+    "declaration": "Festa d'Interés Turístic Nacional (2021)",
+    "center": {
+      "lat": 38.2699,
+      "lng": -0.7126
+    },
+    "bbox": [
+      [
+        38.2555,
+        -0.725
+      ],
+      [
+        38.282,
+        -0.687
+      ]
+    ],
+    "zoom": {
+      "min": 13,
+      "max": 17,
+      "default": 15
+    },
+    "heritage_note": "El Palmeral d'Elx i el Misteri d'Elx són Patrimoni de la Humanitat (UNESCO)."
+  },
+  "launch_points": [
+    {
+      "id": "basilica",
+      "name": "Basílica de Santa María",
+      "lat": 38.2659,
+      "lng": -0.6986,
+      "official": true,
+      "note_va": "Des de la torre es dispara la Palmera de la Mare de Déu",
+      "note_cas": "Desde la torre se dispara la Palmera de la Mare de Déu"
+    },
+    {
+      "id": "glorieta",
+      "name": "Glorieta",
+      "lat": 38.2668,
+      "lng": -0.6996,
+      "official": true,
+      "note_va": "Llançaments al centre de la ciutat",
+      "note_cas": "Lanzamientos en el centro de la ciudad"
+    },
+    {
+      "id": "parc-municipal",
+      "name": "Parc Municipal",
+      "lat": 38.2708,
+      "lng": -0.7,
+      "official": true,
+      "note_va": "Zona verda del parc",
+      "note_cas": "Zona verde del parque"
+    },
+    {
+      "id": "pont-bimillenari",
+      "name": "Pont del Bimil·lenari",
+      "lat": 38.268,
+      "lng": -0.7012,
+      "official": true,
+      "note_va": "Perspectiva oberta sobre el riu Vinalopó",
+      "note_cas": "Perspectiva abierta sobre el río Vinalopó"
+    },
+    {
+      "id": "pont-nou",
+      "name": "Pont Nou",
+      "lat": 38.2655,
+      "lng": -0.6975,
+      "official": true,
+      "note_va": "Vora el centre històric",
+      "note_cas": "Junto al centro histórico"
+    }
+  ],
+  "schedule": [
+    {
+      "id": "inici-oficial",
+      "type_va": "Inici oficial · palmeres de color",
+      "type_cas": "Inicio oficial · palmeres de color",
+      "launch_point": "glorieta",
+      "start": "2026-08-13T23:15:00+02:00",
+      "kind": "palmera_foc",
+      "highlight": false,
+      "note_va": "Comença la Nit de l'Albà organitzada per l'Ajuntament: es disparen més de 300 palmeres de foc de color segons l'ordre del programa de mà.",
+      "note_cas": "Empieza la Nit de l'Albà organizada por el Ayuntamiento: se disparan más de 300 palmeres de foc de color según el orden del programa de mano."
+    },
+    {
+      "id": "bloc-2",
+      "type_va": "Palmeres de foc · bloc central",
+      "type_cas": "Palmeres de foc · bloque central",
+      "launch_point": "parc-municipal",
+      "start": "2026-08-13T23:30:00+02:00",
+      "kind": "palmera_foc",
+      "highlight": false,
+      "note_va": "Hit d'exemple pendent del programa de mà oficial.",
+      "note_cas": "Hito de ejemplo pendiente del programa de mano oficial."
+    },
+    {
+      "id": "bloc-3",
+      "type_va": "Palmeres de foc · últim bloc",
+      "type_cas": "Palmeres de foc · último bloque",
+      "launch_point": "pont-bimillenari",
+      "start": "2026-08-13T23:45:00+02:00",
+      "kind": "palmera_foc",
+      "highlight": false,
+      "note_va": "Hit d'exemple pendent del programa de mà oficial.",
+      "note_cas": "Hito de ejemplo pendiente del programa de mano oficial."
+    },
+    {
+      "id": "apagada",
+      "type_va": "Fi del disparo · s'apaguen les llums",
+      "type_cas": "Fin del disparo · se apagan las luces",
+      "launch_point": "basilica",
+      "start": "2026-08-13T23:57:00+02:00",
+      "kind": "silencio",
+      "highlight": true,
+      "note_va": "Acaba el disparo de coets i palmeres. S'apaguen les llums del perímetre de la Basílica i sona per megafonia el Gloria Patri, l'últim motet del Misteri d'Elx.",
+      "note_cas": "Termina el disparo de cohetes y palmeras. Se apagan las luces del perímetro de la Basílica y suena por megafonía el Gloria Patri, el último motete del Misteri d'Elx."
+    },
+    {
+      "id": "mare-de-deu",
+      "type_va": "Palmera de la Mare de Déu",
+      "type_cas": "Palmera de la Mare de Déu",
+      "launch_point": "basilica",
+      "start": "2026-08-14T00:00:00+02:00",
+      "kind": "palmera_foc",
+      "highlight": true,
+      "note_va": "El moment culminant: des de la torre de la Basílica de Santa María es dispara la palmera més gran del món, formada per 1.500 cohetons blanc-perla que arriben als 300 metres i il·luminen tot Elx.",
+      "note_cas": "El momento culminante: desde la torre de la Basílica de Santa María se dispara la palmera más grande del mundo, formada por 1.500 cohetones blanco-perla que alcanzan los 300 metros e iluminan todo Elx."
+    },
+    {
+      "id": "alborada",
+      "type_va": "La Alborada · Aromas ilicitanos",
+      "type_cas": "La Alborada · Aromas ilicitanos",
+      "launch_point": "basilica",
+      "start": "2026-08-14T00:05:00+02:00",
+      "kind": "alborada",
+      "highlight": false,
+      "note_va": "S'encenen les llums, a la torre apareix la \"Virgen de fuego\" i tota la ciutat canta Aromas ilicitanos des dels balcons. Tradició de menjar meló d'Alger.",
+      "note_cas": "Se encienden las luces, en la torre aparece la \"Virgen de fuego\" y toda la ciudad canta Aromas ilicitanos desde los balcones. Tradición de comer sandía."
+    }
+  ],
+  "closures": [
+    {
+      "id": "cierre-basilica",
+      "name_va": "Entorn de la Basílica",
+      "name_cas": "Entorno de la Basílica",
+      "from": "2026-08-13T21:00:00+02:00",
+      "to": "2026-08-14T01:30:00+02:00",
+      "path": [
+        [
+          38.2662,
+          -0.6998
+        ],
+        [
+          38.2659,
+          -0.6986
+        ],
+        [
+          38.2653,
+          -0.6979
+        ]
+      ]
+    },
+    {
+      "id": "cierre-glorieta",
+      "name_va": "Accessos a la Glorieta",
+      "name_cas": "Accesos a la Glorieta",
+      "from": "2026-08-13T21:00:00+02:00",
+      "to": "2026-08-14T01:30:00+02:00",
+      "path": [
+        [
+          38.2673,
+          -0.7004
+        ],
+        [
+          38.2668,
+          -0.6996
+        ],
+        [
+          38.2662,
+          -0.699
+        ]
+      ]
+    }
+  ],
+  "perimeters": [
+    {
+      "id": "seg-basilica",
+      "type": "safety",
+      "name_va": "Perímetre de seguretat · Basílica",
+      "name_cas": "Perímetro de seguridad · Basílica",
+      "polygon": [
+        [
+          38.2666,
+          -0.6996
+        ],
+        [
+          38.2666,
+          -0.6976
+        ],
+        [
+          38.2652,
+          -0.6976
+        ],
+        [
+          38.2652,
+          -0.6996
+        ]
+      ]
+    }
+  ],
+  "pois": [
+    {
+      "id": "socors-parc",
+      "type": "first_aid",
+      "lat": 38.2704,
+      "lng": -0.7004,
+      "name_va": "Punt d'assistència sanitària",
+      "name_cas": "Punto de asistencia sanitaria"
+    },
+    {
+      "id": "info-glorieta",
+      "type": "info",
+      "lat": 38.2671,
+      "lng": -0.6999,
+      "name_va": "Punt d'informació",
+      "name_cas": "Punto de información"
+    },
+    {
+      "id": "aigua-parc",
+      "type": "water",
+      "lat": 38.2712,
+      "lng": -0.6997,
+      "name_va": "Aigua potable",
+      "name_cas": "Agua potable"
+    },
+    {
+      "id": "accessible-parc",
+      "type": "accessible",
+      "lat": 38.27,
+      "lng": -0.7008,
+      "name_va": "Zona d'accés adaptat",
+      "name_cas": "Zona de acceso adaptado"
+    },
+    {
+      "id": "sortida-nord",
+      "type": "exit",
+      "lat": 38.2718,
+      "lng": -0.7012,
+      "name_va": "Sortida recomanada (nord)",
+      "name_cas": "Salida recomendada (norte)"
+    },
+    {
+      "id": "sortida-sud",
+      "type": "exit",
+      "lat": 38.2646,
+      "lng": -0.698,
+      "name_va": "Sortida recomanada (sud)",
+      "name_cas": "Salida recomendada (sur)"
+    }
+  ],
+  "links": [
+    {
+      "id": "alba-oficial",
+      "url": "https://www.visitelche.com/fiestas/nit-de-l-alba/"
+    },
+    {
+      "id": "misteri-oficial",
+      "url": "https://misteridelx.com"
+    },
+    {
+      "id": "misteri-entrades",
+      "url": "https://entradas.instanticket.es/misteridelx/public/janto/"
+    },
+    {
+      "id": "misteri-visitelche",
+      "url": "https://www.visitelche.com/patrimonios-de-la-humanidad/misteri-delx/"
+    },
+    {
+      "id": "palmeral-ajuntament",
+      "url": "https://www.elche.es/museos/museo-del-palmeral/el-palmeral-de-elche/"
+    },
+    {
+      "id": "museu-palmeral",
+      "url": "https://www.visitelche.com/cultura/museos/museo-del-palmeral/"
+    },
+    {
+      "id": "ajuntament",
+      "url": "https://www.elche.es"
+    },
+    {
+      "id": "visitelche",
+      "url": "https://www.visitelche.com"
+    }
+  ],
+  "viewpoints": [
+    {
+      "id": "pont-bimillenari-mirador",
+      "lat": 38.2683,
+      "lng": -0.7015,
+      "name_va": "Pont del Bimil·lenari",
+      "name_cas": "Pont del Bimil·lenari",
+      "desc_va": "Perspectiva oberta: permet veure les palmeres de foc llançades des de diversos punts de la ciutat alhora.",
+      "desc_cas": "Perspectiva abierta: permite ver las palmeres de foc lanzadas desde varios puntos de la ciudad a la vez."
+    },
+    {
+      "id": "pont-generalitat-mirador",
+      "lat": 38.2727,
+      "lng": -0.7046,
+      "name_va": "Pont de la Generalitat",
+      "name_cas": "Pont de la Generalitat",
+      "desc_va": "Vista àmplia sobre la ciutat, semblant al Bimil·lenari.",
+      "desc_cas": "Vista amplia sobre la ciudad, similar al Bimil·lenari."
+    },
+    {
+      "id": "llit-vinalopo",
+      "lat": 38.2694,
+      "lng": -0.7031,
+      "name_va": "Llit del riu Vinalopó",
+      "name_cas": "Cauce del río Vinalopó",
+      "desc_va": "El lloc clàssic per a anar amb família i amics. És també el més concorregut: arriba amb temps.",
+      "desc_cas": "El lugar clásico para ir con familia y amigos. También es el más concurrido: llega con tiempo."
+    }
+  ]
+}

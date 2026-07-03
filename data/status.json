@@ -1,0 +1,7 @@
+{
+  "_README": "Este fichero se consulta con frecuencia y NO debe cachearse. Para avisar de un retraso, cambia delay_minutes. Para un aviso de seguridad, escribe el texto en 'notice_va' / 'notice_cas' (dejar vacio = sin aviso).",
+  "updated_at": "2026-07-03T00:00:00+02:00",
+  "delay_minutes": 0,
+  "notice_va": "",
+  "notice_cas": ""
+}

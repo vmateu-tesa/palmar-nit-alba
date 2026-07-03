@@ -1,12 +1,18 @@
 /* =====================================================================
-   PalmAR — Mapa de Elche (Leaflet + CartoDB dark) y selector de ubicación
+   Elx al Cel — Mapa de orientación (Leaflet)
+   Capas: puntos de llançament, cortes de calle, perimetros de seguridad,
+   puntos de asistencia (POIs) y ubicacion del usuario en vivo.
    ===================================================================== */
 (function () {
-  const ELCHE = { lat: 38.2699, lng: -0.7126, zoom: 14 };
   const TILE = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
   const ATTR = '&copy; OpenStreetMap &copy; CARTO';
 
-  let mainMap = null, markers = [];
+  const POI_GLYPH = {
+    first_aid: '✚', info: 'i', water: '💧', accessible: '♿', exit: '➜'
+  };
+
+  let map = null, userMarker = null, userAccuracyCircle = null, geoWatchId = null, meetingMarker = null;
+  let layerLaunch = null, layerClosures = null, layerPerimeters = null, layerPois = null, layerViewpoints = null;
 
   function hasLeaflet() { return typeof window.L !== 'undefined'; }
 
@@ -16,72 +22,198 @@
       'text-align:center;color:#a7a3cc;padding:30px;font-size:14px">' + msg + '</div>';
   }
 
-  function markerIcon(color, official) {
+  function launchIcon(active) {
     return L.divIcon({
       className: '',
-      html: '<div class="palm-marker' + (official ? ' official' : '') + '" style="color:' +
-        (color || '#ffce5c') + '">' + (official ? '★' : '✦') + '</div>',
-      iconSize: [34, 34], iconAnchor: [17, 17]
+      html: '<div class="elx-marker' + (active ? ' active' : '') + '">★</div>',
+      iconSize: [30, 30], iconAnchor: [15, 15]
+    });
+  }
+  function poiIcon(type) {
+    return L.divIcon({
+      className: '',
+      html: '<div class="elx-poi elx-poi-' + type + '">' + (POI_GLYPH[type] || '•') + '</div>',
+      iconSize: [26, 26], iconAnchor: [13, 13]
+    });
+  }
+  function viewIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="elx-view"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg></div>',
+      iconSize: [26, 26], iconAnchor: [13, 13]
+    });
+  }
+  function meetingIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="elx-meet"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 3.5L17 11H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
+      iconSize: [30, 30], iconAnchor: [6, 28]
+    });
+  }
+  function userIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="elx-user-dot"><div class="elx-user-pulse"></div></div>',
+      iconSize: [20, 20], iconAnchor: [10, 10]
     });
   }
 
-  function initMain(elId) {
-    if (!hasLeaflet()) {
-      fallback(elId, 'No s\'ha pogut carregar el mapa (sense connexió). La resta de l\'app funciona.');
-      return null;
+  function init(elId, schedule) {
+    if (!hasLeaflet()) { fallback(elId, "No s'ha pogut carregar el mapa. La resta de l'eina funciona igual."); return null; }
+    const ev = (schedule && schedule.event) || {};
+    const center = ev.center || { lat: 38.2699, lng: -0.7126 };
+    const zoom = (ev.zoom && ev.zoom.default) || 15;
+
+    map = L.map(elId, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lng], zoom);
+    if (ev.bbox) {
+      try { map.setMaxBounds(L.latLngBounds(ev.bbox)); } catch (e) { /* bbox invalido, se ignora */ }
     }
-    mainMap = L.map(elId, { zoomControl: false, attributionControl: true })
-      .setView([ELCHE.lat, ELCHE.lng], ELCHE.zoom);
-    L.tileLayer(TILE, { attribution: ATTR, subdomains: 'abcd', maxZoom: 19 }).addTo(mainMap);
-    L.control.zoom({ position: 'bottomleft' }).addTo(mainMap);
-    return mainMap;
+    L.tileLayer(TILE, {
+      attribution: ATTR, subdomains: 'abcd',
+      maxZoom: (ev.zoom && ev.zoom.max) || 19,
+      minZoom: (ev.zoom && ev.zoom.min) || 12
+    }).addTo(map);
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+    layerLaunch = L.layerGroup().addTo(map);
+    layerClosures = L.layerGroup().addTo(map);
+    layerPerimeters = L.layerGroup().addTo(map);
+    layerPois = L.layerGroup().addTo(map);
+    layerViewpoints = L.layerGroup().addTo(map);
+
+    // Mantener pulsado el mapa = marcar punt de trobada
+    map.on('contextmenu', (e) => setMeetingPoint(e.latlng));
+
+    if (schedule) renderSchedule(schedule);
+    return map;
   }
 
-  function renderPalmeras(list, onClick) {
-    if (!mainMap) return;
-    markers.forEach((m) => mainMap.removeLayer(m));
-    markers = [];
-    (list || []).forEach((p) => {
-      if (typeof p.lat !== 'number' || typeof p.lng !== 'number') return;
-      const t = window.Fireworks && Fireworks.getType(p.firework_type);
-      const color = p.color || (t && t.color) || '#ffce5c';
-      const m = L.marker([p.lat, p.lng], { icon: markerIcon(color, p.is_official) }).addTo(mainMap);
-      m.on('click', () => onClick && onClick(p));
-      markers.push(m);
+  function renderSchedule(schedule, activeLaunchPointId) {
+    if (!map) return;
+    layerLaunch.clearLayers();
+    layerClosures.clearLayers();
+    layerPerimeters.clearLayers();
+    layerPois.clearLayers();
+    layerViewpoints.clearLayers();
+
+    (schedule.launch_points || []).forEach((p) => {
+      const m = L.marker([p.lat, p.lng], { icon: launchIcon(p.id === activeLaunchPointId) });
+      const lang = window.I18N ? I18N.get() : 'va';
+      const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
+      m.bindPopup('<strong>' + p.name + '</strong>' + (note ? '<br>' + note : ''));
+      m.addTo(layerLaunch);
+    });
+
+    (schedule.closures || []).forEach((c) => {
+      if (!c.path || c.path.length < 2) return;
+      L.polyline(c.path, { color: '#ff6b6b', weight: 4, opacity: 0.85, dashArray: '2 8' })
+        .bindPopup((window.I18N ? I18N.t('map.legend.closure') : 'Carrer tallat'))
+        .addTo(layerClosures);
+    });
+
+    (schedule.perimeters || []).forEach((pm) => {
+      if (!pm.polygon || pm.polygon.length < 3) return;
+      L.polygon(pm.polygon, { color: '#ffb43c', weight: 2, fillOpacity: 0.08 })
+        .bindPopup((window.I18N ? I18N.t('map.legend.perimeter') : 'Perímetre de seguretat'))
+        .addTo(layerPerimeters);
+    });
+
+    (schedule.viewpoints || []).forEach((v) => {
+      const lang = window.I18N ? I18N.get() : 'va';
+      const name = lang === 'cas' ? (v.name_cas || v.name_va) : (v.name_va || v.name_cas);
+      const desc = lang === 'cas' ? (v.desc_cas || '') : (v.desc_va || '');
+      L.marker([v.lat, v.lng], { icon: viewIcon() })
+        .bindPopup('<strong>' + name + '</strong>' + (desc ? '<br>' + desc : ''))
+        .addTo(layerViewpoints);
+    });
+
+    (schedule.pois || []).forEach((poi) => {
+      const lang = window.I18N ? I18N.get() : 'va';
+      const name = lang === 'cas' ? (poi.name_cas || poi.name_va) : (poi.name_va || poi.name_cas);
+      L.marker([poi.lat, poi.lng], { icon: poiIcon(poi.type) })
+        .bindPopup(name || poi.type)
+        .addTo(layerPois);
     });
   }
 
-  function flyTo(lat, lng, zoom) {
-    if (mainMap) mainMap.flyTo([lat, lng], zoom || 16, { duration: 0.8 });
+  function setActiveLaunchPoint(schedule, launchPointId) {
+    if (schedule) renderSchedule(schedule, launchPointId);
   }
 
-  function refreshMain() { if (mainMap) setTimeout(() => mainMap.invalidateSize(), 60); }
+  // ---- Punt de trobada + compartir ----
+  function toast(msg) { if (window.ElxApp && ElxApp.toast) ElxApp.toast(msg); }
 
-  // ---- Selector de ubicación (paso 2 del alta) ----
-  function initPicker(elId) {
-    if (!hasLeaflet()) { fallback(elId, 'Mapa no disponible'); return null; }
-    const map = L.map(elId, { zoomControl: true, attributionControl: false })
-      .setView([ELCHE.lat, ELCHE.lng], 14);
-    L.tileLayer(TILE, { subdomains: 'abcd', maxZoom: 19 }).addTo(map);
-    let marker = null, chosen = null, curColor = '#ffce5c';
-    function place(lat, lng) {
-      chosen = { lat, lng };
-      if (marker) marker.setLatLng([lat, lng]);
-      else marker = L.marker([lat, lng], { icon: markerIcon(curColor) }).addTo(map);
+  function setMeetingPoint(latlng) {
+    if (!map) return;
+    const label = window.I18N ? I18N.t('map.meeting_point') : 'Punt de trobada';
+    if (!meetingMarker) {
+      meetingMarker = L.marker(latlng, { icon: meetingIcon(), draggable: true, zIndexOffset: 900 }).addTo(map);
+      meetingMarker.on('click', shareMeeting);
+    } else {
+      meetingMarker.setLatLng(latlng);
     }
-    map.on('click', (e) => place(e.latlng.lat, e.latlng.lng));
-    return {
-      map,
-      getLatLng: () => chosen,
-      setColor: (c) => { curColor = c || curColor; if (marker) marker.setIcon(markerIcon(curColor)); },
-      setLatLng: (lat, lng, zoom) => { place(lat, lng); map.setView([lat, lng], zoom || 16); },
-      reset: () => { if (marker) { map.removeLayer(marker); marker = null; } chosen = null; },
-      refresh: () => setTimeout(() => map.invalidateSize(), 60)
-    };
+    meetingMarker.bindTooltip(label, { direction: 'top', offset: [8, -26] });
+    toast(window.I18N ? I18N.t('map.meeting_set') : '');
   }
 
-  window.PalmarMap = {
-    ELCHE, initMain, renderPalmeras, flyTo, refreshMain, initPicker,
+  async function shareMeeting() {
+    const src = meetingMarker || userMarker;
+    if (!src) { toast(window.I18N ? I18N.t('map.share_no_point') : ''); return; }
+    const p = src.getLatLng();
+    const url = 'https://maps.google.com/?q=' + p.lat.toFixed(5) + ',' + p.lng.toFixed(5);
+    const text = (window.I18N ? I18N.t('map.meeting_text') : '') + ' ' + url;
+    try {
+      if (navigator.share) { await navigator.share({ title: 'Elx al Cel', text }); return; }
+      throw new Error('no-share');
+    } catch (e) {
+      if (e && e.name === 'AbortError') return; // el usuario cerró el diálogo
+      try {
+        await navigator.clipboard.writeText(text);
+        toast(window.I18N ? I18N.t('map.shared_copied') : url);
+      } catch (e2) { toast(url); }
+    }
+  }
+
+  // ---- Ubicacion del usuario en vivo ----
+  function startUserLocation(onUpdate) {
+    if (!('geolocation' in navigator)) return;
+    stopUserLocation();
+    geoWatchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude, longitude, accuracy } = pos.coords;
+        if (map) {
+          if (!userMarker) {
+            userMarker = L.marker([latitude, longitude], { icon: userIcon(), zIndexOffset: 1000 }).addTo(map);
+          } else {
+            userMarker.setLatLng([latitude, longitude]);
+          }
+          if (accuracy) {
+            if (!userAccuracyCircle) {
+              userAccuracyCircle = L.circle([latitude, longitude], { radius: accuracy, color: '#5ec8ff', weight: 1, fillOpacity: 0.08 }).addTo(map);
+            } else {
+              userAccuracyCircle.setLatLng([latitude, longitude]).setRadius(accuracy);
+            }
+          }
+        }
+        if (onUpdate) onUpdate({ lat: latitude, lng: longitude, accuracy });
+      },
+      (err) => { if (onUpdate) onUpdate(null, err && err.code); },
+      { enableHighAccuracy: true, maximumAge: 8000, timeout: 12000 }
+    );
+  }
+  function stopUserLocation() {
+    if (geoWatchId != null) { navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
+  }
+  function centerOnUser(zoom) {
+    if (map && userMarker) map.flyTo(userMarker.getLatLng(), zoom || 17, { duration: 0.6 });
+  }
+  function flyTo(lat, lng, zoom) { if (map) map.flyTo([lat, lng], zoom || 17, { duration: 0.8 }); }
+  function refresh() { if (map) setTimeout(() => map.invalidateSize(), 60); }
+
+  window.ElxMap = {
+    init, renderSchedule, setActiveLaunchPoint,
+    startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
+    setMeetingPoint, shareMeeting,
     hasLeaflet
   };
 })();

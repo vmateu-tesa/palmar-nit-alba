@@ -1,319 +1,187 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="va">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#1a1648" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f2b" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <title>PalmAR — Nit de l'Albà d'Elx</title>
+  <title>Elx al Cel — Nit de l'Albà</title>
+  <meta name="description" content="Mapa, programa i brúixola per a orientar-te durant la Nit de l'Albà d'Elx." />
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
   <link rel="apple-touch-icon" href="icons/icon.svg" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="css/styles.css?v=13" />
+  <link rel="stylesheet" href="css/leaflet.css" />
+  <link rel="stylesheet" href="css/styles.css?v=4" />
 
-  <!-- Librerías externas (opcionales: la demo funciona sin ellas) -->
-  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script defer src="https://js.stripe.com/v3/"></script>
-
-  <!-- Módulos de PalmAR (orden de dependencia, defer mantiene el orden) -->
-  <script defer src="js/config.js?v=13"></script>
-  <script defer src="js/i18n.js?v=13"></script>
-  <script defer src="js/fireworks.js?v=13"></script>
-  <script defer src="js/map.js?v=13"></script>
-  <script defer src="js/ar.js?v=13"></script>
-  <script defer src="js/data.js?v=13"></script>
-  <script defer src="js/payments.js?v=13"></script>
-  <script defer src="js/app.js?v=13"></script>
+  <script defer src="js/leaflet.js"></script>
+  <script defer src="js/config.js?v=4"></script>
+  <script defer src="js/i18n.js?v=4"></script>
+  <script defer src="js/map.js?v=4"></script>
+  <script defer src="js/ar.js?v=4"></script>
+  <script defer src="js/timeline.js?v=4"></script>
+  <script defer src="js/data.js?v=4"></script>
+  <script defer src="js/prefetch.js?v=4"></script>
+  <script defer src="js/alerts.js?v=4"></script>
+  <script defer src="js/app.js?v=4"></script>
 </head>
 <body>
 
-  <!-- ====== CABECERA ====== -->
   <header class="topbar">
     <div class="brand">
-      <span class="brand-mark" aria-hidden="true"></span>
-      <span class="brand-name">Palm<span class="brand-ar">AR</span></span>
+      <svg class="brand-mark" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true">
+        <path d="M12 21V9" stroke="#f5c542" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+        <path d="M12 9C10 6 6.5 5.5 4 6.5c2.2.4 4.6 1.6 6 3M12 9c2-3 5.5-3.5 8-2.5-2.2.4-4.6 1.6-6 3M12 9C11 5.5 8 3.5 5.5 3.5 8 4.5 10.5 6 11.5 8.5M12 9c1-3.5 4-5.5 6.5-5.5C16 4.5 13.5 6 12.5 8.5" stroke="#f5c542" stroke-width="1.3" fill="none" stroke-linecap="round"/>
+        <circle cx="12" cy="9" r="0.9" fill="#f5c542"/>
+      </svg>
+      <div>
+        <span class="brand-name">Elx al Cel</span>
+        <span class="brand-sub" data-i18n="app.tagline">Nit de l'Albà · Guia ciutadana</span>
+      </div>
     </div>
-    <div class="topbar-actions">
-      <button id="lang-toggle" class="chip" aria-label="Idioma">
-        <span id="lang-current">CAS</span>
-      </button>
-      <button id="account-btn" class="chip chip-account">
-        <span data-i18n="nav.login">Entrar</span>
-      </button>
-    </div>
+    <button id="lang-toggle" class="chip" aria-label="Canviar idioma / Cambiar idioma">
+      <span data-i18n="lang.switch">CAS</span>
+    </button>
   </header>
 
-  <!-- ====== HERO / CUENTA ATRÁS ====== -->
-  <section id="hero" class="hero">
-    <div class="hero-inner">
-      <p class="hero-kicker" data-i18n="hero.kicker">Nit de l'Albà · Elx</p>
-      <h1 class="hero-title" data-i18n="hero.title">El cel d'Elx, a les teues mans</h1>
-      <p class="hero-sub" data-i18n="hero.sub">Apadrina la teua palmera i reconeix-la la nit més màgica de l'any.</p>
-      <div id="countdown" class="countdown" aria-live="polite">
-        <div class="cd-box"><span id="cd-days">--</span><small data-i18n="cd.days">dies</small></div>
-        <div class="cd-box"><span id="cd-hours">--</span><small data-i18n="cd.hours">hores</small></div>
-        <div class="cd-box"><span id="cd-min">--</span><small data-i18n="cd.min">min</small></div>
-        <div class="cd-box"><span id="cd-sec">--</span><small data-i18n="cd.sec">seg</small></div>
-      </div>
-      <div class="hero-cta">
-        <button id="cta-add" class="btn btn-gold" data-i18n="hero.cta_add">Apadrina la teua palmera</button>
-        <button id="cta-ar" class="btn btn-ghost" data-i18n="hero.cta_ar">Mode AR</button>
-      </div>
-    </div>
-    <button id="hero-collapse" class="hero-collapse" aria-label="map">▾</button>
-  </section>
+  <div id="status-banner" class="status-banner" role="status" hidden></div>
 
-  <!-- ====== MAPA (público, gratis) ====== -->
-  <main id="view-map" class="view-map">
-    <div id="map"></div>
-    <button id="fab-sim" class="fab" title="Simular" aria-label="Simular">✦</button>
+  <main class="views">
+
+    <!-- ====== MAPA ====== -->
+    <section id="view-map" class="view is-active" data-view="map">
+      <div id="map" class="map-canvas"></div>
+      <button id="share-btn" class="fab fab-secondary" aria-label="Compartir punt de trobada">
+        <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="5.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="18.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.4 10.8l6.8-4M8.4 13.2l6.8 4" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      <button id="locate-btn" class="fab" aria-label="Centrar en la meua ubicació">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <span id="map-locate-label" data-i18n="map.locating">Localitzant-te…</span>
+      </button>
+      <div class="map-legend">
+        <span><i class="lg-dot lg-launch"></i><span data-i18n="map.legend.launch">Punt de llançament oficial</span></span>
+        <span><i class="lg-dot lg-closure"></i><span data-i18n="map.legend.closure">Carrer tallat</span></span>
+        <span><i class="lg-dot lg-perimeter"></i><span data-i18n="map.legend.perimeter">Perímetre de seguretat</span></span>
+        <span><i class="lg-dot lg-view"></i><span data-i18n="map.legend.viewpoint">Mirador recomanat</span></span>
+      </div>
+    </section>
+
+    <!-- ====== PROGRAMA ====== -->
+    <section id="view-timeline" class="view" data-view="timeline">
+      <div class="timeline-wrap">
+        <div class="section-head">
+          <h2 data-i18n="timeline.title">Programa de la nit</h2>
+          <span class="section-tag" data-i18n="timeline.declaration">Festa d'Interés Turístic Nacional</span>
+        </div>
+        <button id="notify-btn" class="chip chip-block" aria-label="Activar avisos">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path d="M18 9a6 6 0 1 0-12 0c0 5-2 6-2 6h16s-2-1-2-6M13.8 19a2 2 0 0 1-3.6 0" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="notify.enable">Activar avisos</span>
+        </button>
+        <div id="timeline-now-card" class="tl-now-card"></div>
+        <div class="tl-progress-wrap">
+          <div class="tl-progress-label"><span data-i18n="timeline.progress">Progrés de la nit</span><span id="tl-progress-pct"></span></div>
+          <div class="tl-progress"><div id="tl-progress-bar" class="tl-progress-bar"></div></div>
+        </div>
+        <ul id="timeline-list" class="tl-list"></ul>
+      </div>
+    </section>
+
+    <!-- ====== BRÚIXOLA ====== -->
+    <section id="view-ar" class="view" data-view="ar">
+      <div class="ar-wrap">
+        <p class="ar-hint" id="ar-hint" data-i18n="ar.hint">Gira sobre tu mateix fins que la fletxa quede recta cap amunt</p>
+        <div class="ar-compass">
+          <span class="ar-cardinal ar-n">N</span>
+          <div id="ar-arrow" class="ar-arrow">
+            <svg viewBox="0 0 24 24" width="64" height="64" aria-hidden="true"><path d="M21 12L5 4l3.5 8L5 20z" fill="currentColor"/></svg>
+          </div>
+        </div>
+        <p id="ar-target-name" class="ar-target-name">—</p>
+        <p id="ar-target-dist" class="ar-target-dist"></p>
+        <p id="ar-heading" class="ar-heading"></p>
+      </div>
+    </section>
+
+    <!-- ====== GUIA ====== -->
+    <section id="view-guide" class="view" data-view="guide">
+      <div class="guide-wrap">
+        <div class="section-head">
+          <h2 data-i18n="guide.title">Guia d'Elx en festes</h2>
+        </div>
+        <p class="guide-intro" data-i18n="guide.intro">Informació oficial per a viure la Nit de l'Albà i les Festes d'Agost.</p>
+
+        <article class="g-card">
+          <h3 data-i18n="guide.alba.title">La Nit de l'Albà</h3>
+          <p data-i18n="guide.alba.desc"></p>
+          <div class="g-links">
+            <a class="g-link" href="https://www.visitelche.com/fiestas/nit-de-l-alba/" target="_blank" rel="noopener" data-i18n="guide.alba.link">Informació oficial (VisitElche)</a>
+          </div>
+        </article>
+
+        <article class="g-card">
+          <h3 data-i18n="guide.misteri.title">El Misteri d'Elx</h3>
+          <p data-i18n="guide.misteri.desc"></p>
+          <div class="g-links">
+            <a class="g-link" href="https://misteridelx.com" target="_blank" rel="noopener" data-i18n="guide.misteri.link">Web oficial del Misteri</a>
+            <a class="g-link g-link-primary" href="https://entradas.instanticket.es/misteridelx/public/janto/" target="_blank" rel="noopener" data-i18n="guide.misteri.tickets">Comprar entrades</a>
+            <a class="g-link" href="https://www.visitelche.com/patrimonios-de-la-humanidad/misteri-delx/" target="_blank" rel="noopener" data-i18n="guide.misteri.more">El Misteri a VisitElche</a>
+          </div>
+        </article>
+
+        <article class="g-card">
+          <h3 data-i18n="guide.palmeral.title">El Palmeral</h3>
+          <p data-i18n="guide.palmeral.desc"></p>
+          <div class="g-links">
+            <a class="g-link" href="https://www.elche.es/museos/museo-del-palmeral/el-palmeral-de-elche/" target="_blank" rel="noopener" data-i18n="guide.palmeral.link">El Palmeral (Ajuntament)</a>
+            <a class="g-link" href="https://www.visitelche.com/cultura/museos/museo-del-palmeral/" target="_blank" rel="noopener" data-i18n="guide.palmeral.museum">Museu del Palmeral</a>
+          </div>
+        </article>
+
+        <article class="g-card">
+          <h3 data-i18n="guide.participate.title">Participar amb les teues palmeres de foc</h3>
+          <p data-i18n="guide.participate.desc"></p>
+        </article>
+
+        <article class="g-card">
+          <h3 data-i18n="guide.official.title">Enllaços oficials</h3>
+          <div class="g-links">
+            <a class="g-link" href="https://www.elche.es" target="_blank" rel="noopener" data-i18n="guide.official.ajuntament">Ajuntament d'Elx</a>
+            <a class="g-link" href="https://www.visitelche.com" target="_blank" rel="noopener" data-i18n="guide.official.visitelche">VisitElche · Turisme oficial</a>
+          </div>
+        </article>
+
+        <article class="g-card g-about">
+          <h3 data-i18n="about.title">Sobre esta eina</h3>
+          <p data-i18n="about.p1"></p>
+          <p data-i18n="about.p2"></p>
+          <p class="g-heritage" data-i18n="about.heritage"></p>
+        </article>
+      </div>
+    </section>
+
   </main>
 
-  <!-- ====== NAVEGACIÓN INFERIOR ====== -->
+  <!-- ====== NAVEGACIÓ INFERIOR ====== -->
   <nav class="bottomnav">
     <button class="nav-item is-active" data-nav="map">
-      <span class="nav-ico">🗺️</span><span data-i18n="nav.map">Mapa</span>
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.3-6.5-10A6.5 6.5 0 0 1 12 4.5 6.5 6.5 0 0 1 18.5 11c0 4.7-6.5 10-6.5 10z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="11" r="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+      <span data-i18n="nav.map">Mapa</span>
+    </button>
+    <button class="nav-item" data-nav="timeline">
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span data-i18n="nav.timeline">Programa</span>
     </button>
     <button class="nav-item" data-nav="ar">
-      <span class="nav-ico">📷</span><span data-i18n="nav.ar">AR</span>
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M15.5 8.5l-2 5-5 2 2-5z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      <span data-i18n="nav.ar">Brúixola</span>
     </button>
-    <button class="nav-item nav-add" data-nav="add">
-      <span class="nav-add-plus">+</span>
-    </button>
-    <button class="nav-item" data-nav="sim">
-      <span class="nav-ico">✦</span><span data-i18n="nav.sim">Cel</span>
-    </button>
-    <button class="nav-item" data-nav="info">
-      <span class="nav-ico">ℹ️</span><span data-i18n="nav.info">Info</span>
+    <button class="nav-item" data-nav="guide">
+      <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M20 18v3H6.5A2.5 2.5 0 0 1 4 18.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M9 8h7M9 11.5h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span data-i18n="nav.guide">Guia</span>
     </button>
   </nav>
 
-  <!-- ====== HOJA: DETALLE DE PALMERA ====== -->
-  <div id="detail-sheet" class="sheet" aria-hidden="true">
-    <div class="sheet-grip"></div>
-    <div class="sheet-head">
-      <canvas id="detail-preview" class="detail-preview" width="120" height="120"></canvas>
-      <div>
-        <span id="detail-official" class="official-badge" data-i18n="detail.official" hidden>Oficial · Ajuntament d'Elx</span>
-        <h2 id="detail-name" class="sheet-title">—</h2>
-        <p id="detail-type" class="sheet-meta">—</p>
-        <p id="detail-time" class="sheet-meta">—</p>
-      </div>
-      <button class="sheet-close" data-close-sheet="detail-sheet" aria-label="Cerrar">✕</button>
-    </div>
-    <blockquote id="detail-note" class="family-note"></blockquote>
-    <div id="detail-gallery" class="media-gallery"></div>
-    <div id="detail-desc-wrap" class="detail-block" hidden>
-      <h3 class="block-label" data-i18n="detail.description">Descripció</h3>
-      <p id="detail-desc" class="detail-text"></p>
-    </div>
-    <div id="detail-dedication-wrap" class="detail-block dedication-block" hidden>
-      <span class="dedication-mark">✿</span>
-      <p id="detail-dedication" class="dedication-text"></p>
-    </div>
-    <div class="detail-actions">
-      <button id="detail-simulate" class="btn btn-gold" data-i18n="detail.simulate">Simular al cel</button>
-      <button id="detail-share" class="btn btn-ghost btn-share" data-i18n="detail.share">Compartir</button>
-      <div class="reactions" id="detail-reactions"></div>
-    </div>
-    <div class="comments">
-      <h3 data-i18n="detail.comments">Comentaris</h3>
-      <div id="comments-list" class="comments-list"></div>
-      <form id="comment-form" class="comment-form">
-        <input id="comment-input" type="text" maxlength="180"
-               data-i18n-attr="placeholder:detail.comment_ph"
-               placeholder="Escriu un comentari…" />
-        <button type="submit" class="btn btn-sm btn-gold" data-i18n="detail.send">Enviar</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ====== HOJA: AÑADIR PALMERA (multi-paso) ====== -->
-  <div id="add-sheet" class="sheet sheet-tall" aria-hidden="true">
-    <div class="sheet-grip"></div>
-    <div class="sheet-head">
-      <h2 class="sheet-title" data-i18n="add.title">Apadrina la teua palmera</h2>
-      <button class="sheet-close" data-close-sheet="add-sheet" aria-label="Cerrar">✕</button>
-    </div>
-    <div class="steps">
-      <span class="step is-active" data-step-dot="1"></span>
-      <span class="step" data-step-dot="2"></span>
-      <span class="step" data-step-dot="3"></span>
-    </div>
-
-    <!-- Paso 1: carrusel de tipos -->
-    <section class="add-step" data-step="1">
-      <p class="step-label" data-i18n="add.choose_type">1 · Tria la teua palmera</p>
-      <div id="carousel" class="carousel"></div>
-      <p id="carousel-name" class="carousel-name">—</p>
-      <div class="carousel-nav">
-        <button id="car-prev" class="round-btn" aria-label="Anterior">‹</button>
-        <button id="car-next" class="round-btn" aria-label="Següent">›</button>
-      </div>
-      <button class="btn btn-gold btn-wide" data-step-next="2" data-i18n="add.next">Següent</button>
-    </section>
-
-    <!-- Paso 2: ubicación + hora + nota -->
-    <section class="add-step is-hidden" data-step="2">
-      <p class="step-label" data-i18n="add.place">2 · Situa-la i personalitza</p>
-      <div id="pick-map" class="pick-map"></div>
-      <button type="button" id="use-location" class="btn btn-ghost btn-sm btn-wide" style="margin:8px 0 2px">
-        📍 <span data-i18n="add.use_location">Usar la meua ubicació</span>
-      </button>
-      <p class="hint" data-i18n="add.pick_hint">Toca el mapa per fixar on s'encendrà.</p>
-      <label class="field">
-        <span data-i18n="add.name">Nom de la palmera</span>
-        <input id="f-name" type="text" maxlength="40" placeholder="Família Mas" />
-      </label>
-      <label class="field">
-        <span data-i18n="add.time">Hora d'encesa</span>
-        <input id="f-time" type="time" value="23:30" />
-      </label>
-      <label class="field">
-        <span data-i18n="add.note">Nota familiar</span>
-        <textarea id="f-note" maxlength="160" rows="2"
-                  data-i18n-attr="placeholder:add.note_ph"
-                  placeholder="En memòria de l'iaio Vicent…"></textarea>
-      </label>
-      <label class="field">
-        <span data-i18n="add.desc">Descripció</span>
-        <textarea id="f-desc" maxlength="500" rows="3"
-                  data-i18n-attr="placeholder:add.desc_ph"
-                  placeholder="Conta la història de la teua palmera…"></textarea>
-      </label>
-      <label class="field">
-        <span data-i18n="add.dedication">Dedicatòria</span>
-        <input id="f-dedication" type="text" maxlength="100"
-               data-i18n-attr="placeholder:add.dedication_ph"
-               placeholder="Dedicada a…" />
-      </label>
-      <div class="field">
-        <span data-i18n="add.media">Fotos i vídeos</span>
-        <div id="media-thumbs" class="media-thumbs"></div>
-        <button type="button" id="media-add-btn" class="btn btn-ghost btn-sm media-add">
-          📷 <span data-i18n="add.media_add">Afegir foto o vídeo</span>
-        </button>
-        <input id="media-input" type="file" accept="image/*,video/*" multiple hidden />
-        <p class="hint" data-i18n="add.media_hint">Comparteix records de la teua palmera (màx. 5).</p>
-      </div>
-      <div class="row-btns">
-        <button class="btn btn-ghost" data-step-prev="1" data-i18n="add.back">Enrere</button>
-        <button class="btn btn-gold" data-step-next="3" data-i18n="add.next">Següent</button>
-      </div>
-    </section>
-
-    <!-- Paso 3: pago -->
-    <section class="add-step is-hidden" data-step="3">
-      <p class="step-label" data-i18n="add.checkout">3 · Publica la teua palmera</p>
-      <div class="summary" id="summary"></div>
-      <div class="price-card">
-        <span data-i18n="add.price_label">Apadrinament de palmera</span>
-        <strong id="price-amount">2,99 €</strong>
-      </div>
-      <div class="row-btns">
-        <button class="btn btn-ghost" data-step-prev="2" data-i18n="add.back">Enrere</button>
-        <button id="pay-btn" class="btn btn-gold" data-i18n="add.pay">Pagar i publicar</button>
-      </div>
-      <p class="legal" data-i18n="add.legal">Pagament segur amb Stripe. Experiència simbòlica i digital.</p>
-    </section>
-  </div>
-
-  <!-- ====== MODAL LOGIN ====== -->
-  <div id="auth-modal" class="modal" aria-hidden="true">
-    <div class="modal-card">
-      <button class="sheet-close" data-close-modal="auth-modal" aria-label="Cerrar">✕</button>
-      <h2 class="sheet-title" id="auth-title" data-i18n="auth.title">Entra a PalmAR</h2>
-      <p class="auth-sub" id="auth-sub" data-i18n="auth.sub">Per apadrinar i comentar palmeres.</p>
-      <form id="auth-form">
-        <label class="field" id="field-name">
-          <span data-i18n="auth.name">Nom visible</span>
-          <input id="a-name" type="text" maxlength="40" placeholder="Vicent" />
-        </label>
-        <label class="field" id="field-email">
-          <span data-i18n="auth.email">Correu</span>
-          <input id="a-email" type="email" autocomplete="email" placeholder="tu@correu.com" />
-        </label>
-        <label class="field" id="field-pass">
-          <span data-i18n="auth.pass">Contrasenya</span>
-          <input id="a-pass" type="password" minlength="6" autocomplete="current-password" placeholder="••••••" />
-        </label>
-        <label class="field" id="field-newpass" hidden>
-          <span data-i18n="auth.newpass">Nova contrasenya</span>
-          <input id="a-newpass" type="password" minlength="6" autocomplete="new-password" placeholder="••••••" />
-        </label>
-        <button type="submit" class="btn btn-gold btn-wide" id="auth-submit" data-i18n="auth.signin">Entrar</button>
-      </form>
-      <button id="auth-forgot" class="link-btn" data-i18n="auth.forgot">Has oblidat la contrasenya?</button>
-      <button id="auth-switch" class="link-btn" data-i18n="auth.to_signup">No tens compte? Registra't</button>
-    </div>
-  </div>
-
-  <!-- ====== OVERLAY AR ====== -->
-  <div id="ar-overlay" class="fullscreen" aria-hidden="true">
-    <video id="ar-video" playsinline muted></video>
-    <canvas id="ar-canvas" class="fullscreen-canvas"></canvas>
-    <div class="ar-hud">
-      <button class="sheet-close ar-close" data-close-full="ar-overlay" aria-label="Cerrar">✕</button>
-      <div id="ar-compass" class="ar-compass" hidden>
-        <div id="ar-arrow" class="ar-arrow">➤</div>
-        <p id="ar-target" class="ar-target">—</p>
-        <p id="ar-target-dist" class="ar-target-dist"></p>
-      </div>
-      <p class="ar-hint" data-i18n="ar.hint">Apunta al cel i toca per llançar palmeres</p>
-    </div>
-  </div>
-
-  <!-- ====== OVERLAY SIMULACIÓN (cielo) ====== -->
-  <div id="sim-overlay" class="fullscreen" aria-hidden="true">
-    <canvas id="sim-canvas" class="fullscreen-canvas"></canvas>
-    <div class="sim-hud">
-      <button class="sheet-close" data-close-full="sim-overlay" aria-label="Cerrar">✕</button>
-      <p id="sim-caption" class="sim-caption"></p>
-    </div>
-  </div>
-
-  <!-- ====== INFO ====== -->
-  <div id="info-modal" class="modal" aria-hidden="true">
-    <div class="modal-card">
-      <button class="sheet-close" data-close-modal="info-modal" aria-label="Cerrar">✕</button>
-      <h2 class="sheet-title">PalmAR</h2>
-      <p class="info-p" data-i18n="info.p1">PalmAR porta la Nit de l'Albà al teu mòbil. La nit del 13 al 14 d'agost, Elx omple el cel de palmeres de foc en honor al Palmeral.</p>
-      <p class="info-p" data-i18n="info.p2">Mira totes les palmeres gratis. Si vols, apadrina la teua: tria l'animació, posa-li una nota i reconeix-la al cel amb realitat augmentada.</p>
-      <p class="info-credit">Patrimoni de la Humanitat · Elx</p>
-    </div>
-  </div>
-
-  <!-- ====== HOJA: PERFIL ====== -->
-  <div id="profile-sheet" class="sheet" aria-hidden="true">
-    <div class="sheet-grip"></div>
-    <button class="sheet-close" data-close-sheet="profile-sheet" aria-label="Cerrar" style="position:absolute;top:14px;right:16px">✕</button>
-    <input id="avatar-input" type="file" accept="image/*" hidden />
-    <div class="profile-head">
-      <div id="profile-avatar" class="profile-avatar" role="button" tabindex="0" aria-label="avatar">·<span class="avatar-cam">📷</span></div>
-      <div class="profile-id">
-        <div class="profile-name-row">
-          <h2 id="profile-name" class="profile-name">—</h2>
-          <button id="profile-edit-name" class="icon-btn" aria-label="✎">✎</button>
-        </div>
-        <p id="profile-email" class="profile-email">—</p>
-        <p id="profile-count" class="profile-count">—</p>
-      </div>
-    </div>
-    <button id="profile-add" class="btn btn-gold btn-wide" style="margin-top:4px">
-      ✦ <span data-i18n="profile.add">Apadrina una palmera</span>
-    </button>
-    <h3 class="block-label" style="margin:20px 0 10px" data-i18n="my.title">Les meues palmeres</h3>
-    <div id="my-list"></div>
-    <button id="profile-logout" class="btn btn-ghost btn-wide" style="margin-top:18px">
-      <span data-i18n="profile.logout">Tancar sessió</span>
-    </button>
-  </div>
-
-  <div class="scrim" id="scrim" hidden></div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="toast" class="toast" role="status"></div>
 
 </body>
 </html>

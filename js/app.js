@@ -26,8 +26,39 @@
     $$('.view').forEach((v) => v.classList.toggle('is-active', v.dataset.view === name));
     $$('.nav-item').forEach((b) => b.classList.toggle('is-active', b.dataset.nav === name));
     if (name === 'map' && window.ElxMap) ElxMap.refresh();
-    if (name === 'ar') { AR.start(() => toast(I18N.t('ar.permission_needed'))); }
+    if (name === 'ar') { AR.start(); }
     else { AR.stop(); }
+    showHint(name);
+  }
+
+  function showHint(view) {
+    const el = document.querySelector('.view-hint[data-hint="' + view + '"]');
+    if (!el) return;
+    if (localStorage.getItem('elx_hint_' + view)) return;
+    el.hidden = false;
+  }
+  function initHints() {
+    $$('.view-hint-x').forEach((b) => b.addEventListener('click', () => {
+      const box = b.closest('.view-hint');
+      box.hidden = true;
+      localStorage.setItem('elx_hint_' + box.dataset.hint, '1');
+    }));
+  }
+
+  function initWelcome() {
+    const w = $('#welcome');
+    if (!w) return;
+    if (!localStorage.getItem('elx_welcome')) {
+      w.hidden = false;
+      const cta = $('#welcome-cta');
+      if (cta) cta.addEventListener('click', () => {
+        w.hidden = true;
+        localStorage.setItem('elx_welcome', '1');
+        showHint('map');
+      });
+    } else {
+      showHint('map');
+    }
   }
 
   function renderStatusBanner() {
@@ -111,6 +142,16 @@
 
     renderProgress(state);
 
+    // "Próximo desde aquí" por punto de lanzamiento (para los popups del mapa)
+    const nextByPoint = {};
+    state.items.forEach((it) => {
+      if (it._start >= (window.Clock ? Clock.now() : Date.now()) && it.launch_point && !nextByPoint[it.launch_point]) {
+        const time = new Date(it._start).toLocaleTimeString(I18N.get() === 'cas' ? 'es-ES' : 'ca-ES', { hour: '2-digit', minute: '2-digit' });
+        nextByPoint[it.launch_point] = I18N.t('map.next_here') + ': ' + labelFor(it) + ' \u00B7 ' + time;
+      }
+    });
+    if (window.ElxMap) ElxMap.setNextInfo(nextByPoint);
+
     if (window.Alerts) Alerts.check(state, labelFor, toast);
 
     listEl.innerHTML = state.items.map((it) => {
@@ -129,12 +170,12 @@
   function initMapView(schedule) {
     if (!window.ElxMap) return;
     ElxMap.init('map', schedule);
+    let gpsToastShown = false;
     ElxMap.startUserLocation((pos, errCode) => {
-      const label = $('#map-locate-label');
-      if (!label) return;
-      if (pos) { label.textContent = I18N.t('map.you_are_here'); return; }
-      // 1 = permiso denegado, 2 = sin señal, 3 = timeout
-      label.textContent = errCode === 1 ? I18N.t('map.gps_denied') : I18N.t('map.no_gps');
+      if (!pos && !gpsToastShown) {
+        gpsToastShown = true;
+        toast(errCode === 1 ? I18N.t('map.gps_denied') : I18N.t('map.no_gps'));
+      }
     });
   }
 
@@ -184,11 +225,16 @@
   async function boot() {
     I18N.applyToDom();
     initNav();
+    initHints();
+    initWelcome();
+    const arBtn = $('#ar-enable-btn');
+    if (arBtn) arBtn.addEventListener('click', () => AR.enable(() => toast(I18N.t('ar.permission_needed'))));
 
     const schedule = await DB.loadSchedule();
     initDemo(schedule);
     if (schedule) {
       initMapView(schedule);
+      AR.setTargets(schedule.launch_points || []);
       renderTimeline();
     } else {
       toast(I18N.t('common.offline_bad'));

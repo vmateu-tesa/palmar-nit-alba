@@ -18,6 +18,25 @@
       'status.delay': "Avís: el programa porta un retard aproximat de {min} min.",
 
       'map.you_are_here': "Ets ací",
+      'welcome.title': "Benvingut a Elx al Cel",
+      'welcome.sub': "La teua guia per a la Nit de l'Albà",
+      'welcome.map': "Mapa: on són els llançaments, talls de carrer i punts d'ajuda",
+      'welcome.timeline': "Programa: què està passant ara i què ve després",
+      'welcome.ar': "Brúixola: cap a on mirar en cada moment",
+      'welcome.cta': "Començar",
+      'hint.map': "Toca qualsevol icona del mapa per a saber què és. Mantín premut per a marcar un punt de trobada.",
+      'hint.timeline': "El programa s'actualitza sol. Activa els avisos per a no perdre't res.",
+      'hint.guide': "Tota la informació oficial de la festa, en un lloc.",
+      'hint.close': "Entesos",
+      'ar.intro_title': "Brúixola de la Nit de l'Albà",
+      'ar.intro_text': "T'indica cap a on mirar per a cada palmera de foc. Necessita permís per a usar la ubicació i el sensor d'orientació del mòbil.",
+      'ar.enable': "Activar la brúixola",
+      'ar.target_auto': "Automàtic (segons el programa)",
+      'ar.turn_left': "Gira a l'esquerra",
+      'ar.turn_right': "Gira a la dreta",
+      'ar.text_mode': "Sense brúixola al dispositiu. El punt està cap al {card} de la teua posició.",
+      'map.locate': "La meua ubicació",
+
       'map.locating': "Localitzant-te…",
       'map.no_gps': "Sense ubicació. Pots moure el mapa manualment.",
       'map.gps_denied': "Ubicació desactivada. Activa-la als permisos del navegador.",
@@ -34,6 +53,7 @@
       'notify.denied': "Avisos no disponibles o bloquejats al navegador.",
 
       'map.legend.viewpoint': "Mirador recomanat",
+      'map.next_here': "Pròxim des d'ací",
       'map.legend.launch': "Punt de llançament oficial",
       'map.legend.closure': "Carrer tallat",
       'map.legend.perimeter': "Perímetre de seguretat",
@@ -103,6 +123,25 @@
       'status.delay': "Aviso: el programa lleva un retraso aproximado de {min} min.",
 
       'map.you_are_here': "Estás aquí",
+      'welcome.title': "Bienvenido a Elx al Cel",
+      'welcome.sub': "Tu guía para la Nit de l'Albà",
+      'welcome.map': "Mapa: dónde son los lanzamientos, cortes de calle y puntos de ayuda",
+      'welcome.timeline': "Programa: qué está pasando ahora y qué viene después",
+      'welcome.ar': "Brújula: hacia dónde mirar en cada momento",
+      'welcome.cta': "Empezar",
+      'hint.map': "Toca cualquier icono del mapa para saber qué es. Mantén pulsado para marcar un punto de encuentro.",
+      'hint.timeline': "El programa se actualiza solo. Activa los avisos para no perderte nada.",
+      'hint.guide': "Toda la información oficial de la fiesta, en un lugar.",
+      'hint.close': "Entendido",
+      'ar.intro_title': "Brújula de la Nit de l'Albà",
+      'ar.intro_text': "Te indica hacia dónde mirar para cada palmera de foc. Necesita permiso para usar la ubicación y el sensor de orientación del móvil.",
+      'ar.enable': "Activar la brújula",
+      'ar.target_auto': "Automático (según el programa)",
+      'ar.turn_left': "Gira a la izquierda",
+      'ar.turn_right': "Gira a la derecha",
+      'ar.text_mode': "Sin brújula en el dispositivo. El punto está hacia el {card} de tu posición.",
+      'map.locate': "Mi ubicación",
+
       'map.locating': "Localizándote…",
       'map.no_gps': "Sin ubicación. Puedes mover el mapa manualmente.",
       'map.gps_denied': "Ubicación desactivada. Actívala en los permisos del navegador.",
@@ -119,6 +158,7 @@
       'notify.denied': "Avisos no disponibles o bloqueados en el navegador.",
 
       'map.legend.viewpoint': "Mirador recomendado",
+      'map.next_here': "Próximo desde aquí",
       'map.legend.launch': "Punto de lanzamiento oficial",
       'map.legend.closure': "Calle cortada",
       'map.legend.perimeter': "Perímetro de seguridad",
@@ -186,9 +226,7 @@
   function detect() {
     const saved = localStorage.getItem('elx_lang');
     if (saved && DICT[saved]) return saved;
-    const nav = (navigator.language || '').toLowerCase();
-    if (nav.startsWith('ca') || nav.startsWith('va')) return 'va';
-    return (window.ElxConfig && ElxConfig.DEFAULT_LANG) || 'va';
+    return 'cas'; // castellano por defecto (el usuario puede cambiar a valencià)
   }
 
   function t(key, vars) {

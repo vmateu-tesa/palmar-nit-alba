@@ -1,6 +1,6 @@
 {
-  "_README": "v3 - Horas del programa OFICIAL (VisitElche). Coordenadas de puntos, cortes, perimetros y miradors PROVISIONALES pendientes de confirmar con el Ajuntament. Los miradors (viewpoints) proceden de las recomendaciones publicas habituales: Pont del Bimil-lenari, Pont de la Generalitat i llit del Vinalopo.",
-  "version": 3,
+  "_README": "v6 - COORDENADAS CORREGIDAS con referencias verificadas (OSM/Mapcarta): Basilica 38.26719,-0.69799; Pont del Bimil-lenari 38.27932,-0.70214; resto triangulado con distancias publicadas (precision ~50m). Horas del programa OFICIAL. Pendiente: confirmacion final del Ajuntament.",
+  "version": 6,
   "event": {
     "name": "Nit de l'Albà",
     "city": "Elx",
@@ -9,17 +9,17 @@
     "utc_offset": "+02:00",
     "declaration": "Festa d'Interés Turístic Nacional (2021)",
     "center": {
-      "lat": 38.2699,
-      "lng": -0.7126
+      "lat": 38.2685,
+      "lng": -0.699
     },
     "bbox": [
       [
-        38.2555,
-        -0.725
+        38.257,
+        -0.712
       ],
       [
-        38.282,
-        -0.687
+        38.283,
+        -0.688
       ]
     ],
     "zoom": {
@@ -33,47 +33,29 @@
     {
       "id": "basilica",
       "name": "Basílica de Santa María",
-      "lat": 38.2659,
-      "lng": -0.6986,
+      "lat": 38.26719,
+      "lng": -0.69799,
       "official": true,
-      "note_va": "Des de la torre es dispara la Palmera de la Mare de Déu",
-      "note_cas": "Desde la torre se dispara la Palmera de la Mare de Déu"
+      "note_va": "Des de la torre es dispara la Palmera de la Mare de Déu a mitjanit",
+      "note_cas": "Desde la torre se dispara la Palmera de la Mare de Déu a medianoche"
     },
     {
       "id": "glorieta",
-      "name": "Glorieta",
-      "lat": 38.2668,
-      "lng": -0.6996,
+      "name": "La Glorieta",
+      "lat": 38.2659,
+      "lng": -0.6963,
       "official": true,
-      "note_va": "Llançaments al centre de la ciutat",
-      "note_cas": "Lanzamientos en el centro de la ciudad"
+      "note_va": "Plaça de la Glorieta, al costat de l'Ajuntament",
+      "note_cas": "Plaza de la Glorieta, junto al Ayuntamiento"
     },
     {
       "id": "parc-municipal",
       "name": "Parc Municipal",
-      "lat": 38.2708,
-      "lng": -0.7,
+      "lat": 38.2699,
+      "lng": -0.6985,
       "official": true,
-      "note_va": "Zona verda del parc",
-      "note_cas": "Zona verde del parque"
-    },
-    {
-      "id": "pont-bimillenari",
-      "name": "Pont del Bimil·lenari",
-      "lat": 38.268,
-      "lng": -0.7012,
-      "official": true,
-      "note_va": "Perspectiva oberta sobre el riu Vinalopó",
-      "note_cas": "Perspectiva abierta sobre el río Vinalopó"
-    },
-    {
-      "id": "pont-nou",
-      "name": "Pont Nou",
-      "lat": 38.2655,
-      "lng": -0.6975,
-      "official": true,
-      "note_va": "Vora el centre històric",
-      "note_cas": "Junto al centro histórico"
+      "note_va": "El gran parc del Palmeral, vora el riu",
+      "note_cas": "El gran parque del Palmeral, junto al río"
     }
   ],
   "schedule": [
@@ -103,7 +85,7 @@
       "id": "bloc-3",
       "type_va": "Palmeres de foc · últim bloc",
       "type_cas": "Palmeres de foc · último bloque",
-      "launch_point": "pont-bimillenari",
+      "launch_point": "parc-municipal",
       "start": "2026-08-13T23:45:00+02:00",
       "kind": "palmera_foc",
       "highlight": false,
@@ -153,16 +135,16 @@
       "to": "2026-08-14T01:30:00+02:00",
       "path": [
         [
-          38.2662,
-          -0.6998
+          38.2676,
+          -0.6988
         ],
         [
-          38.2659,
-          -0.6986
+          38.2672,
+          -0.698
         ],
         [
-          38.2653,
-          -0.6979
+          38.2667,
+          -0.6974
         ]
       ]
     },
@@ -174,16 +156,16 @@
       "to": "2026-08-14T01:30:00+02:00",
       "path": [
         [
-          38.2673,
-          -0.7004
+          38.2664,
+          -0.697
         ],
         [
-          38.2668,
-          -0.6996
+          38.2659,
+          -0.6963
         ],
         [
-          38.2662,
-          -0.699
+          38.2654,
+          -0.6957
         ]
       ]
     }
@@ -196,20 +178,20 @@
       "name_cas": "Perímetro de seguridad · Basílica",
       "polygon": [
         [
-          38.2666,
-          -0.6996
+          38.2678,
+          -0.6987
+        ],
+        [
+          38.2678,
+          -0.6972
         ],
         [
           38.2666,
-          -0.6976
+          -0.6972
         ],
         [
-          38.2652,
-          -0.6976
-        ],
-        [
-          38.2652,
-          -0.6996
+          38.2666,
+          -0.6987
         ]
       ]
     }
@@ -218,50 +200,50 @@
     {
       "id": "socors-parc",
       "type": "first_aid",
-      "lat": 38.2704,
-      "lng": -0.7004,
-      "name_va": "Punt d'assistència sanitària",
-      "name_cas": "Punto de asistencia sanitaria"
+      "lat": 38.2694,
+      "lng": -0.6982,
+      "name_va": "Punt d'assistència sanitària (Parc Municipal)",
+      "name_cas": "Punto de asistencia sanitaria (Parque Municipal)"
     },
     {
       "id": "info-glorieta",
       "type": "info",
-      "lat": 38.2671,
-      "lng": -0.6999,
-      "name_va": "Punt d'informació",
-      "name_cas": "Punto de información"
+      "lat": 38.2661,
+      "lng": -0.6966,
+      "name_va": "Punt d'informació (Glorieta)",
+      "name_cas": "Punto de información (Glorieta)"
     },
     {
       "id": "aigua-parc",
       "type": "water",
-      "lat": 38.2712,
-      "lng": -0.6997,
-      "name_va": "Aigua potable",
-      "name_cas": "Agua potable"
+      "lat": 38.2703,
+      "lng": -0.6988,
+      "name_va": "Aigua potable (Parc Municipal)",
+      "name_cas": "Agua potable (Parque Municipal)"
     },
     {
-      "id": "accessible-parc",
+      "id": "accessible-ajuntament",
       "type": "accessible",
-      "lat": 38.27,
-      "lng": -0.7008,
-      "name_va": "Zona d'accés adaptat",
-      "name_cas": "Zona de acceso adaptado"
+      "lat": 38.2656,
+      "lng": -0.6989,
+      "name_va": "Zona d'accés adaptat (Plaça de Baix)",
+      "name_cas": "Zona de acceso adaptado (Plaça de Baix)"
     },
     {
       "id": "sortida-nord",
       "type": "exit",
-      "lat": 38.2718,
-      "lng": -0.7012,
-      "name_va": "Sortida recomanada (nord)",
-      "name_cas": "Salida recomendada (norte)"
+      "lat": 38.2712,
+      "lng": -0.698,
+      "name_va": "Sortida recomanada nord (Estació Elx-Parc)",
+      "name_cas": "Salida recomendada norte (Estación Elche-Parque)"
     },
     {
       "id": "sortida-sud",
       "type": "exit",
-      "lat": 38.2646,
-      "lng": -0.698,
-      "name_va": "Sortida recomanada (sud)",
-      "name_cas": "Salida recomendada (sur)"
+      "lat": 38.2652,
+      "lng": -0.7008,
+      "name_va": "Sortida recomanada sud (Pont Nou)",
+      "name_cas": "Salida recomendada sur (Pont Nou)"
     }
   ],
   "links": [
@@ -300,31 +282,31 @@
   ],
   "viewpoints": [
     {
-      "id": "pont-bimillenari-mirador",
-      "lat": 38.2683,
-      "lng": -0.7015,
+      "id": "pont-bimillenari",
+      "lat": 38.27932,
+      "lng": -0.70214,
       "name_va": "Pont del Bimil·lenari",
       "name_cas": "Pont del Bimil·lenari",
-      "desc_va": "Perspectiva oberta: permet veure les palmeres de foc llançades des de diversos punts de la ciutat alhora.",
-      "desc_cas": "Perspectiva abierta: permite ver las palmeres de foc lanzadas desde varios puntos de la ciudad a la vez."
+      "desc_va": "Al nord de la ciutat. Perspectiva oberta per a veure palmeres de foc de tota la ciutat alhora.",
+      "desc_cas": "Al norte de la ciudad. Perspectiva abierta para ver palmeres de foc de toda la ciudad a la vez."
     },
     {
-      "id": "pont-generalitat-mirador",
-      "lat": 38.2727,
-      "lng": -0.7046,
+      "id": "pont-generalitat",
+      "lat": 38.2614,
+      "lng": -0.7013,
       "name_va": "Pont de la Generalitat",
       "name_cas": "Pont de la Generalitat",
-      "desc_va": "Vista àmplia sobre la ciutat, semblant al Bimil·lenari.",
-      "desc_cas": "Vista amplia sobre la ciudad, similar al Bimil·lenari."
+      "desc_va": "Al sud del centre. Vista àmplia sobre el nucli antic.",
+      "desc_cas": "Al sur del centro. Vista amplia sobre el casco antiguo."
     },
     {
       "id": "llit-vinalopo",
-      "lat": 38.2694,
-      "lng": -0.7031,
+      "lat": 38.2664,
+      "lng": -0.7003,
       "name_va": "Llit del riu Vinalopó",
       "name_cas": "Cauce del río Vinalopó",
-      "desc_va": "El lloc clàssic per a anar amb família i amics. És també el més concorregut: arriba amb temps.",
-      "desc_cas": "El lugar clásico para ir con familia y amigos. También es el más concurrido: llega con tiempo."
+      "desc_va": "El lloc clàssic per a famílies. És el més concorregut: arriba amb temps.",
+      "desc_cas": "El lugar clásico para familias. Es el más concurrido: llega con tiempo."
     }
   ]
 }

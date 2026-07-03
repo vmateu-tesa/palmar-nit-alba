@@ -12,6 +12,8 @@
   };
 
   let map = null, userMarker = null, userAccuracyCircle = null, geoWatchId = null, meetingMarker = null;
+  let nextInfo = {};
+  let lastSchedule = null;
   let layerLaunch = null, layerClosures = null, layerPerimeters = null, layerPois = null, layerViewpoints = null;
 
   function hasLeaflet() { return typeof window.L !== 'undefined'; }
@@ -94,8 +96,14 @@
     return map;
   }
 
+  function setNextInfo(info) {
+    nextInfo = info || {};
+    if (lastSchedule) renderSchedule(lastSchedule);
+  }
+
   function renderSchedule(schedule, activeLaunchPointId) {
     if (!map) return;
+    lastSchedule = schedule;
     layerLaunch.clearLayers();
     layerClosures.clearLayers();
     layerPerimeters.clearLayers();
@@ -106,7 +114,9 @@
       const m = L.marker([p.lat, p.lng], { icon: launchIcon(p.id === activeLaunchPointId) });
       const lang = window.I18N ? I18N.get() : 'va';
       const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
-      m.bindPopup('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : ''));
+      const nx = nextInfo[p.id];
+      m.bindPopup('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
+        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : ''));
       m.addTo(layerLaunch);
     });
 
@@ -219,7 +229,7 @@
   window.ElxMap = {
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
-    setMeetingPoint, shareMeeting,
+    setMeetingPoint, shareMeeting, setNextInfo,
     hasLeaflet
   };
 })();

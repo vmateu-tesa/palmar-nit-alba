@@ -1,148 +1,175 @@
 /* =====================================================================
-   Elx al Cel — Brúixola orientativa
-   Indica cap a quin punt cardinal / punt de llançament mirar. Tot el
-   càlcul (rumb, distància) és local; no hi ha xarxa ni càmera implicades.
+   Elx al Cel — Brújula orientativa v6 (rediseño UX)
+   Flujo: pantalla explicativa → botón "Activar" (gesto de usuario,
+   necesario en iOS) → brújula con objetivo elegible.
+   Degradación elegante:
+   · Sin sensor de orientación pero con GPS → modo texto:
+     "La Basílica está a 450 m al NE de ti".
+   · Sin GPS → mensaje claro y sugerencia de usar el mapa.
+   Todo el cálculo es local (sin red).
    ===================================================================== */
 (function () {
-  const arrowEl = () => document.getElementById('ar-arrow');
-  const targetEl = () => document.getElementById('ar-target-name');
-  const distEl = () => document.getElementById('ar-target-dist');
-  const hintEl = () => document.getElementById('ar-hint');
-  const headingEl = () => document.getElementById('ar-heading');
+  const $ = (id) => document.getElementById(id);
 
-  let userPos = null, heading = null, target = null;
+  let userPos = null, heading = null, target = null, targets = [];
+  let autoTarget = null;            // el objetivo que marca el programa
+  let manualTargetId = null;        // si el usuario eligió uno a mano
   let geoWatch = null, orientHandler = null;
-  let pendingFrame = false;
-  let active = false;
+  let pendingFrame = false, active = false, enabled = false;
+  let sensorSeen = false;
 
   const toRad = (d) => d * Math.PI / 180;
   const toDeg = (r) => r * 180 / Math.PI;
+  const CARDINALS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+  const cardinal = (h) => CARDINALS[Math.round(((h % 360) + 360) % 360 / 45) % 8];
 
-  function bearing(lat1, lon1, lat2, lon2) {
-    const φ1 = toRad(lat1), φ2 = toRad(lat2), Δλ = toRad(lon2 - lon1);
+  function bearing(a, b) {
+    const φ1 = toRad(a.lat), φ2 = toRad(b.lat), Δλ = toRad(b.lng - a.lng);
     const y = Math.sin(Δλ) * Math.cos(φ2);
     const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
     return (toDeg(Math.atan2(y, x)) + 360) % 360;
   }
-  function distance(lat1, lon1, lat2, lon2) {
-    const R = 6371000;
-    const dφ = toRad(lat2 - lat1), dλ = toRad(lon2 - lon1);
-    const a = Math.sin(dφ / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dλ / 2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(a));
+  function distance(a, b) {
+    const R = 6371000, dφ = toRad(b.lat - a.lat), dλ = toRad(b.lng - a.lng);
+    const s = Math.sin(dφ / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dλ / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(s));
   }
-  const CARDINALS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
-  function cardinal(h) { return CARDINALS[Math.round(h / 45) % 8]; }
-  function renderHeading() {
-    const el = headingEl();
-    if (!el) return;
-    el.textContent = heading == null ? '' : Math.round(heading) + '\u00B0 \u00B7 ' + cardinal(heading);
-  }
+  const fmtDist = (m) => m == null ? '' : (m < 1000 ? Math.round(m) + ' m' : (m / 1000).toFixed(1) + ' km');
 
-  function fmtDist(m) {
-    if (m == null) return '';
-    return m < 1000 ? Math.round(m) + ' m' : (m / 1000).toFixed(1) + ' km';
+  // ---------- Objetivos ----------
+  function setTargets(points) { targets = points || []; renderChips(); pickTarget(); }
+  function setAutoTarget(point, label) {
+    autoTarget = point ? { ...point, label: label || point.name } : null;
+    pickTarget();
   }
-
-  // ---- Objetivo: el punto de lanzamiento del hito activo/proximo ----
-  function setTarget(point, label) {
-    target = point ? { ...point, label: label || point.name } : null;
+  function pickTarget() {
+    if (manualTargetId) {
+      const p = targets.find((t) => t.id === manualTargetId);
+      target = p ? { ...p, label: p.name } : null;
+    } else {
+      target = autoTarget;
+    }
     render();
   }
-
-  function render() {
-    const t = targetEl(), d = distEl(), h = hintEl();
-    renderHeading();
-    if (!target) {
-      if (t) t.textContent = window.I18N ? I18N.t('ar.no_target') : '';
-      if (d) d.textContent = '';
-      const arrow = arrowEl();
-      if (arrow) {
-        if (heading != null) {
-          // Mode brúixola: la fletxa apunta al nord
-          const rel = (-heading + 540) % 360 - 180;
-          arrow.style.transform = 'rotate(' + (rel - 90) + 'deg)';
-          arrow.style.opacity = '0.75';
-          arrow.classList.remove('aligned');
-        } else {
-          arrow.style.opacity = '0.2';
-        }
-      }
-      return;
-    }
-    if (!userPos) {
-      if (t) t.textContent = window.I18N ? I18N.t('ar.locating') : '';
-      if (d) d.textContent = '';
-      return;
-    }
-    const dist = distance(userPos.lat, userPos.lng, target.lat, target.lng);
-    if (t) t.textContent = target.label;
-    if (d) d.textContent = fmtDist(dist);
-
-    if (heading == null) {
-      if (arrowEl()) arrowEl().style.opacity = '0.4';
-      if (h) h.textContent = window.I18N ? I18N.t('ar.no_compass') : '';
-      return;
-    }
-    const brg = bearing(userPos.lat, userPos.lng, target.lat, target.lng);
-    let rel = (brg - heading + 540) % 360 - 180;
-    const arrow = arrowEl();
-    if (arrow) {
-      arrow.style.opacity = '1';
-      arrow.style.transform = 'rotate(' + (rel - 90) + 'deg)';
-      const aligned = Math.abs(rel) < 16;
-      arrow.classList.toggle('aligned', aligned);
-      if (t) t.textContent = aligned ? (window.I18N ? I18N.t('ar.aligned') : target.label) : target.label;
-    }
+  function renderChips() {
+    const box = $('ar-targets');
+    if (!box) return;
+    const chips = [
+      { id: null, label: I18N.t('ar.target_auto') }
+    ].concat(targets.map((t) => ({ id: t.id, label: t.name })));
+    box.innerHTML = chips.map((c) =>
+      '<button class="ar-chip' + ((c.id || null) === manualTargetId ? ' is-active' : '') + '" data-target="' + (c.id || '') + '">' +
+      c.label.replace(/</g, '&lt;') + '</button>').join('');
+    Array.from(box.querySelectorAll('.ar-chip')).forEach((b) => {
+      b.addEventListener('click', () => { manualTargetId = b.dataset.target || null; renderChips(); pickTarget(); });
+    });
   }
 
-  // ---- Geolocalización ----
+  // ---------- Render ----------
+  function show(id, on) { const el = $(id); if (el) el.hidden = !on; }
+
+  function render() {
+    if (!active) return;
+    show('ar-intro', !enabled);
+    show('ar-live', enabled);
+    if (!enabled) return;
+
+    const nameEl = $('ar-target-name'), distEl = $('ar-target-dist'),
+          headEl = $('ar-heading'), stateEl = $('ar-state'), arrow = $('ar-arrow');
+
+    if (headEl) headEl.textContent = heading == null ? '' : Math.round(heading) + '\u00B0 \u00B7 ' + cardinal(heading);
+
+    if (!target) {
+      if (nameEl) nameEl.textContent = I18N.t('ar.no_target');
+      if (distEl) distEl.textContent = '';
+      if (stateEl) stateEl.textContent = '';
+      if (arrow) { arrow.style.opacity = heading == null ? '0.2' : '0.7'; if (heading != null) rotateTo(-heading); }
+      return;
+    }
+    if (nameEl) nameEl.textContent = target.label;
+
+    if (!userPos) {
+      if (distEl) distEl.textContent = '';
+      if (stateEl) stateEl.textContent = I18N.t('ar.locating');
+      if (arrow) arrow.style.opacity = '0.25';
+      return;
+    }
+
+    const dist = distance(userPos, target);
+    const brg = bearing(userPos, target);
+    if (distEl) distEl.textContent = fmtDist(dist);
+
+    if (heading == null) {
+      // Modo texto (sin sensor): dirección cardinal absoluta
+      if (arrow) arrow.style.opacity = '0.15';
+      if (stateEl) stateEl.textContent = I18N.t('ar.text_mode', { card: cardinal(brg) });
+      return;
+    }
+
+    const rel = (brg - heading + 540) % 360 - 180;
+    rotateTo(rel);
+    const aligned = Math.abs(rel) < 15;
+    if (arrow) { arrow.style.opacity = '1'; arrow.classList.toggle('aligned', aligned); }
+    if (stateEl) {
+      stateEl.textContent = aligned ? I18N.t('ar.aligned')
+        : I18N.t(rel > 0 ? 'ar.turn_right' : 'ar.turn_left');
+    }
+  }
+  function rotateTo(rel) {
+    const arrow = $('ar-arrow');
+    if (arrow) arrow.style.transform = 'rotate(' + (rel - 90) + 'deg)';
+  }
+
+  // ---------- Sensores ----------
   function enableGeolocation() {
-    if (!('geolocation' in navigator)) return;
+    if (!('geolocation' in navigator)) { render(); return; }
     geoWatch = navigator.geolocation.watchPosition(
-      (pos) => { userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude }; render(); },
+      (p) => { userPos = { lat: p.coords.latitude, lng: p.coords.longitude }; render(); },
       () => { userPos = null; render(); },
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 }
     );
   }
-
-  // ---- Brújula (throttled con requestAnimationFrame, no en cada evento) ----
   function onOrientation(e) {
     let h = null;
     if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading;
     else if (typeof e.alpha === 'number') h = (360 - e.alpha) % 360;
     if (h == null) return;
+    sensorSeen = true;
     heading = h;
     if (!pendingFrame) {
       pendingFrame = true;
       requestAnimationFrame(() => { pendingFrame = false; if (active) render(); });
     }
   }
-
   function enableOrientation(onDenied) {
     const add = () => {
       orientHandler = onOrientation;
       window.addEventListener('deviceorientationabsolute', orientHandler, true);
       window.addEventListener('deviceorientation', orientHandler, true);
+      // Si en 3 s no ha llegado ningún dato, avisamos del modo texto
+      setTimeout(() => { if (!sensorSeen && active) render(); }, 3000);
     };
     try {
       if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission().then((s) => {
-          if (s === 'granted') add(); else if (onDenied) onDenied();
-        }).catch(() => { if (onDenied) onDenied(); });
+        DeviceOrientationEvent.requestPermission()
+          .then((s) => { if (s === 'granted') add(); else if (onDenied) onDenied(); })
+          .catch(() => { if (onDenied) onDenied(); });
       } else { add(); }
     } catch (e) { if (onDenied) onDenied(); }
   }
 
-  function start(onDenied) {
-    active = true;
-    userPos = null; heading = null;
+  // ---------- Ciclo de vida ----------
+  // enable(): llamado por el botón "Activar" (gesto de usuario, clave en iOS)
+  function enable(onDenied) {
+    if (enabled) return;
+    enabled = true;
     enableGeolocation();
     enableOrientation(onDenied);
     render();
   }
-
+  function start() { active = true; render(); }
   function stop() {
-    active = false;
+    active = false; enabled = false; sensorSeen = false;
     if (geoWatch != null) { navigator.geolocation.clearWatch(geoWatch); geoWatch = null; }
     if (orientHandler) {
       window.removeEventListener('deviceorientationabsolute', orientHandler, true);
@@ -152,5 +179,6 @@
     userPos = null; heading = null;
   }
 
-  window.AR = { start, stop, setTarget };
+  window.AR = { start, stop, enable, setTargets, setAutoTarget,
+    setTarget: setAutoTarget /* compatibilidad */ };
 })();

@@ -1,5 +1,14 @@
 # Changelog
 
+## v6 — Revisión UX completa + coordenadas verificadas (julio 2026)
+
+- COORDENADAS CORREGIDAS con fuentes verificadas (OSM): Basílica 38.26719,-0.69799; Pont del Bimil·lenari 38.27932,-0.70214 (antes desviado >1 km); Glorieta, Parque Municipal, Pont de la Generalitat, cauce del Vinalopó y POIs triangulados (~50 m).
+- Castellano por defecto (valencià a un toque).
+- Pantalla de bienvenida en la primera visita + consejos contextuales por pestaña (descartables).
+- Brújula rediseñada: pantalla explicativa con botón de activación (permiso iOS correcto), selector de objetivo (automático o punto concreto), indicaciones "gira a la izquierda/derecha", grados + cardinal, y modo texto sin sensor ("el punto está hacia el NE").
+- Popups del mapa con "Próximo desde aquí" (siguiente lanzamiento y hora en cada punto).
+- Estado del GPS por aviso no intrusivo; botón "Mi ubicación" estable.
+
 ## v5 — Robustez final + modo demo (julio 2026)
 
 - Modo demostración (?demo=1): hora simulada anclada 7 min antes de la Palmera de la Mare de Déu, con distintivo DEMO visible. Para presentaciones al Ajuntament.

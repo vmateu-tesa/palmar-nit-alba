@@ -7,6 +7,13 @@
 
   let timelineTick = null;
 
+  // Saneamiento: todo texto de datos que se inyecta via innerHTML pasa por aqui.
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function toast(msg) {
     const t = $('#toast'); if (!t || !msg) return;
     t.textContent = msg;
@@ -62,7 +69,7 @@
     if (!bar || !state.items.length) return;
     const first = state.items[0]._start;
     const last = state.items[state.items.length - 1]._start + 20 * 60000;
-    let pct = ((Date.now() - first) / (last - first)) * 100;
+    let pct = (((window.Clock ? Clock.now() : Date.now()) - first) / (last - first)) * 100;
     pct = Math.max(0, Math.min(100, pct));
     bar.style.width = pct.toFixed(1) + '%';
     if (pctEl) pctEl.textContent = pct > 0 && pct < 100 ? Math.round(pct) + '%' : '';
@@ -84,16 +91,16 @@
         const note = noteFor(state.current);
         nowCard.innerHTML =
           '<span class="tl-badge">' + I18N.t('timeline.now') + '</span>' +
-          '<h3>' + labelFor(state.current) + '</h3>' +
-          (lp ? '<p class="tl-place">' + lp.name + '</p>' : '') +
-          (note ? '<p class="tl-note">' + note + '</p>' : '');
+          '<h3>' + esc(labelFor(state.current)) + '</h3>' +
+          (lp ? '<p class="tl-place">' + esc(lp.name) + '</p>' : '') +
+          (note ? '<p class="tl-note">' + esc(note) + '</p>' : '');
         if (window.ElxMap && lp) ElxMap.setActiveLaunchPoint(schedule, lp.id);
         AR.setTarget(lp, labelFor(state.current));
       } else if (state.notStarted && state.next) {
-        const untilStart = state.next._start - Date.now();
+        const untilStart = state.next._start - (window.Clock ? Clock.now() : Date.now());
         nowCard.innerHTML =
           '<span class="tl-badge tl-badge-muted">' + I18N.t('timeline.not_started') + '</span>' +
-          '<h3>' + labelFor(state.next) + '</h3>' +
+          '<h3>' + esc(labelFor(state.next)) + '</h3>' +
           '<p class="tl-countdown">' + fmtCountdown(untilStart) + '</p>';
         AR.setTarget(Timeline.launchPointOf(schedule, state.next), labelFor(state.next));
       } else if (state.allDone) {
@@ -108,13 +115,13 @@
 
     listEl.innerHTML = state.items.map((it) => {
       const isNow = state.current && state.current.id === it.id;
-      const isPast = it._start < Date.now() && !isNow;
+      const isPast = it._start < (window.Clock ? Clock.now() : Date.now()) && !isNow;
       const cls = isNow ? 'is-now' : (isPast ? 'is-past' : 'is-upcoming');
       const time = new Date(it._start).toLocaleTimeString(I18N.get() === 'cas' ? 'es-ES' : 'ca-ES',
         { hour: '2-digit', minute: '2-digit' });
       return '<li class="tl-item ' + cls + '">' +
         '<span class="tl-time">' + time + '</span>' +
-        '<span class="tl-name">' + labelFor(it) + (it.highlight ? ' <span class="tl-star">✦</span>' : '') + '</span>' +
+        '<span class="tl-name">' + esc(labelFor(it)) + (it.highlight ? ' <span class="tl-star">✦</span>' : '') + '</span>' +
         '</li>';
     }).join('');
   }
@@ -159,11 +166,27 @@
     renderTimeline();
   }
 
+  function initDemo(schedule) {
+    try {
+      const q = new URLSearchParams(location.search);
+      if (!q.has('demo') || !schedule || !schedule.schedule || !schedule.schedule.length) return;
+      const times = schedule.schedule.map((i) => new Date(i.start).getTime());
+      const highlights = schedule.schedule.filter((i) => i.highlight).map((i) => new Date(i.start).getTime());
+      // Ancla: 7 min antes del gran hito (Palmera de la Mare de Déu) para un arco de demo perfecto.
+      const anchor = (highlights.length ? Math.max.apply(null, highlights) : Math.min.apply(null, times)) - 7 * 60000;
+      Clock.setOffset(anchor - Date.now());
+      const badge = $('#demo-badge');
+      if (badge) badge.hidden = false;
+      setTimeout(() => toast(I18N.t('demo.on')), 800);
+    } catch (e) { /* nunca bloquear el arranque por el modo demo */ }
+  }
+
   async function boot() {
     I18N.applyToDom();
     initNav();
 
     const schedule = await DB.loadSchedule();
+    initDemo(schedule);
     if (schedule) {
       initMapView(schedule);
       renderTimeline();
@@ -184,6 +207,16 @@
     if (!localStorage.getItem('elx_meet_hint')) {
       setTimeout(() => { toast(I18N.t('map.meeting_hint')); localStorage.setItem('elx_meet_hint', '1'); }, 2500);
     }
+
+    // Recuperación: al volver del bloqueo del móvil, repintar el programa al instante.
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) renderTimeline(); });
+    // Recuperación: si la primera carga falló sin red, reintentar al recuperarla.
+    window.addEventListener('online', async () => {
+      if (!DB.getSchedule()) {
+        const s = await DB.loadSchedule();
+        if (s) { initDemo(s); initMapView(s); renderTimeline(); }
+      }
+    });
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});

@@ -91,6 +91,7 @@
       'about.heritage': "El Palmeral d'Elx i el Misteri d'Elx són Patrimoni de la Humanitat (UNESCO).",
 
       'common.offline_bad': "No s'han pogut descarregar totes les dades encara.",
+      'demo.on': "Mode demostració: hora simulada. Lleva ?demo de l'adreça per a eixir.",
       'lang.switch': "CAS"
     },
     cas: {
@@ -175,6 +176,7 @@
       'about.heritage': "El Palmeral de Elche y el Misteri d'Elx son Patrimonio de la Humanidad (UNESCO).",
 
       'common.offline_bad': "Todavía no se han podido descargar todos los datos.",
+      'demo.on': "Modo demostración: hora simulada. Quita ?demo de la dirección para salir.",
       'lang.switch': "VAL"
     }
   };

@@ -22,7 +22,7 @@
     const items = withDelay(schedule.schedule, delayMin)
       .sort((a, b) => a._start - b._start);
 
-    const now = Date.now();
+    const now = (window.Clock ? Clock.now() : Date.now());
     let current = null, next = null;
     for (let i = 0; i < items.length; i++) {
       const start = items[i]._start;

@@ -16,6 +16,12 @@
 
   function hasLeaflet() { return typeof window.L !== 'undefined'; }
 
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   function fallback(elId, msg) {
     const el = document.getElementById(elId);
     if (el) el.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;' +
@@ -100,7 +106,7 @@
       const m = L.marker([p.lat, p.lng], { icon: launchIcon(p.id === activeLaunchPointId) });
       const lang = window.I18N ? I18N.get() : 'va';
       const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
-      m.bindPopup('<strong>' + p.name + '</strong>' + (note ? '<br>' + note : ''));
+      m.bindPopup('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : ''));
       m.addTo(layerLaunch);
     });
 
@@ -123,7 +129,7 @@
       const name = lang === 'cas' ? (v.name_cas || v.name_va) : (v.name_va || v.name_cas);
       const desc = lang === 'cas' ? (v.desc_cas || '') : (v.desc_va || '');
       L.marker([v.lat, v.lng], { icon: viewIcon() })
-        .bindPopup('<strong>' + name + '</strong>' + (desc ? '<br>' + desc : ''))
+        .bindPopup('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : ''))
         .addTo(layerViewpoints);
     });
 
@@ -131,7 +137,7 @@
       const lang = window.I18N ? I18N.get() : 'va';
       const name = lang === 'cas' ? (poi.name_cas || poi.name_va) : (poi.name_va || poi.name_cas);
       L.marker([poi.lat, poi.lng], { icon: poiIcon(poi.type) })
-        .bindPopup(name || poi.type)
+        .bindPopup(esc(name || poi.type))
         .addTo(layerPois);
     });
   }

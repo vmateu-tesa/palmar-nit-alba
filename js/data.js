@@ -22,11 +22,15 @@
   // schedule.json: se pide una vez; el Service Worker decide cache-first /
   // stale-while-revalidate, asi que esta llamada es barata incluso offline.
   async function loadSchedule() {
-    try {
-      schedule = await fetchJSON(cfg.SCHEDULE_URL);
-    } catch (e) {
-      schedule = schedule || null; // si ya la teniamos en memoria, la conservamos
-      console.warn('[data] no se pudo cargar schedule.json', e);
+    // 3 intentos con espera creciente: la red del evento puede fallar a rachas.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        schedule = await fetchJSON(cfg.SCHEDULE_URL);
+        break;
+      } catch (e) {
+        if (attempt === 2) console.warn('[data] no se pudo cargar schedule.json', e);
+        else await new Promise((r) => setTimeout(r, 800 * (attempt + 1)));
+      }
     }
     emit();
     return schedule;

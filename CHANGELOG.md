@@ -1,5 +1,13 @@
 # Changelog
 
+## v5 — Robustez final + modo demo (julio 2026)
+
+- Modo demostración (?demo=1): hora simulada anclada 7 min antes de la Palmera de la Mare de Déu, con distintivo DEMO visible. Para presentaciones al Ajuntament.
+- Reloj centralizado (Clock) usado por cronograma y avisos.
+- Saneamiento HTML de todo contenido dinámico (plantillas y popups del mapa).
+- Carga de datos con 3 reintentos y recuperación automática al volver la red.
+- Repintado inmediato al desbloquear el móvil (visibilitychange).
+
 ## v4 — Pivote institucional "Elx al Cel" (julio 2026)
 
 Reescritura completa: de app social B2C (PalmAR) a herramienta ciudadana de movilidad y seguridad para el Ajuntament d'Elx. La versión anterior se conserva íntegra en el historial de git.

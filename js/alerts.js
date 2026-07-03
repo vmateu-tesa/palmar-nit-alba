@@ -33,7 +33,7 @@
   // Llamado en cada tick del cronograma (cada ~15 s).
   function check(state, labelFor, toast) {
     if (!state || !state.items) return;
-    const now = Date.now();
+    const now = (window.Clock ? Clock.now() : Date.now());
     state.items.forEach((it) => {
       const dt = it._start - now;
       if (dt > 0 && dt <= WINDOW_MS && !warned[it.id]) {

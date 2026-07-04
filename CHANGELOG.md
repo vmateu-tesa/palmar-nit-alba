@@ -1,5 +1,11 @@
 # Changelog
 
+## v12 — Brújula corregida, patrocinio oficial y apartado de Fiestas (julio 2026)
+
+- Brújula: corregido el rumbo erróneo en Android (el sensor relativo, con norte arbitrario, pisaba las lecturas absolutas); compensación del ángulo de pantalla y suavizado circular anti-temblor.
+- Guía: enlace oficial de patrocinio de palmeras del Ayuntamiento (elche.es/fiestas/patrocinio-de-palmeras-de-la-nit-de-lalba) + correo patrociniopalmera@elche.es; precios reales 150–300 EUR, seis docenas de cohetes y dedicatoria por palmera.
+- Nueva tarjeta "Las Fiestas de Elche (7–15 de agosto)": Moros y Cristianos, charangas, ofrenda, mascletàs diarias, Racó FestiElx, conciertos, Nit de la Roà, procesión y castillo final; enlace a fiestasenelche.es (web oficial donde se publica el programa con la relación completa de palmeras y puntos de lanzamiento).
+
 ## v11 — Puntos de lanzamiento oficiales + contador rediseñado (julio 2026)
 
 - 12 puntos de lanzamiento según la nota oficial del Ayuntamiento (elche.es): torre de la Basílica, terraza del Ayuntamiento, Paseo de la Estación (Palmera Imperial 23:30), puentes del Ferrocarril y de Altamira (cohetà), Plaza del 1 de Mayo, Jardín de Andalucía y Colegio Mariano Benlliure (carcasas), y puntos de barrio en Altabix, El Pla, Sector V y Carrús.

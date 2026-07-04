@@ -116,7 +116,12 @@
       'guide.palmeral.museum': "Museu del Palmeral",
 
       'guide.participate.title': "Participar amb les teues palmeres de foc",
-      'guide.participate.desc': "La Nit de l'Albà no és un espectacle passiu: es llancen més de 8.000 palmeres i coets, la majoria per famílies i penyes des de terrats i balcons. Pots patrocinar la teua palmera escrivint a fiestas@elche.es, i comprar pirotècnia només en punts de venda autoritzats. Respecta els horaris (el disparo acaba a les 23:55) i les indicacions de seguretat.",
+      'guide.participate.desc': "Pots patrocinar la teua pròpia palmera de foc a través de l'Ajuntament: cada palmera porta sis dotzenes de coets i una dedicatòria (a una persona estimada, a qui ja no hi és, o d'una empresa als seus clients), amb preus entre 150 i 300 euros. El programa oficial amb la relació completa de palmeres i els punts de llançament es publica a fiestasenelche.es uns dies abans del 13 d'agost.",
+      'guide.participate.link': "Patrocini de palmeres (Ajuntament)",
+      'guide.participate.mail': "patrociniopalmera@elche.es",
+      'guide.festes.title': "Les Festes d'Elx (7–15 d'agost)",
+      'guide.festes.desc': "La Nit de l'Albà s'emmarca en les Festes Majors en honor a la Mare de Déu de l'Assumpció, declarades d'Interés Turístic Nacional: Entrades de Moros i Cristians i ambaixades, la Gran Xaranga, l'ofrena de flors, mascletàs diàries a les 14:00 al concurs de l'avinguda Alcalde Vicente Quiles, el Racó FestiElx al Passeig de l'Estació, concerts a l'Hort de Baix i al festival Nits de Festa, la Nit de la Roà (la vetla amb espelmes de la matinada del 14 al 15), i el 15 d'agost la Gran Mascletà, la Processó-Soterrar de la Mare de Déu i el castell de focs de fi de festes des del Pont del Ferrocarril.",
+      'guide.festes.link': "Web oficial de les festes (fiestasenelche.es)",
 
       'guide.official.title': "Enllaços oficials",
       'guide.official.ajuntament': "Ajuntament d'Elx",
@@ -238,7 +243,12 @@
       'guide.palmeral.museum': "Museo del Palmeral",
 
       'guide.participate.title': "Participar con tus palmeres de foc",
-      'guide.participate.desc': "La Nit de l'Albà no es un espectáculo pasivo: se lanzan más de 8.000 palmeras y cohetes, la mayoría por familias y peñas desde terrazas y balcones. Puedes patrocinar tu palmera escribiendo a fiestas@elche.es, y comprar pirotecnia solo en puntos de venta autorizados. Respeta los horarios (el disparo termina a las 23:55) y las indicaciones de seguridad.",
+      'guide.participate.desc': "Puedes patrocinar tu propia palmera de foc a través del Ayuntamiento: cada palmera lleva seis docenas de cohetes y una dedicatoria (a un ser querido, a quien ya no está, o de una empresa a sus clientes), con precios entre 150 y 300 euros. El programa oficial con la relación completa de palmeras y los puntos de lanzamiento se publica en fiestasenelche.es unos días antes del 13 de agosto.",
+      'guide.participate.link': "Patrocinio de palmeras (Ayuntamiento)",
+      'guide.participate.mail': "patrociniopalmera@elche.es",
+      'guide.festes.title': "Las Fiestas de Elche (7–15 de agosto)",
+      'guide.festes.desc': "La Nit de l'Albà se enmarca en las Fiestas Mayores en honor a la Mare de Déu de l'Assumpció, declaradas de Interés Turístico Nacional: Entradas de Moros y Cristianos y embajadas, la Gran Charanga, la ofrenda de flores, mascletàs diarias a las 14:00 en el concurso de la avenida Alcalde Vicente Quiles, el Racó FestiElx en el Paseo de la Estación, conciertos en el Hort de Baix y en el festival Nits de Festa, la Nit de la Roà (la vela con velas de la madrugada del 14 al 15), y el 15 de agosto la Gran Mascletà, la Procesión-Entierro de la Virgen y el castillo de fuegos de fin de fiestas desde el Puente del Ferrocarril.",
+      'guide.festes.link': "Web oficial de las fiestas (fiestasenelche.es)",
 
       'guide.official.title': "Enlaces oficiales",
       'guide.official.ajuntament': "Ayuntamiento de Elche",

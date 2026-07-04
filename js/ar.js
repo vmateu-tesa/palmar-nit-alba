@@ -16,7 +16,7 @@
   let manualTargetId = null;        // si el usuario eligió uno a mano
   let geoWatch = null, orientHandler = null;
   let pendingFrame = false, active = false, enabled = false;
-  let sensorSeen = false;
+  let sensorSeen = false, hasAbsolute = false;
 
   const toRad = (d) => d * Math.PI / 180;
   const toDeg = (r) => r * 180 / Math.PI;
@@ -129,13 +129,33 @@
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 12000 }
     );
   }
+  function screenAngle() {
+    try {
+      if (screen.orientation && typeof screen.orientation.angle === 'number') return screen.orientation.angle;
+      return window.orientation || 0;
+    } catch (e) { return 0; }
+  }
+  // Suavizado circular: evita que la flecha tiemble con el ruido del sensor
+  function smooth(prev, next) {
+    if (prev == null) return next;
+    const d = ((next - prev + 540) % 360) - 180;
+    return (prev + d * 0.25 + 360) % 360;
+  }
   function onOrientation(e) {
-    let h = null;
-    if (typeof e.webkitCompassHeading === 'number') h = e.webkitCompassHeading;
-    else if (typeof e.alpha === 'number') h = (360 - e.alpha) % 360;
+    let h = null, absolute = false;
+    if (typeof e.webkitCompassHeading === 'number') {
+      h = e.webkitCompassHeading; absolute = true;           // iOS: ya es rumbo real
+    } else if (typeof e.alpha === 'number') {
+      absolute = (e.type === 'deviceorientationabsolute') || e.absolute === true;
+      // Si el dispositivo emite lecturas absolutas, ignoramos las relativas
+      // (el sensor relativo tiene un norte arbitrario y "rompía" la dirección).
+      if (hasAbsolute && !absolute) return;
+      h = (360 - e.alpha + screenAngle()) % 360;
+    }
     if (h == null) return;
+    if (absolute) hasAbsolute = true;
     sensorSeen = true;
-    heading = h;
+    heading = smooth(heading, h);
     if (!pendingFrame) {
       pendingFrame = true;
       requestAnimationFrame(() => { pendingFrame = false; if (active) render(); });
@@ -169,7 +189,7 @@
   }
   function start() { active = true; render(); }
   function stop() {
-    active = false; enabled = false; sensorSeen = false;
+    active = false; enabled = false; sensorSeen = false; hasAbsolute = false;
     if (geoWatch != null) { navigator.geolocation.clearWatch(geoWatch); geoWatch = null; }
     if (orientHandler) {
       window.removeEventListener('deviceorientationabsolute', orientHandler, true);

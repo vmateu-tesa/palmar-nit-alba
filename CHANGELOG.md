@@ -1,5 +1,9 @@
 # Changelog
 
+## v8 — Hotfix crítico de visibilidad (julio 2026)
+
+- Corregido: los elementos con display explícito en CSS ignoraban el atributo hidden. Afectaba a la pantalla de bienvenida (no se podía cerrar), panel de capas, consejos contextuales, brújula, insignia DEMO y botón de instalación. Regla global [hidden]{display:none !important}.
+
 ## v7 — Fase B: herramienta avanzada (julio 2026)
 
 - Programa interactivo: cada hito se despliega con su descripción y botón "Ver en el mapa" que vuela al punto y abre su ficha.

@@ -63,6 +63,7 @@
       const cta = $('#welcome-cta');
       if (cta) cta.addEventListener('click', () => {
         w.hidden = true;
+        w.style.display = 'none';
         localStorage.setItem('elx_welcome', '1');
         showHint('map');
       });

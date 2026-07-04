@@ -5,7 +5,7 @@
    · tiles del mapa      -> stale-while-revalidate con caché LRU acotada (evita crecer sin límite)
    · status.json          -> siempre red, nunca caché persistente (avisos en vivo)
 */
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CORE_CACHE = 'elx-core-' + VERSION;
 const TILE_CACHE = 'elx-tiles-' + VERSION;
 const MAX_TILES = 400; // límite duro de tiles guardados (evita saturar el almacenamiento del móvil)
@@ -14,7 +14,7 @@ const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css?v=7',
+  './css/styles.css?v=8',
   './css/leaflet.css',
   './css/images/marker-icon.png',
   './css/images/marker-icon-2x.png',
@@ -22,18 +22,18 @@ const CORE = [
   './css/images/layers.png',
   './css/images/layers-2x.png',
   './js/leaflet.js',
-  './js/clock.js?v=7',
-  './js/config.js?v=7',
-  './js/i18n.js?v=7',
-  './js/map.js?v=7',
-  './js/ar.js?v=7',
-  './js/timeline.js?v=7',
-  './js/data.js?v=7',
-  './js/app.js?v=7',
-  './js/prefetch.js?v=7',
-  './js/alerts.js?v=7',
+  './js/clock.js?v=8',
+  './js/config.js?v=8',
+  './js/i18n.js?v=8',
+  './js/map.js?v=8',
+  './js/ar.js?v=8',
+  './js/timeline.js?v=8',
+  './js/data.js?v=8',
+  './js/app.js?v=8',
+  './js/prefetch.js?v=8',
+  './js/alerts.js?v=8',
   './icons/icon.svg',
-  './data/schedule.json?v=7'
+  './data/schedule.json?v=8'
 ];
 
 self.addEventListener('install', (e) => {

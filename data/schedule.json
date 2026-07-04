@@ -1,6 +1,6 @@
 {
   "_README": "v11 - PUNTOS DE LANZAMIENTO según nota oficial del Ayuntamiento (elche.es, programa Nit de l'Albà): 21 puntos en el municipio; palmeras desde terrazas (Ayuntamiento incl.), Palmera Imperial 23:30 desde Paseo de la Estación; coheta desde Paseo+Pte Ferrocarril+Pte Altamira; carcasas desde Pl. 1 de Mayo, Jardin de Andalucia y Col. Mariano Benlliure; puntos de barrio en Altabix, El Pla, Sector V y Carrus. Coordenadas de referencia verificadas (Basilica, Bimil-lenari) y el resto trianguladas/aproximadas (provisional=true) pendientes de confirmacion municipal.",
-  "version": 11,
+  "version": 15,
   "event": {
     "name": "Nit de l'Albà",
     "city": "Elx",
@@ -483,71 +483,894 @@
       "id": "nits-de-festa-umh",
       "lat": 38.2789,
       "lng": -0.6862,
-      "provisional": true,
-      "name_va": "Festival Nits de Festa (pàrquing UMH)",
-      "name_cas": "Festival Nits de Festa (parking UMH)",
-      "desc_va": "Concerts nocturns i la barraca Elx Music Fest, vora la Torre dels Vaïllos.",
-      "desc_cas": "Conciertos nocturnos y la barraca Elx Music Fest, junto a la Torre dels Vaïllos."
+      "name_va": "Nits de Festa ELX (pàrquing UMH)",
+      "name_cas": "Nits de Festa ELX (parking UMH)",
+      "desc_va": "Barraca Municipal, del 7 al 14 d'agost (obertura 21:00). Cartell 2026: MVRK + Juicy Bae, Siloé, Sidecars, Lia Kali, Celtas Cortos (gratuït), Rigoberta Bandini, OBK (gratuït, la nit de l'Albà) i Chimo Bayo + Kuve (gratuït). Entrades a enterticket.es.",
+      "desc_cas": "Barraca Municipal, del 7 al 14 de agosto (apertura 21:00). Cartel 2026: MVRK + Juicy Bae, Siloé, Sidecars, Lia Kali, Celtas Cortos (gratuito), Rigoberta Bandini, OBK (gratuito, la noche de l'Albà) y Chimo Bayo + Kuve (gratuito). Entradas en enterticket.es."
     }
   ],
   "citizen_palmeras": [
     {
-      "id": "cp-mas",
-      "lat": 38.2682,
-      "lng": -0.7126,
-      "name": "Família Mas",
-      "time": "23:30"
+      "id": "cp-001",
+      "lat": 38.26733,
+      "lng": -0.69729,
+      "name": "Família Pomares",
+      "time": "23:30",
+      "zone": "Centre"
     },
     {
-      "id": "cp-tro",
-      "lat": 38.2655,
-      "lng": -0.705,
-      "name": "Penya El Tro",
-      "time": "23:45"
+      "id": "cp-002",
+      "lat": 38.26519,
+      "lng": -0.69765,
+      "name": "Per als xiquets de la família Valero",
+      "time": "23:30",
+      "zone": "Centre"
     },
     {
-      "id": "cp-cantons",
-      "lat": 38.2731,
-      "lng": -0.7008,
-      "name": "Els Quatre Cantons",
-      "time": "00:15"
+      "id": "cp-003",
+      "lat": 38.26643,
+      "lng": -0.69908,
+      "name": "A l'avi Orts",
+      "time": "23:15",
+      "zone": "Centre"
     },
     {
-      "id": "cp-anton",
-      "lat": 38.262,
-      "lng": -0.718,
-      "name": "Casa Antón",
-      "time": "23:15"
+      "id": "cp-004",
+      "lat": 38.26536,
+      "lng": -0.70044,
+      "name": "Família Maciá",
+      "time": "23:20",
+      "zone": "Centre"
     },
     {
-      "id": "cp-vila",
-      "lat": 38.27,
-      "lng": -0.699,
+      "id": "cp-005",
+      "lat": 38.26502,
+      "lng": -0.69767,
+      "name": "Família Amorós",
+      "time": "23:50",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-006",
+      "lat": 38.26517,
+      "lng": -0.6992,
+      "name": "Colla El Foc",
+      "time": "23:35",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-007",
+      "lat": 38.26579,
+      "lng": -0.69869,
+      "name": "Família Valero",
+      "time": "23:15",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-008",
+      "lat": 38.26709,
+      "lng": -0.69985,
+      "name": "Família Bru",
+      "time": "23:25",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-009",
+      "lat": 38.26512,
+      "lng": -0.69761,
+      "name": "Penya El Coet",
+      "time": "23:20",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-010",
+      "lat": 38.26581,
+      "lng": -0.69954,
+      "name": "A l'avi Sempere",
+      "time": "23:40",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-011",
+      "lat": 38.26466,
+      "lng": -0.69767,
+      "name": "Penya L'Espurna",
+      "time": "23:45",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-012",
+      "lat": 38.26604,
+      "lng": -0.70003,
+      "name": "Família Tarí",
+      "time": "23:35",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-013",
+      "lat": 38.2684,
+      "lng": -0.69947,
+      "name": "Família Sansano",
+      "time": "23:50",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-014",
+      "lat": 38.26813,
+      "lng": -0.69624,
+      "name": "Família Miralles",
+      "time": "23:15",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-015",
+      "lat": 38.2668,
+      "lng": -0.69717,
+      "name": "Família Orts",
+      "time": "23:35",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-016",
+      "lat": 38.26703,
+      "lng": -0.69653,
+      "name": "Penya La Traca",
+      "time": "23:50",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-017",
+      "lat": 38.26594,
+      "lng": -0.69671,
+      "name": "Penya La Nit",
+      "time": "23:20",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-018",
+      "lat": 38.2659,
+      "lng": -0.69857,
       "name": "Comparsa La Vila",
-      "time": "23:20"
+      "time": "23:30",
+      "zone": "Centre"
     },
     {
-      "id": "cp-raval",
-      "lat": 38.2638,
-      "lng": -0.7022,
-      "name": "Penya del Raval",
-      "time": "23:35"
+      "id": "cp-019",
+      "lat": 38.26623,
+      "lng": -0.69857,
+      "name": "Penya L'Espurna",
+      "time": "23:40",
+      "zone": "Centre"
     },
     {
-      "id": "cp-altabix",
-      "lat": 38.2758,
-      "lng": -0.6905,
-      "name": "Festers d'Altabix",
-      "time": "23:25"
+      "id": "cp-020",
+      "lat": 38.26755,
+      "lng": -0.69907,
+      "name": "En record de Selva",
+      "time": "23:25",
+      "zone": "Centre"
     },
     {
-      "id": "cp-carrus",
-      "lat": 38.2712,
-      "lng": -0.7118,
-      "name": "Amics de Carrús",
-      "time": "23:50"
+      "id": "cp-021",
+      "lat": 38.26678,
+      "lng": -0.69761,
+      "name": "A l'avi Valero",
+      "time": "23:40",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-022",
+      "lat": 38.26724,
+      "lng": -0.69808,
+      "name": "Família Lledó",
+      "time": "23:35",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-023",
+      "lat": 38.26793,
+      "lng": -0.69748,
+      "name": "Família Selva",
+      "time": "23:35",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-024",
+      "lat": 38.26626,
+      "lng": -0.69744,
+      "name": "Família Sansano",
+      "time": "23:25",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-025",
+      "lat": 38.26635,
+      "lng": -0.69758,
+      "name": "Penya El Tro",
+      "time": "23:15",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-026",
+      "lat": 38.2675,
+      "lng": -0.69613,
+      "name": "Penya El Tro",
+      "time": "23:40",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-027",
+      "lat": 38.26764,
+      "lng": -0.69687,
+      "name": "Comparsa La Vila",
+      "time": "23:25",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-028",
+      "lat": 38.26761,
+      "lng": -0.69981,
+      "name": "A la iaia Serrano",
+      "time": "23:30",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-029",
+      "lat": 38.26708,
+      "lng": -0.69852,
+      "name": "Família Botella",
+      "time": "23:50",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-030",
+      "lat": 38.26624,
+      "lng": -0.69675,
+      "name": "Família Orts",
+      "time": "23:15",
+      "zone": "Centre"
+    },
+    {
+      "id": "cp-031",
+      "lat": 38.27075,
+      "lng": -0.71216,
+      "name": "Família Antón",
+      "time": "23:50",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-032",
+      "lat": 38.27692,
+      "lng": -0.70865,
+      "name": "Família Brotons",
+      "time": "23:30",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-033",
+      "lat": 38.27645,
+      "lng": -0.71162,
+      "name": "Família Botella",
+      "time": "23:20",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-034",
+      "lat": 38.27378,
+      "lng": -0.71205,
+      "name": "Família Pomares",
+      "time": "23:50",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-035",
+      "lat": 38.27702,
+      "lng": -0.71451,
+      "name": "Família Lledó",
+      "time": "23:15",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-036",
+      "lat": 38.27724,
+      "lng": -0.70985,
+      "name": "Penya El Tro",
+      "time": "23:45",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-037",
+      "lat": 38.27273,
+      "lng": -0.71581,
+      "name": "Família Antón",
+      "time": "23:35",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-038",
+      "lat": 38.27627,
+      "lng": -0.70833,
+      "name": "Família Gonzálvez",
+      "time": "23:35",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-039",
+      "lat": 38.27436,
+      "lng": -0.70974,
+      "name": "Penya L'Espurna",
+      "time": "23:35",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-040",
+      "lat": 38.27327,
+      "lng": -0.71593,
+      "name": "Per als xiquets de la família Javaloyes",
+      "time": "23:30",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-041",
+      "lat": 38.27324,
+      "lng": -0.71508,
+      "name": "A la iaia Coves",
+      "time": "23:35",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-042",
+      "lat": 38.2752,
+      "lng": -0.71022,
+      "name": "Per als xiquets de la família Valero",
+      "time": "23:40",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-043",
+      "lat": 38.27242,
+      "lng": -0.71279,
+      "name": "Família Ruiz",
+      "time": "23:20",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-044",
+      "lat": 38.27479,
+      "lng": -0.71416,
+      "name": "Família Torres",
+      "time": "23:45",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-045",
+      "lat": 38.27166,
+      "lng": -0.70846,
+      "name": "A la iaia Esclapez",
+      "time": "23:50",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-046",
+      "lat": 38.27313,
+      "lng": -0.70849,
+      "name": "Família Quiles",
+      "time": "23:30",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-047",
+      "lat": 38.27711,
+      "lng": -0.71032,
+      "name": "En record de Javaloyes",
+      "time": "23:20",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-048",
+      "lat": 38.27251,
+      "lng": -0.70959,
+      "name": "Penya El Terrat",
+      "time": "23:15",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-049",
+      "lat": 38.27116,
+      "lng": -0.70871,
+      "name": "Família Coves",
+      "time": "23:40",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-050",
+      "lat": 38.27641,
+      "lng": -0.71411,
+      "name": "Família Ferrández",
+      "time": "23:20",
+      "zone": "Carrús"
+    },
+    {
+      "id": "cp-051",
+      "lat": 38.27421,
+      "lng": -0.68887,
+      "name": "Família Lledó",
+      "time": "23:50",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-052",
+      "lat": 38.27446,
+      "lng": -0.68986,
+      "name": "Família Lledó",
+      "time": "23:40",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-053",
+      "lat": 38.27438,
+      "lng": -0.68952,
+      "name": "Família Penalva",
+      "time": "23:30",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-054",
+      "lat": 38.27564,
+      "lng": -0.68829,
+      "name": "Família Penalva",
+      "time": "23:15",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-055",
+      "lat": 38.2766,
+      "lng": -0.69169,
+      "name": "Família Serrano",
+      "time": "23:50",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-056",
+      "lat": 38.27767,
+      "lng": -0.69223,
+      "name": "Família Pomares",
+      "time": "23:40",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-057",
+      "lat": 38.27835,
+      "lng": -0.68948,
+      "name": "Família Quiles",
+      "time": "23:40",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-058",
+      "lat": 38.27866,
+      "lng": -0.69111,
+      "name": "Família Sempere",
+      "time": "23:50",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-059",
+      "lat": 38.27846,
+      "lng": -0.69031,
+      "name": "A l'avi Sansano",
+      "time": "23:30",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-060",
+      "lat": 38.27774,
+      "lng": -0.6881,
+      "name": "Família Brotons",
+      "time": "23:15",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-061",
+      "lat": 38.27201,
+      "lng": -0.69311,
+      "name": "Família Vicente",
+      "time": "23:20",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-062",
+      "lat": 38.27809,
+      "lng": -0.68951,
+      "name": "Família Sansano",
+      "time": "23:20",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-063",
+      "lat": 38.2747,
+      "lng": -0.69187,
+      "name": "Família Antón",
+      "time": "23:40",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-064",
+      "lat": 38.27745,
+      "lng": -0.69425,
+      "name": "Penya El Tro",
+      "time": "23:15",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-065",
+      "lat": 38.27402,
+      "lng": -0.6914,
+      "name": "A la iaia Antón",
+      "time": "23:15",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-066",
+      "lat": 38.2789,
+      "lng": -0.69208,
+      "name": "Amb tot l'amor, els Lledó",
+      "time": "23:25",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-067",
+      "lat": 38.27348,
+      "lng": -0.69288,
+      "name": "Família Latour",
+      "time": "23:30",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-068",
+      "lat": 38.27367,
+      "lng": -0.69293,
+      "name": "Família Bru",
+      "time": "23:45",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-069",
+      "lat": 38.27403,
+      "lng": -0.68756,
+      "name": "Per als xiquets de la família Cascales",
+      "time": "23:40",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-070",
+      "lat": 38.27513,
+      "lng": -0.69351,
+      "name": "Família Orts",
+      "time": "23:30",
+      "zone": "Altabix"
+    },
+    {
+      "id": "cp-071",
+      "lat": 38.26283,
+      "lng": -0.69344,
+      "name": "Penya La Nit",
+      "time": "23:40",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-072",
+      "lat": 38.26392,
+      "lng": -0.69338,
+      "name": "Penya La Nit",
+      "time": "23:45",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-073",
+      "lat": 38.26353,
+      "lng": -0.69282,
+      "name": "Família Miralles",
+      "time": "23:45",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-074",
+      "lat": 38.26385,
+      "lng": -0.68873,
+      "name": "Els del Barri",
+      "time": "23:50",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-075",
+      "lat": 38.26436,
+      "lng": -0.68823,
+      "name": "Família Pomares",
+      "time": "23:15",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-076",
+      "lat": 38.26238,
+      "lng": -0.69238,
+      "name": "Família Valero",
+      "time": "23:35",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-077",
+      "lat": 38.26319,
+      "lng": -0.69135,
+      "name": "Penya El Terrat",
+      "time": "23:40",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-078",
+      "lat": 38.26623,
+      "lng": -0.69365,
+      "name": "Família Latour",
+      "time": "23:40",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-079",
+      "lat": 38.26141,
+      "lng": -0.69197,
+      "name": "Els Fogueters",
+      "time": "23:15",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-080",
+      "lat": 38.26456,
+      "lng": -0.69289,
+      "name": "Família Maciá",
+      "time": "23:15",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-081",
+      "lat": 38.26287,
+      "lng": -0.68987,
+      "name": "Família Coves",
+      "time": "23:20",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-082",
+      "lat": 38.26619,
+      "lng": -0.69437,
+      "name": "Família Antón",
+      "time": "23:25",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-083",
+      "lat": 38.26061,
+      "lng": -0.69306,
+      "name": "Família Brotons",
+      "time": "23:50",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-084",
+      "lat": 38.26289,
+      "lng": -0.69105,
+      "name": "Família Esclapez",
+      "time": "23:25",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-085",
+      "lat": 38.26455,
+      "lng": -0.69289,
+      "name": "Família Latour",
+      "time": "23:45",
+      "zone": "El Pla"
+    },
+    {
+      "id": "cp-086",
+      "lat": 38.2637,
+      "lng": -0.70446,
+      "name": "Família Gonzálvez",
+      "time": "23:20",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-087",
+      "lat": 38.26015,
+      "lng": -0.70647,
+      "name": "Família Mas",
+      "time": "23:25",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-088",
+      "lat": 38.26007,
+      "lng": -0.70701,
+      "name": "Penya El Coet",
+      "time": "23:35",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-089",
+      "lat": 38.26164,
+      "lng": -0.70711,
+      "name": "Família Sempere",
+      "time": "23:50",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-090",
+      "lat": 38.26143,
+      "lng": -0.70523,
+      "name": "Família Botella",
+      "time": "23:45",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-091",
+      "lat": 38.26073,
+      "lng": -0.70236,
+      "name": "Família Botella",
+      "time": "23:30",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-092",
+      "lat": 38.25956,
+      "lng": -0.7024,
+      "name": "Família Lledó",
+      "time": "23:25",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-093",
+      "lat": 38.26282,
+      "lng": -0.70849,
+      "name": "Família Javaloyes",
+      "time": "23:50",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-094",
+      "lat": 38.25958,
+      "lng": -0.704,
+      "name": "Família Agulló",
+      "time": "23:45",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-095",
+      "lat": 38.25762,
+      "lng": -0.70159,
+      "name": "En record de Agulló",
+      "time": "23:45",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-096",
+      "lat": 38.26129,
+      "lng": -0.70396,
+      "name": "Família Amorós",
+      "time": "23:20",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-097",
+      "lat": 38.26343,
+      "lng": -0.70688,
+      "name": "Família Selva",
+      "time": "23:35",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-098",
+      "lat": 38.26036,
+      "lng": -0.70731,
+      "name": "Colla El Foc",
+      "time": "23:25",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-099",
+      "lat": 38.26142,
+      "lng": -0.70542,
+      "name": "Família Sempere",
+      "time": "23:35",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-100",
+      "lat": 38.26398,
+      "lng": -0.70614,
+      "name": "Els Fogueters",
+      "time": "23:15",
+      "zone": "Raval / Sector V"
+    },
+    {
+      "id": "cp-101",
+      "lat": 38.26864,
+      "lng": -0.69655,
+      "name": "En record de Antón",
+      "time": "23:40",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-102",
+      "lat": 38.27197,
+      "lng": -0.69555,
+      "name": "Família Brotons",
+      "time": "23:15",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-103",
+      "lat": 38.27031,
+      "lng": -0.69527,
+      "name": "A l'avi Javaloyes",
+      "time": "23:15",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-104",
+      "lat": 38.26928,
+      "lng": -0.69799,
+      "name": "Família Esclapez",
+      "time": "23:40",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-105",
+      "lat": 38.26815,
+      "lng": -0.69448,
+      "name": "Amb tot l'amor, els Tarí",
+      "time": "23:45",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-106",
+      "lat": 38.27088,
+      "lng": -0.69757,
+      "name": "A l'avi Agulló",
+      "time": "23:35",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-107",
+      "lat": 38.27177,
+      "lng": -0.69491,
+      "name": "Família Botella",
+      "time": "23:30",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-108",
+      "lat": 38.26882,
+      "lng": -0.69765,
+      "name": "Família Bru",
+      "time": "23:15",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-109",
+      "lat": 38.26857,
+      "lng": -0.69558,
+      "name": "Família Lledó",
+      "time": "23:25",
+      "zone": "Parc / Estació"
+    },
+    {
+      "id": "cp-110",
+      "lat": 38.27236,
+      "lng": -0.69682,
+      "name": "Família Latour",
+      "time": "23:20",
+      "zone": "Parc / Estació"
     }
   ],
-  "citizen_note_va": "Palmeres patrocinades per famílies i penyes (dades d'exemple). El patrocini real existeix: fiestas@elche.es",
-  "citizen_note_cas": "Palmeras patrocinadas por familias y peñas (datos de ejemplo). El patrocinio real existe: fiestas@elche.es"
+  "citizen_note_va": "Recreació d'exemple a escala realista (el programa real té 312 palmeres patrocinades). El llistat oficial 2026, amb dedicatòries i ordre, es publicarà a fiestasenelche.es dies abans del 13 d'agost.",
+  "citizen_note_cas": "Recreación de ejemplo a escala realista (el programa real tiene 312 palmeras patrocinadas). El listado oficial 2026, con dedicatorias y orden, se publicará en fiestasenelche.es días antes del 13 de agosto."
 }

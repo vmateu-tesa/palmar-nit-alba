@@ -148,7 +148,7 @@ h2, h3 { font-weight: 700; letter-spacing: -0.01em; }
   background: rgba(200,110,255,0.18); color: #cf8dff;
   border: 1.5px solid rgba(200,110,255,0.6); box-shadow: 0 2px 8px rgba(0,0,0,0.45);
 }
-.elx-cpalm { font-size: 15px; display: grid; place-items: center; width: 22px; height: 22px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6)); }
+.elx-cpalm { font-size: 13px; display: grid; place-items: center; width: 18px; height: 18px; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.6)); opacity: 0.92; }
 .elx-user-dot { width: 16px; height: 16px; border-radius: 50%; background: var(--safe); border: 2.5px solid #fff; position: relative; box-shadow: 0 0 10px rgba(94,200,255,0.7); }
 .elx-user-pulse { position: absolute; inset: -9px; border-radius: 50%; background: var(--safe); opacity: 0.35; animation: pulse 1.8s ease-out infinite; }
 @keyframes pulse { from { transform: scale(0.4); opacity: 0.5; } to { transform: scale(1.7); opacity: 0; } }

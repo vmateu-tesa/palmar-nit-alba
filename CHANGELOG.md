@@ -1,5 +1,11 @@
 # Changelog
 
+## v15 — El cielo lleno: 110 palmeras de ejemplo por barrios (julio 2026)
+
+- El folleto oficial 2025 ya no está disponible (fiestasenelche.es renovada para 2026, programa "próximamente"). Mientras llega el listado 2026: recreación de ejemplo a escala realista con 110 palmeras distribuidas por los barrios reales de disparo (Centro 30, Carrús 20, Altabix 20, El Pla 15, Raval/Sector V 15, Parque/Estación 10), con familias, peñas y dedicatorias verosímiles y horas del programa real. Etiquetadas como recreación en cada ficha.
+- Nits de Festa ELX: cartel 2026 REAL verificado en la web oficial (Siloé, Sidecars, Lia Kali, Celtas Cortos, Rigoberta Bandini, OBK la nit de l Albà, Chimo Bayo...), recinto confirmado.
+- El mapa pasa a 140 puntos.
+
 ## v14 — Mi palmera de foc + compartir en redes (julio 2026)
 
 - Botón dorado "Mi palmera" en el mapa: crea una palmera simbólica con dedicatoria, hora y ubicación (GPS o centro del mapa). Se guarda en el dispositivo (sin backend, coherente con la arquitectura static-first) y aparece en el mapa con icono animado.

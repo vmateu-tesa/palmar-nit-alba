@@ -1,5 +1,12 @@
 # Changelog
 
+## v10 — Mapa vivo: actos de las fiestas y palmeras ciudadanas (julio 2026)
+
+- Nueva capa "Actos de las fiestas" con 9 lugares del programa publicado: Racó FestiElx (Paseo de la Estación), concurso de mascletàs (Av. Alcalde Vicente Quiles), Ágora Heliketana (rotonda Parque Municipal), conciertos del Hort de Baix, Gran Carretillà (Hort del Monjo, 01:00 tras la Nit de l Albà), castillo de fuegos del 15 (puente del Ferrocarril), Nit de la Roà (Basílica), Plaça de Baix y Nits de Festa (parking UMH).
+- Nueva capa "Palmeras ciudadanas": 8 palmeras de familias y peñas (datos de ejemplo, recuperando el espíritu de la versión original) enlazadas con el patrocinio real del Ayuntamiento (fiestas@elche.es).
+- Guía actualizada: mas de 8.000 palmeras y cohetes en la Nit de l Albà, y cómo patrocinar la tuya.
+- El mapa pasa de 12 a 29 puntos de interés.
+
 ## v9 — Mapa: ubicación real, fondo detallado, puntos provisionales (julio 2026)
 
 - Corregido: "Mi ubicación" quedaba atrapada por los límites del área del evento; eliminados los límites de paneo — el mapa sigue al usuario esté donde esté.

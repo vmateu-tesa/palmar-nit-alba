@@ -1,6 +1,6 @@
 {
   "_README": "v6 - COORDENADAS CORREGIDAS con referencias verificadas (OSM/Mapcarta): Basilica 38.26719,-0.69799; Pont del Bimil-lenari 38.27932,-0.70214; resto triangulado con distancias publicadas (precision ~50m). Horas del programa OFICIAL. Pendiente: confirmacion final del Ajuntament.",
-  "version": 9,
+  "version": 10,
   "event": {
     "name": "Nit de l'Albà",
     "city": "Elx",
@@ -310,5 +310,155 @@
       "desc_va": "El lloc clàssic per a famílies. És el més concorregut: arriba amb temps.",
       "desc_cas": "El lugar clásico para familias. Es el más concurrido: llega con tiempo."
     }
-  ]
+  ],
+  "festa_pois": [
+    {
+      "id": "raco-festielx",
+      "lat": 38.2706,
+      "lng": -0.6954,
+      "provisional": true,
+      "name_va": "Racó FestiElx",
+      "name_cas": "Racó FestiElx",
+      "desc_va": "Passeig de l'Estació: racó gastronòmic amb una trentena d'establiments, sessions de DJ i el concurs de mascletàs.",
+      "desc_cas": "Paseo de la Estación: racó gastronómico con una treintena de establecimientos, sesiones de DJ y el concurso de mascletàs."
+    },
+    {
+      "id": "mascleta-quiles",
+      "lat": 38.2741,
+      "lng": -0.7093,
+      "provisional": true,
+      "name_va": "Concurs de mascletàs",
+      "name_cas": "Concurso de mascletàs",
+      "desc_va": "Av. Alcalde Vicente Quiles: mascletà diària a les 14:00 durant les festes.",
+      "desc_cas": "Av. Alcalde Vicente Quiles: mascletà diaria a las 14:00 durante las fiestas."
+    },
+    {
+      "id": "agora-heliketana",
+      "lat": 38.2712,
+      "lng": -0.6974,
+      "provisional": true,
+      "name_va": "Àgora Heliketana",
+      "name_cas": "Ágora Heliketana",
+      "desc_va": "Rotonda del Parc Municipal: recinte dels Pobladors d'Elx amb tallers, teatre i la Festa de l'Aigua.",
+      "desc_cas": "Rotonda del Parque Municipal: recinto de los Pobladores de Elche con talleres, teatro y la Fiesta del Agua."
+    },
+    {
+      "id": "hort-de-baix",
+      "lat": 38.2644,
+      "lng": -0.6999,
+      "provisional": true,
+      "name_va": "Hort de Baix · concerts",
+      "name_cas": "Hort de Baix · conciertos",
+      "desc_va": "Concerts i actuacions musicals cada nit de festes.",
+      "desc_cas": "Conciertos y actuaciones musicales cada noche de fiestas."
+    },
+    {
+      "id": "hort-del-monjo",
+      "lat": 38.2721,
+      "lng": -0.7001,
+      "provisional": true,
+      "name_va": "Gran Carretillà (Hort del Monjo)",
+      "name_cas": "Gran Carretillà (Hort del Monjo)",
+      "desc_va": "La nit del 13 al 14, a la 01:00, després de la Nit de l'Albà: un centenar de carretillers dins d'una zona delimitada. Cal formació per a participar.",
+      "desc_cas": "La noche del 13 al 14, a la 01:00, tras la Nit de l'Albà: un centenar de carretilleros en una zona delimitada. Se requiere formación para participar."
+    },
+    {
+      "id": "castell-ferrocarril",
+      "lat": 38.2758,
+      "lng": -0.7032,
+      "provisional": true,
+      "name_va": "Castell de focs (Pont del Ferrocarril)",
+      "name_cas": "Castillo de fuegos (Puente del Ferrocarril)",
+      "desc_va": "El 15 d'agost, castell de focs artificials de fi de festes disparat des del pont del Ferrocarril.",
+      "desc_cas": "El 15 de agosto, castillo de fuegos artificiales de fin de fiestas disparado desde el puente del Ferrocarril."
+    },
+    {
+      "id": "nit-roa",
+      "lat": 38.26719,
+      "lng": -0.69799,
+      "name_va": "Nit de la Roà (Basílica)",
+      "name_cas": "Nit de la Roà (Basílica)",
+      "desc_va": "La matinada del 14 al 15: milers d'il·licitans vetlen la Mare de Déu amb espelmes al voltant de la Basílica.",
+      "desc_cas": "La madrugada del 14 al 15: miles de ilicitanos velan a la Virgen con velas alrededor de la Basílica."
+    },
+    {
+      "id": "placa-baix",
+      "lat": 38.2656,
+      "lng": -0.6988,
+      "name_va": "Plaça de Baix",
+      "name_cas": "Plaça de Baix",
+      "desc_va": "Cor de la festa: pregó des del balcó de l'Ajuntament, pas de les Entrades de Moros i Cristians i de la Gran Xaranga.",
+      "desc_cas": "Corazón de la fiesta: pregón desde el balcón del Ayuntamiento, paso de las Entradas de Moros y Cristianos y de la Gran Charanga."
+    },
+    {
+      "id": "nits-de-festa-umh",
+      "lat": 38.2789,
+      "lng": -0.6862,
+      "provisional": true,
+      "name_va": "Festival Nits de Festa (pàrquing UMH)",
+      "name_cas": "Festival Nits de Festa (parking UMH)",
+      "desc_va": "Concerts nocturns i la barraca Elx Music Fest, vora la Torre dels Vaïllos.",
+      "desc_cas": "Conciertos nocturnos y la barraca Elx Music Fest, junto a la Torre dels Vaïllos."
+    }
+  ],
+  "citizen_palmeras": [
+    {
+      "id": "cp-mas",
+      "lat": 38.2682,
+      "lng": -0.7126,
+      "name": "Família Mas",
+      "time": "23:30"
+    },
+    {
+      "id": "cp-tro",
+      "lat": 38.2655,
+      "lng": -0.705,
+      "name": "Penya El Tro",
+      "time": "23:45"
+    },
+    {
+      "id": "cp-cantons",
+      "lat": 38.2731,
+      "lng": -0.7008,
+      "name": "Els Quatre Cantons",
+      "time": "00:15"
+    },
+    {
+      "id": "cp-anton",
+      "lat": 38.262,
+      "lng": -0.718,
+      "name": "Casa Antón",
+      "time": "23:15"
+    },
+    {
+      "id": "cp-vila",
+      "lat": 38.27,
+      "lng": -0.699,
+      "name": "Comparsa La Vila",
+      "time": "23:20"
+    },
+    {
+      "id": "cp-raval",
+      "lat": 38.2638,
+      "lng": -0.7022,
+      "name": "Penya del Raval",
+      "time": "23:35"
+    },
+    {
+      "id": "cp-altabix",
+      "lat": 38.2758,
+      "lng": -0.6905,
+      "name": "Festers d'Altabix",
+      "time": "23:25"
+    },
+    {
+      "id": "cp-carrus",
+      "lat": 38.2712,
+      "lng": -0.7118,
+      "name": "Amics de Carrús",
+      "time": "23:50"
+    }
+  ],
+  "citizen_note_va": "Palmeres patrocinades per famílies i penyes (dades d'exemple). El patrocini real existeix: fiestas@elche.es",
+  "citizen_note_cas": "Palmeras patrocinadas por familias y peñas (datos de ejemplo). El patrocinio real existe: fiestas@elche.es"
 }

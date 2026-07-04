@@ -55,6 +55,8 @@
       'map.legend.viewpoint': "Mirador recomanat",
       'map.next_here': "Pròxim des d'ací",
       'map.legend.pois': "Punts d'assistència",
+      'map.legend.festa': "Actes de les festes",
+      'map.legend.palmeres': "Palmeres ciutadanes (exemple)",
       'map.base': "Fons del mapa",
       'map.base_detail': "Detallat",
       'map.base_dark': "Nocturn",
@@ -113,7 +115,7 @@
       'guide.palmeral.museum': "Museu del Palmeral",
 
       'guide.participate.title': "Participar amb les teues palmeres de foc",
-      'guide.participate.desc': "La Nit de l'Albà no és un espectacle passiu: milers de famílies llancen les seues pròpies palmeres de foc des de terrats i balcons. Compra-les només en punts de venda de pirotècnia autoritzats, respecta els horaris (el disparo acaba a les 23:57) i les indicacions de seguretat del programa oficial.",
+      'guide.participate.desc': "La Nit de l'Albà no és un espectacle passiu: es llancen més de 8.000 palmeres i coets, la majoria per famílies i penyes des de terrats i balcons. Pots patrocinar la teua palmera escrivint a fiestas@elche.es, i comprar pirotècnia només en punts de venda autoritzats. Respecta els horaris (el disparo acaba a les 23:57) i les indicacions de seguretat.",
 
       'guide.official.title': "Enllaços oficials",
       'guide.official.ajuntament': "Ajuntament d'Elx",
@@ -174,6 +176,8 @@
       'map.legend.viewpoint': "Mirador recomendado",
       'map.next_here': "Próximo desde aquí",
       'map.legend.pois': "Puntos de asistencia",
+      'map.legend.festa': "Actos de las fiestas",
+      'map.legend.palmeres': "Palmeras ciudadanas (ejemplo)",
       'map.base': "Fondo del mapa",
       'map.base_detail': "Detallado",
       'map.base_dark': "Nocturno",
@@ -232,7 +236,7 @@
       'guide.palmeral.museum': "Museo del Palmeral",
 
       'guide.participate.title': "Participar con tus palmeres de foc",
-      'guide.participate.desc': "La Nit de l'Albà no es un espectáculo pasivo: miles de familias lanzan sus propias palmeres de foc desde terrazas y balcones. Cómpralas solo en puntos de venta de pirotecnia autorizados, respeta los horarios (el disparo termina a las 23:57) y las indicaciones de seguridad del programa oficial.",
+      'guide.participate.desc': "La Nit de l'Albà no es un espectáculo pasivo: se lanzan más de 8.000 palmeras y cohetes, la mayoría por familias y peñas desde terrazas y balcones. Puedes patrocinar tu palmera escribiendo a fiestas@elche.es, y comprar pirotecnia solo en puntos de venta autorizados. Respeta los horarios (el disparo termina a las 23:57) y las indicaciones de seguridad.",
 
       'guide.official.title': "Enlaces oficiales",
       'guide.official.ajuntament': "Ayuntamiento de Elche",

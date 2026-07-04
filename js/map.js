@@ -22,7 +22,7 @@
   let lastSchedule = null;
   let launchMarkers = {};
   const LAYER_KEYS = ['launch','closures','perimeters','pois','viewpoints'];
-  let layerLaunch = null, layerClosures = null, layerPerimeters = null, layerPois = null, layerViewpoints = null;
+  let layerLaunch = null, layerClosures = null, layerPerimeters = null, layerPois = null, layerViewpoints = null, layerFesta = null, layerPalmeres = null;
 
   function hasLeaflet() { return typeof window.L !== 'undefined'; }
 
@@ -65,6 +65,20 @@
       iconSize: [26, 26], iconAnchor: [13, 13]
     });
   }
+  function festaIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="elx-festa"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M12 3l2.2 4.9 5.3.5-4 3.6 1.2 5.2L12 14.5 7.3 17.2l1.2-5.2-4-3.6 5.3-.5z" fill="currentColor"/></svg></div>',
+      iconSize: [26, 26], iconAnchor: [13, 13]
+    });
+  }
+  function cpalmIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="elx-cpalm">\uD83C\uDF34</div>',
+      iconSize: [22, 22], iconAnchor: [11, 11]
+    });
+  }
   function meetingIcon() {
     return L.divIcon({
       className: '',
@@ -96,6 +110,8 @@
     layerPerimeters = L.layerGroup().addTo(map);
     layerPois = L.layerGroup().addTo(map);
     layerViewpoints = L.layerGroup().addTo(map);
+    layerFesta = L.layerGroup().addTo(map);
+    layerPalmeres = L.layerGroup().addTo(map);
 
     // Mantener pulsado el mapa = marcar punt de trobada
     map.on('contextmenu', (e) => setMeetingPoint(e.latlng));
@@ -117,6 +133,8 @@
     layerPerimeters.clearLayers();
     layerPois.clearLayers();
     layerViewpoints.clearLayers();
+    layerFesta.clearLayers();
+    layerPalmeres.clearLayers();
 
     launchMarkers = {};
     (schedule.launch_points || []).forEach((p) => {
@@ -152,6 +170,24 @@
       L.marker([v.lat, v.lng], { icon: viewIcon() })
         .bindPopup('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + dirLink(v.lat, v.lng))
         .addTo(layerViewpoints);
+    });
+
+    (schedule.festa_pois || []).forEach((f) => {
+      const lang = window.I18N ? I18N.get() : 'cas';
+      const name = lang === 'cas' ? (f.name_cas || f.name_va) : (f.name_va || f.name_cas);
+      const desc = lang === 'cas' ? (f.desc_cas || '') : (f.desc_va || '');
+      const pending = f.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
+      L.marker([f.lat, f.lng], { icon: festaIcon() })
+        .bindPopup('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + pending + dirLink(f.lat, f.lng))
+        .addTo(layerFesta);
+    });
+
+    const cpNote = window.I18N && schedule['citizen_note_' + (I18N.get() === 'cas' ? 'cas' : 'va')];
+    (schedule.citizen_palmeras || []).forEach((c) => {
+      L.marker([c.lat, c.lng], { icon: cpalmIcon() })
+        .bindPopup('<strong>' + esc(c.name) + '</strong>' + (c.time ? ' \u00B7 ' + esc(c.time) : '') +
+          (cpNote ? '<br><span class="pp-pending">' + esc(cpNote) + '</span>' : ''))
+        .addTo(layerPalmeres);
     });
 
     (schedule.pois || []).forEach((poi) => {
@@ -269,7 +305,7 @@
 
   function layerByKey(key) {
     return { launch: layerLaunch, closures: layerClosures, perimeters: layerPerimeters,
-             pois: layerPois, viewpoints: layerViewpoints }[key];
+             pois: layerPois, viewpoints: layerViewpoints, festa: layerFesta, palmeres: layerPalmeres }[key];
   }
   function setLayerVisible(key, on) {
     const l = layerByKey(key);

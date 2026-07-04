@@ -1,5 +1,12 @@
 # Changelog
 
+## v9 — Mapa: ubicación real, fondo detallado, puntos provisionales (julio 2026)
+
+- Corregido: "Mi ubicación" quedaba atrapada por los límites del área del evento; eliminados los límites de paneo — el mapa sigue al usuario esté donde esté.
+- "Mi ubicación" ahora pide la posición si aún no la tiene y avisa del estado (permiso denegado / sin señal).
+- Selector de fondo del mapa: Detallado (OpenStreetMap estándar, con todos los nombres) por defecto, y Nocturno como opción. La preferencia se recuerda; la precarga offline usa el fondo por defecto.
+- Los puntos de lanzamiento no verificados muestran "ubicación exacta por confirmar con el Ayuntamiento" en su ficha.
+
 ## v8 — Hotfix crítico de visibilidad (julio 2026)
 
 - Corregido: los elementos con display explícito en CSS ignoraban el atributo hidden. Afectaba a la pantalla de bienvenida (no se podía cerrar), panel de capas, consejos contextuales, brújula, insignia DEMO y botón de instalación. Regla global [hidden]{display:none !important}.

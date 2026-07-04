@@ -12,19 +12,19 @@
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
   <link rel="apple-touch-icon" href="icons/icon.svg" />
   <link rel="stylesheet" href="css/leaflet.css" />
-  <link rel="stylesheet" href="css/styles.css?v=8" />
+  <link rel="stylesheet" href="css/styles.css?v=9" />
 
   <script defer src="js/leaflet.js"></script>
-  <script defer src="js/clock.js?v=8"></script>
-  <script defer src="js/config.js?v=8"></script>
-  <script defer src="js/i18n.js?v=8"></script>
-  <script defer src="js/map.js?v=8"></script>
-  <script defer src="js/ar.js?v=8"></script>
-  <script defer src="js/timeline.js?v=8"></script>
-  <script defer src="js/data.js?v=8"></script>
-  <script defer src="js/prefetch.js?v=8"></script>
-  <script defer src="js/alerts.js?v=8"></script>
-  <script defer src="js/app.js?v=8"></script>
+  <script defer src="js/clock.js?v=9"></script>
+  <script defer src="js/config.js?v=9"></script>
+  <script defer src="js/i18n.js?v=9"></script>
+  <script defer src="js/map.js?v=9"></script>
+  <script defer src="js/ar.js?v=9"></script>
+  <script defer src="js/timeline.js?v=9"></script>
+  <script defer src="js/data.js?v=9"></script>
+  <script defer src="js/prefetch.js?v=9"></script>
+  <script defer src="js/alerts.js?v=9"></script>
+  <script defer src="js/app.js?v=9"></script>
 </head>
 <body>
 
@@ -74,6 +74,9 @@
         <label><input type="checkbox" data-layer="perimeters" checked> <span data-i18n="map.legend.perimeter">Perímetros de seguridad</span></label>
         <label><input type="checkbox" data-layer="viewpoints" checked> <span data-i18n="map.legend.viewpoint">Miradores</span></label>
         <label><input type="checkbox" data-layer="pois" checked> <span data-i18n="map.legend.pois">Puntos de asistencia</span></label>
+        <strong data-i18n="map.base">Fondo del mapa</strong>
+        <label><input type="radio" name="basemap" value="detail"> <span data-i18n="map.base_detail">Detallado</span></label>
+        <label><input type="radio" name="basemap" value="dark"> <span data-i18n="map.base_dark">Nocturno</span></label>
       </div>
       <div class="map-legend">
         <span><i class="lg-dot lg-launch"></i><span data-i18n="map.legend.launch">Punt de llançament oficial</span></span>

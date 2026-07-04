@@ -35,16 +35,13 @@
       }
 
       const [[south, west], [north, east]] = schedule.event.bbox;
-      const retina = (window.devicePixelRatio || 1) > 1 ? '@2x' : '';
-      const subs = ['a', 'b', 'c', 'd'];
       const urls = [];
-      let i = 0;
       for (const z of ZOOMS) {
         const x1 = lon2x(west, z), x2 = lon2x(east, z);
         const y1 = lat2y(north, z), y2 = lat2y(south, z);
         for (let x = x1; x <= x2; x++) {
           for (let y = y1; y <= y2; y++) {
-            urls.push('https://' + subs[i++ % 4] + '.basemaps.cartocdn.com/dark_all/' + z + '/' + x + '/' + y + retina + '.png');
+            urls.push('https://tile.openstreetmap.org/' + z + '/' + x + '/' + y + '.png');
             if (urls.length >= MAX_PRECACHE) break;
           }
           if (urls.length >= MAX_PRECACHE) break;

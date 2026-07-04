@@ -5,7 +5,7 @@
    · tiles del mapa      -> stale-while-revalidate con caché LRU acotada (evita crecer sin límite)
    · status.json          -> siempre red, nunca caché persistente (avisos en vivo)
 */
-const VERSION = 'v8';
+const VERSION = 'v9';
 const CORE_CACHE = 'elx-core-' + VERSION;
 const TILE_CACHE = 'elx-tiles-' + VERSION;
 const MAX_TILES = 400; // límite duro de tiles guardados (evita saturar el almacenamiento del móvil)
@@ -14,7 +14,7 @@ const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css?v=8',
+  './css/styles.css?v=9',
   './css/leaflet.css',
   './css/images/marker-icon.png',
   './css/images/marker-icon-2x.png',
@@ -22,18 +22,18 @@ const CORE = [
   './css/images/layers.png',
   './css/images/layers-2x.png',
   './js/leaflet.js',
-  './js/clock.js?v=8',
-  './js/config.js?v=8',
-  './js/i18n.js?v=8',
-  './js/map.js?v=8',
-  './js/ar.js?v=8',
-  './js/timeline.js?v=8',
-  './js/data.js?v=8',
-  './js/app.js?v=8',
-  './js/prefetch.js?v=8',
-  './js/alerts.js?v=8',
+  './js/clock.js?v=9',
+  './js/config.js?v=9',
+  './js/i18n.js?v=9',
+  './js/map.js?v=9',
+  './js/ar.js?v=9',
+  './js/timeline.js?v=9',
+  './js/data.js?v=9',
+  './js/app.js?v=9',
+  './js/prefetch.js?v=9',
+  './js/alerts.js?v=9',
   './icons/icon.svg',
-  './data/schedule.json?v=8'
+  './data/schedule.json?v=9'
 ];
 
 self.addEventListener('install', (e) => {
@@ -53,7 +53,7 @@ self.addEventListener('activate', (e) => {
 });
 
 function isTile(url) {
-  return /basemaps\.cartocdn\.com/.test(url.hostname);
+  return /basemaps\.cartocdn\.com|tile\.openstreetmap\.org/.test(url.hostname);
 }
 function isSchedule(url) {
   return /schedule\.json/.test(url.pathname);

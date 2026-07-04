@@ -192,6 +192,7 @@
     if (!window.ElxMap) return;
     try { ElxMap.init('map', schedule); } catch (e) { console.warn('[map]', e); return; }
     applyLayerPrefs();
+    initBasemap();
     let gpsToastShown = false;
     ElxMap.startUserLocation((pos, errCode) => {
       if (!pos && !gpsToastShown) {
@@ -228,6 +229,12 @@
         const p = loadLayerPrefs(); p[key] = cb.checked;
         localStorage.setItem('elx_layers', JSON.stringify(p));
       });
+    });
+  }
+  function initBasemap() {
+    $$('#layers-panel input[name="basemap"]').forEach((r) => {
+      r.checked = (r.value === (ElxMap.getBasemap ? ElxMap.getBasemap() : 'detail'));
+      r.addEventListener('change', () => { if (r.checked) ElxMap.setBasemap(r.value); });
     });
   }
   function applyLayerPrefs() {

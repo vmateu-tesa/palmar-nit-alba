@@ -4,8 +4,14 @@
    puntos de asistencia (POIs) y ubicacion del usuario en vivo.
    ===================================================================== */
 (function () {
-  const TILE = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-  const ATTR = '&copy; OpenStreetMap &copy; CARTO';
+  const BASEMAPS = {
+    detail: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              attr: '&copy; OpenStreetMap contributors', maxZoom: 19 },
+    dark:   { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+              attr: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19, subdomains: 'abcd' }
+  };
+  let baseLayer = null;
+  let currentBase = localStorage.getItem('elx_basemap') || 'detail';
 
   const POI_GLYPH = {
     first_aid: '✚', info: 'i', water: '💧', accessible: '♿', exit: '➜'
@@ -81,14 +87,8 @@
     const zoom = (ev.zoom && ev.zoom.default) || 15;
 
     map = L.map(elId, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lng], zoom);
-    if (ev.bbox) {
-      try { map.setMaxBounds(L.latLngBounds(ev.bbox)); } catch (e) { /* bbox invalido, se ignora */ }
-    }
-    L.tileLayer(TILE, {
-      attribution: ATTR, subdomains: 'abcd',
-      maxZoom: (ev.zoom && ev.zoom.max) || 19,
-      minZoom: (ev.zoom && ev.zoom.min) || 12
-    }).addTo(map);
+    // Nota: sin maxBounds a propósito — el usuario puede estar fuera del área del evento
+    setBasemap(currentBase);
     L.control.zoom({ position: 'bottomleft' }).addTo(map);
 
     layerLaunch = L.layerGroup().addTo(map);
@@ -125,8 +125,9 @@
       const lang = window.I18N ? I18N.get() : 'va';
       const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
       const nx = nextInfo[p.id];
+      const pending = p.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
       m.bindPopup('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
-        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + dirLink(p.lat, p.lng));
+        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + pending + dirLink(p.lat, p.lng));
       m.addTo(layerLaunch);
     });
 
@@ -231,9 +232,32 @@
     if (geoWatchId != null) { navigator.geolocation.clearWatch(geoWatchId); geoWatchId = null; }
   }
   function centerOnUser(zoom) {
-    if (map && userMarker) map.flyTo(userMarker.getLatLng(), zoom || 17, { duration: 0.6 });
+    if (!map) return;
+    if (userMarker) { map.flyTo(userMarker.getLatLng(), zoom || 17, { duration: 0.6 }); return; }
+    // Aún sin posición: la pedimos una vez y volamos en cuanto llegue
+    if (!('geolocation' in navigator)) { toast(window.I18N ? I18N.t('map.no_gps') : ''); return; }
+    toast(window.I18N ? I18N.t('map.locating') : '');
+    navigator.geolocation.getCurrentPosition(
+      (p) => { map.flyTo([p.coords.latitude, p.coords.longitude], zoom || 17, { duration: 0.6 }); },
+      (err) => { toast(window.I18N ? I18N.t(err && err.code === 1 ? 'map.gps_denied' : 'map.no_gps') : ''); },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
   }
   function flyTo(lat, lng, zoom) { if (map) map.flyTo([lat, lng], zoom || 17, { duration: 0.8 }); }
+
+  function setBasemap(key) {
+    if (!map || !BASEMAPS[key]) return;
+    if (baseLayer) map.removeLayer(baseLayer);
+    const b = BASEMAPS[key];
+    baseLayer = L.tileLayer(b.url, {
+      attribution: b.attr, maxZoom: b.maxZoom, minZoom: 3,
+      subdomains: b.subdomains || 'abc'
+    }).addTo(map);
+    currentBase = key;
+    localStorage.setItem('elx_basemap', key);
+    document.body.classList.toggle('map-light', key === 'detail');
+  }
+  function getBasemap() { return currentBase; }
 
   function focusLaunchPoint(id) {
     const m = launchMarkers[id];
@@ -258,7 +282,7 @@
   window.ElxMap = {
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
-    setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
+    setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible, setBasemap, getBasemap,
     hasLeaflet
   };
 })();

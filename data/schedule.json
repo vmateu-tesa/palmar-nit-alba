@@ -1,6 +1,6 @@
 {
   "_README": "v6 - COORDENADAS CORREGIDAS con referencias verificadas (OSM/Mapcarta): Basilica 38.26719,-0.69799; Pont del Bimil-lenari 38.27932,-0.70214; resto triangulado con distancias publicadas (precision ~50m). Horas del programa OFICIAL. Pendiente: confirmacion final del Ajuntament.",
-  "version": 6,
+  "version": 9,
   "event": {
     "name": "Nit de l'Albà",
     "city": "Elx",
@@ -46,7 +46,8 @@
       "lng": -0.6963,
       "official": true,
       "note_va": "Plaça de la Glorieta, al costat de l'Ajuntament",
-      "note_cas": "Plaza de la Glorieta, junto al Ayuntamiento"
+      "note_cas": "Plaza de la Glorieta, junto al Ayuntamiento",
+      "provisional": true
     },
     {
       "id": "parc-municipal",
@@ -55,7 +56,8 @@
       "lng": -0.6985,
       "official": true,
       "note_va": "El gran parc del Palmeral, vora el riu",
-      "note_cas": "El gran parque del Palmeral, junto al río"
+      "note_cas": "El gran parque del Palmeral, junto al río",
+      "provisional": true
     }
   ],
   "schedule": [

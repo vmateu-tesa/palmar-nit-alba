@@ -131,6 +131,7 @@
       'about.p1': "Elx al Cel és una eina ciutadana per a orientar-te durant la Nit de l'Albà: mapa, programa i brúixola, pensada per a funcionar encara que la xarxa mòbil estiga saturada.",
       'about.p2': "Prova de concepte per a l'Ajuntament d'Elx. Les dades del programa (llocs, talls de carrer i perímetres) són provisionals i han de confirmar-se amb la informació oficial abans de l'esdeveniment.",
       'about.heritage': "El Palmeral d'Elx i el Misteri d'Elx són Patrimoni de la Humanitat (UNESCO).",
+      'about.credit': "App desenvolupada per Greenbox, empresa il·licitana d'Smart Cities i sostenibilitat.",
 
       'common.offline_bad': "No s'han pogut descarregar totes les dades encara.",
       'demo.on': "Mode demostració: hora simulada. Lleva ?demo de l'adreça per a eixir.",
@@ -258,6 +259,7 @@
       'about.p1': "Elx al Cel es una herramienta ciudadana para orientarte durante la Nit de l'Albà: mapa, programa y brújula, pensada para funcionar aunque la red móvil esté saturada.",
       'about.p2': "Prueba de concepto para el Ajuntament d'Elx. Los datos del programa (lugares, cortes de calle y perímetros) son provisionales y deben confirmarse con la información oficial antes del evento.",
       'about.heritage': "El Palmeral de Elche y el Misteri d'Elx son Patrimonio de la Humanidad (UNESCO).",
+      'about.credit': "App desarrollada por Greenbox, empresa ilicitana de Smart Cities y sostenibilidad.",
 
       'common.offline_bad': "Todavía no se han podido descargar todos los datos.",
       'demo.on': "Modo demostración: hora simulada. Quita ?demo de la dirección para salir.",

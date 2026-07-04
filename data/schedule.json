@@ -1,6 +1,6 @@
 {
-  "_README": "v6 - COORDENADAS CORREGIDAS con referencias verificadas (OSM/Mapcarta): Basilica 38.26719,-0.69799; Pont del Bimil-lenari 38.27932,-0.70214; resto triangulado con distancias publicadas (precision ~50m). Horas del programa OFICIAL. Pendiente: confirmacion final del Ajuntament.",
-  "version": 10,
+  "_README": "v11 - PUNTOS DE LANZAMIENTO según nota oficial del Ayuntamiento (elche.es, programa Nit de l'Albà): 21 puntos en el municipio; palmeras desde terrazas (Ayuntamiento incl.), Palmera Imperial 23:30 desde Paseo de la Estación; coheta desde Paseo+Pte Ferrocarril+Pte Altamira; carcasas desde Pl. 1 de Mayo, Jardin de Andalucia y Col. Mariano Benlliure; puntos de barrio en Altabix, El Pla, Sector V y Carrus. Coordenadas de referencia verificadas (Basilica, Bimil-lenari) y el resto trianguladas/aproximadas (provisional=true) pendientes de confirmacion municipal.",
+  "version": 11,
   "event": {
     "name": "Nit de l'Albà",
     "city": "Elx",
@@ -32,78 +32,167 @@
   "launch_points": [
     {
       "id": "basilica",
-      "name": "Basílica de Santa María",
+      "name": "Basílica de Santa María (torre)",
       "lat": 38.26719,
       "lng": -0.69799,
       "official": true,
-      "note_va": "Des de la torre es dispara la Palmera de la Mare de Déu a mitjanit",
-      "note_cas": "Desde la torre se dispara la Palmera de la Mare de Déu a medianoche"
+      "note_va": "Des de la torre es dispara la Palmera de la Mare de Déu a les 00:00",
+      "note_cas": "Desde la torre se dispara la Palmera de la Mare de Déu a las 00:00"
     },
     {
-      "id": "glorieta",
-      "name": "La Glorieta",
-      "lat": 38.2659,
-      "lng": -0.6963,
+      "id": "ajuntament",
+      "name": "Terrassa de l'Ajuntament (Plaça de Baix)",
+      "lat": 38.2656,
+      "lng": -0.6988,
       "official": true,
-      "note_va": "Plaça de la Glorieta, al costat de l'Ajuntament",
-      "note_cas": "Plaza de la Glorieta, junto al Ayuntamiento",
-      "provisional": true
+      "note_va": "Una de les terrasses des d'on es disparen les 312 palmeres patrocinades",
+      "note_cas": "Una de las terrazas desde donde se disparan las 312 palmeras patrocinadas"
     },
     {
-      "id": "parc-municipal",
-      "name": "Parc Municipal",
-      "lat": 38.2699,
-      "lng": -0.6985,
+      "id": "paseo-estacion",
+      "name": "Passeig de l'Estació",
+      "lat": 38.2706,
+      "lng": -0.6954,
       "official": true,
-      "note_va": "El gran parc del Palmeral, vora el riu",
-      "note_cas": "El gran parque del Palmeral, junto al río",
-      "provisional": true
+      "provisional": true,
+      "note_va": "A les 23:30 es dispara la Palmera Imperial, que obri la cohetà",
+      "note_cas": "A las 23:30 se dispara la Palmera Imperial, que abre la cohetà"
+    },
+    {
+      "id": "pont-ferrocarril",
+      "name": "Pont del Ferrocarril",
+      "lat": 38.2758,
+      "lng": -0.7032,
+      "official": true,
+      "provisional": true,
+      "note_va": "Un dels tres punts de la cohetà (4.000 dotzenes de coets bomba)",
+      "note_cas": "Uno de los tres puntos de la cohetà (4.000 docenas de cohetes bomba)"
+    },
+    {
+      "id": "pont-altamira",
+      "name": "Pont d'Altamira",
+      "lat": 38.2684,
+      "lng": -0.6999,
+      "official": true,
+      "provisional": true,
+      "note_va": "Un dels tres punts de la cohetà, als peus del Palau d'Altamira",
+      "note_cas": "Uno de los tres puntos de la cohetà, a los pies del Palacio de Altamira"
+    },
+    {
+      "id": "placa-1-maig",
+      "name": "Plaça del 1 de Maig",
+      "lat": 38.2712,
+      "lng": -0.7062,
+      "official": true,
+      "provisional": true,
+      "note_va": "Punt de llançament de carcasses de tro i efectes",
+      "note_cas": "Punto de lanzamiento de carcasas de trueno y efectos"
+    },
+    {
+      "id": "jardi-andalusia",
+      "name": "Jardí d'Andalusia",
+      "lat": 38.2735,
+      "lng": -0.6925,
+      "official": true,
+      "provisional": true,
+      "note_va": "Punt de llançament de carcasses",
+      "note_cas": "Punto de lanzamiento de carcasas"
+    },
+    {
+      "id": "col-benlliure",
+      "name": "Col·legi Mariano Benlliure",
+      "lat": 38.263,
+      "lng": -0.7075,
+      "official": true,
+      "provisional": true,
+      "note_va": "Punt de llançament de carcasses",
+      "note_cas": "Punto de lanzamiento de carcasas"
+    },
+    {
+      "id": "barri-altabix",
+      "name": "Barri d'Altabix",
+      "lat": 38.276,
+      "lng": -0.69,
+      "official": true,
+      "provisional": true,
+      "note_va": "Punt de barri perquè l'Albà arribe a tota la ciutat",
+      "note_cas": "Punto de barrio para que l'Albà llegue a toda la ciudad"
+    },
+    {
+      "id": "barri-pla",
+      "name": "Barri del Pla",
+      "lat": 38.2645,
+      "lng": -0.6905,
+      "official": true,
+      "provisional": true,
+      "note_va": "Punt de barri perquè l'Albà arribe a tota la ciutat",
+      "note_cas": "Punto de barrio para que l'Albà llegue a toda la ciudad"
+    },
+    {
+      "id": "sector-v",
+      "name": "Sector V (Pistes del Pla)",
+      "lat": 38.259,
+      "lng": -0.704,
+      "official": true,
+      "provisional": true,
+      "note_va": "Punt de barri perquè l'Albà arribe a tota la ciutat",
+      "note_cas": "Punto de barrio para que l'Albà llegue a toda la ciudad"
+    },
+    {
+      "id": "barri-carrus",
+      "name": "Barri de Carrús",
+      "lat": 38.2745,
+      "lng": -0.7135,
+      "official": true,
+      "provisional": true,
+      "note_va": "Punt de barri perquè l'Albà arribe a tota la ciutat",
+      "note_cas": "Punto de barrio para que l'Albà llegue a toda la ciudad"
     }
   ],
   "schedule": [
     {
       "id": "inici-oficial",
-      "type_va": "Inici oficial · palmeres de color",
-      "type_cas": "Inicio oficial · palmeres de color",
-      "launch_point": "glorieta",
+      "type_va": "Inici · 312 palmeres des de les terrasses",
+      "type_cas": "Inicio · 312 palmeras desde las terrazas",
+      "launch_point": "ajuntament",
       "start": "2026-08-13T23:15:00+02:00",
       "kind": "palmera_foc",
       "highlight": false,
-      "note_va": "Comença la Nit de l'Albà organitzada per l'Ajuntament: es disparen més de 300 palmeres de foc de color segons l'ordre del programa de mà.",
-      "note_cas": "Empieza la Nit de l'Albà organizada por el Ayuntamiento: se disparan más de 300 palmeres de foc de color según el orden del programa de mano."
+      "note_va": "Comença l'espectacle: 312 palmeres patrocinades per famílies i empreses es disparen des de terrasses de tota la ciutat, entre elles la de l'Ajuntament.",
+      "note_cas": "Empieza el espectáculo: 312 palmeras patrocinadas por familias y empresas se disparan desde terrazas de toda la ciudad, entre ellas la del Ayuntamiento."
     },
     {
-      "id": "bloc-2",
-      "type_va": "Palmeres de foc · bloc central",
-      "type_cas": "Palmeres de foc · bloque central",
-      "launch_point": "parc-municipal",
+      "id": "palmera-imperial",
+      "type_va": "Palmera Imperial · comença la cohetà",
+      "type_cas": "Palmera Imperial · empieza la cohetà",
+      "launch_point": "paseo-estacion",
       "start": "2026-08-13T23:30:00+02:00",
       "kind": "palmera_foc",
-      "highlight": false,
-      "note_va": "Hit d'exemple pendent del programa de mà oficial.",
-      "note_cas": "Hito de ejemplo pendiente del programa de mano oficial."
+      "highlight": true,
+      "note_va": "Des del Passeig de l'Estació es dispara la Palmera Imperial i arranca la cohetà: 4.000 dotzenes de coets bomba des del Passeig, el Pont del Ferrocarril i el Pont d'Altamira.",
+      "note_cas": "Desde el Paseo de la Estación se dispara la Palmera Imperial y arranca la cohetà: 4.000 docenas de cohetes bomba desde el Paseo, el Puente del Ferrocarril y el Puente de Altamira."
     },
     {
-      "id": "bloc-3",
-      "type_va": "Palmeres de foc · últim bloc",
-      "type_cas": "Palmeres de foc · último bloque",
-      "launch_point": "parc-municipal",
-      "start": "2026-08-13T23:45:00+02:00",
+      "id": "carcasses",
+      "type_va": "Carcasses de tro i efectes",
+      "type_cas": "Carcasas de trueno y efectos",
+      "launch_point": "placa-1-maig",
+      "start": "2026-08-13T23:40:00+02:00",
       "kind": "palmera_foc",
       "highlight": false,
-      "note_va": "Hit d'exemple pendent del programa de mà oficial.",
-      "note_cas": "Hito de ejemplo pendiente del programa de mano oficial."
+      "note_va": "Més de 2.000 carcasses (tro, xiulet, efecte tronc de palmera, oripell...) des de la Plaça del 1 de Maig, el Jardí d'Andalusia i el Col·legi Mariano Benlliure.",
+      "note_cas": "Más de 2.000 carcasas (trueno, silbato, efecto tronco de palmera, oropel...) desde la Plaza del 1 de Mayo, el Jardín de Andalucía y el Colegio Mariano Benlliure."
     },
     {
       "id": "apagada",
-      "type_va": "Fi del disparo · s'apaguen les llums",
-      "type_cas": "Fin del disparo · se apagan las luces",
+      "type_va": "S'apaguen les llums · Gloria Patri",
+      "type_cas": "Se apagan las luces · Gloria Patri",
       "launch_point": "basilica",
-      "start": "2026-08-13T23:57:00+02:00",
+      "start": "2026-08-13T23:55:00+02:00",
       "kind": "silencio",
       "highlight": true,
-      "note_va": "Acaba el disparo de coets i palmeres. S'apaguen les llums del perímetre de la Basílica i sona per megafonia el Gloria Patri, l'últim motet del Misteri d'Elx.",
-      "note_cas": "Termina el disparo de cohetes y palmeras. Se apagan las luces del perímetro de la Basílica y suena por megafonía el Gloria Patri, el último motete del Misteri d'Elx."
+      "note_va": "Tradició: tota la ciutat apaga les llums. En la foscor sona el Gloria Patri, l'últim motet del Misteri d'Elx.",
+      "note_cas": "Tradición: toda la ciudad apaga las luces. En la oscuridad suena el Gloria Patri, el último motete del Misteri d'Elx."
     },
     {
       "id": "mare-de-deu",
@@ -113,8 +202,8 @@
       "start": "2026-08-14T00:00:00+02:00",
       "kind": "palmera_foc",
       "highlight": true,
-      "note_va": "El moment culminant: des de la torre de la Basílica de Santa María es dispara la palmera més gran del món, formada per 1.500 cohetons blanc-perla que arriben als 300 metres i il·luminen tot Elx.",
-      "note_cas": "El momento culminante: desde la torre de la Basílica de Santa María se dispara la palmera más grande del mundo, formada por 1.500 cohetones blanco-perla que alcanzan los 300 metros e iluminan todo Elx."
+      "note_va": "El moment culminant: des de la torre de la Basílica es dispara la palmera més gran del món — més de 1.000 cohetons blanc-perla que pugen uns 300 metres i s'obrin fins a 500 de diàmetre, il·luminant Elx com si fora de dia durant més de 20 segons.",
+      "note_cas": "El momento culminante: desde la torre de la Basílica se dispara la palmera más grande del mundo — más de 1.000 cohetones blanco-perla que suben unos 300 metros y se abren hasta 500 de diámetro, iluminando Elx como si fuera de día durante más de 20 segundos."
     },
     {
       "id": "alborada",
@@ -124,8 +213,8 @@
       "start": "2026-08-14T00:05:00+02:00",
       "kind": "alborada",
       "highlight": false,
-      "note_va": "S'encenen les llums, a la torre apareix la \"Virgen de fuego\" i tota la ciutat canta Aromas ilicitanos des dels balcons. Tradició de menjar meló d'Alger.",
-      "note_cas": "Se encienden las luces, en la torre aparece la \"Virgen de fuego\" y toda la ciudad canta Aromas ilicitanos desde los balcones. Tradición de comer sandía."
+      "note_va": "S'encenen les llums, a la torre apareix la \"Virgen de fuego\" i tota la ciutat canta Aromas ilicitanos. Tradició de menjar meló d'Alger. A la 01:00, la Gran Carretillà a l'Hort del Monjo.",
+      "note_cas": "Se encienden las luces, en la torre aparece la \"Virgen de fuego\" y toda la ciudad canta Aromas ilicitanos. Tradición de comer sandía. A la 01:00, la Gran Carretillà en el Hort del Monjo."
     }
   ],
   "closures": [

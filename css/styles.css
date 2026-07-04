@@ -168,7 +168,19 @@ h2, h3 { font-weight: 700; letter-spacing: -0.01em; }
 .tl-now-card h3 { margin: 0 0 5px; font-size: 21px; }
 .tl-place, .tl-note { margin: 0; color: var(--ink-muted); font-size: 13px; line-height: 1.5; }
 .tl-note { margin-top: 7px; }
-.tl-countdown { margin: 8px 0 0; font-variant-numeric: tabular-nums; font-size: 26px; color: var(--gold); font-weight: 800; letter-spacing: 0.02em; }
+.tl-cd { display: flex; gap: 8px; margin-top: 12px; }
+.tl-cd-seg {
+  display: flex; flex-direction: column; align-items: center; min-width: 58px;
+  background: rgba(245,197,66,0.09); border: 1px solid rgba(245,197,66,0.3);
+  border-radius: 12px; padding: 9px 8px 7px;
+  box-shadow: 0 0 16px rgba(245,197,66,0.08) inset;
+}
+.tl-cd-num {
+  font-size: 26px; font-weight: 800; color: var(--gold);
+  font-variant-numeric: tabular-nums; line-height: 1; letter-spacing: 0.01em;
+  text-shadow: 0 0 14px rgba(245,197,66,0.4);
+}
+.tl-cd-lab { font-size: 9.5px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-muted); margin-top: 5px; }
 .tl-done { margin: 0; text-align: center; color: var(--ink-muted); }
 
 .tl-progress-wrap { margin: 4px 0 16px; }

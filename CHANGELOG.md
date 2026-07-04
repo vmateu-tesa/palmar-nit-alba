@@ -1,5 +1,12 @@
 # Changelog
 
+## v11 — Puntos de lanzamiento oficiales + contador rediseñado (julio 2026)
+
+- 12 puntos de lanzamiento según la nota oficial del Ayuntamiento (elche.es): torre de la Basílica, terraza del Ayuntamiento, Paseo de la Estación (Palmera Imperial 23:30), puentes del Ferrocarril y de Altamira (cohetà), Plaza del 1 de Mayo, Jardín de Andalucía y Colegio Mariano Benlliure (carcasas), y puntos de barrio en Altabix, El Pla, Sector V y Carrús.
+- Cronograma corregido con el programa municipal: 23:15 palmeras de terrazas, 23:30 Palmera Imperial + cohetà, 23:40 carcasas, 23:55 apagada de luces + Gloria Patri, 00:00 Palmera de la Mare de Déu (mas de 1.000 cohetones, 300 m de altura, 500 m de diámetro), 00:05 Alborada.
+- Contador rediseñado: segmentos de días / horas / minutos / segundos en cajas doradas, actualizado cada segundo.
+- El mapa pasa a 38 puntos de interés.
+
 ## v10 — Mapa vivo: actos de las fiestas y palmeras ciudadanas (julio 2026)
 
 - Nueva capa "Actos de las fiestas" con 9 lugares del programa publicado: Racó FestiElx (Paseo de la Estación), concurso de mascletàs (Av. Alcalde Vicente Quiles), Ágora Heliketana (rotonda Parque Municipal), conciertos del Hort de Baix, Gran Carretillà (Hort del Monjo, 01:00 tras la Nit de l Albà), castillo de fuegos del 15 (puente del Ferrocarril), Nit de la Roà (Basílica), Plaça de Baix y Nits de Festa (parking UMH).

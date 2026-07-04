@@ -6,6 +6,8 @@
   const $$ = (s) => Array.from(document.querySelectorAll(s));
 
   let timelineTick = null;
+  let secondTick = null;
+  let nextStartMs = null;
   let expandedId = null;   // hito desplegado en el programa
   let deferredInstall = null;
 
@@ -86,14 +88,22 @@
     else { banner.hidden = true; }
   }
 
-  function fmtCountdown(ms) {
+  function cdSplit(ms) {
     if (ms < 0) ms = 0;
-    const totalSec = Math.floor(ms / 1000);
-    const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
+    const t = Math.floor(ms / 1000);
+    return {
+      d: Math.floor(t / 86400),
+      h: Math.floor((t % 86400) / 3600),
+      m: Math.floor((t % 3600) / 60),
+      s: t % 60
+    };
+  }
+  function cdHTML(ms) {
+    const c = cdSplit(ms);
     const pad = (n) => String(n).padStart(2, '0');
-    return h > 0 ? (h + ':' + pad(m) + ':' + pad(s)) : (pad(m) + ':' + pad(s));
+    const seg = (num, key) =>
+      '<span class="tl-cd-seg"><span class="tl-cd-num">' + num + '</span><span class="tl-cd-lab">' + I18N.t(key) + '</span></span>';
+    return (c.d > 0 ? seg(c.d, 'cd.d') : '') + seg(pad(c.h), 'cd.h') + seg(pad(c.m), 'cd.m') + seg(pad(c.s), 'cd.s');
   }
 
   function labelFor(item) {
@@ -129,6 +139,7 @@
 
     if (nowCard) {
       if (state.current) {
+        nextStartMs = null;
         const lp = Timeline.launchPointOf(schedule, state.current);
         const note = noteFor(state.current);
         nowCard.innerHTML =
@@ -139,13 +150,15 @@
         if (window.ElxMap && lp) ElxMap.setActiveLaunchPoint(schedule, lp.id);
         AR.setTarget(lp, labelFor(state.current));
       } else if (state.notStarted && state.next) {
-        const untilStart = state.next._start - (window.Clock ? Clock.now() : Date.now());
+        nextStartMs = state.next._start;
+        const untilStart = nextStartMs - (window.Clock ? Clock.now() : Date.now());
         nowCard.innerHTML =
           '<span class="tl-badge tl-badge-muted">' + I18N.t('timeline.not_started') + '</span>' +
           '<h3>' + esc(labelFor(state.next)) + '</h3>' +
-          '<p class="tl-countdown">' + fmtCountdown(untilStart) + '</p>';
+          '<div class="tl-cd" id="tl-cd">' + cdHTML(untilStart) + '</div>';
         AR.setTarget(Timeline.launchPointOf(schedule, state.next), labelFor(state.next));
       } else if (state.allDone) {
+        nextStartMs = null;
         nowCard.innerHTML = '<p class="tl-done">' + I18N.t('timeline.all_done') + '</p>';
         AR.setTarget(null);
       }
@@ -341,6 +354,15 @@
 
     if (timelineTick) clearInterval(timelineTick);
     timelineTick = setInterval(renderTimeline, 15000);
+    if (secondTick) clearInterval(secondTick);
+    secondTick = setInterval(() => {
+      if (!nextStartMs) return;
+      const el = document.getElementById('tl-cd');
+      if (!el) return;
+      const remaining = nextStartMs - (window.Clock ? Clock.now() : Date.now());
+      el.innerHTML = cdHTML(remaining);
+      if (remaining <= 0) renderTimeline();
+    }, 1000);
 
     setView('map');
 

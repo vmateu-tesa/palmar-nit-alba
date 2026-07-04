@@ -86,6 +86,7 @@
       'timeline.all_done': "El programa d'esta nit ha acabat. Fins l'any que ve!",
       'timeline.not_started': "Encara no ha començat",
       'timeline.progress': "Progrés de la nit",
+      'cd.d': "dies", 'cd.h': "hores", 'cd.m': "min", 'cd.s': "seg",
       'timeline.declaration': "Festa d'Interés Turístic Nacional",
 
       'ar.hint': "Gira sobre tu mateix fins que la fletxa quede recta cap amunt",
@@ -100,7 +101,7 @@
       'guide.intro': "Informació oficial per a viure la Nit de l'Albà i les Festes d'Agost amb tot el context.",
 
       'guide.alba.title': "La Nit de l'Albà",
-      'guide.alba.desc': "La nit del 13 d'agost, tota la ciutat llança palmeres de foc en honor a la Mare de Déu de l'Assumpció. L'origen es remunta a l'Edat Mitjana, quan cada família oferia un coet per cada fill. A les 23:15 comença el programa oficial amb més de 300 palmeres de color; a les 23:57 s'apaguen les llums, sona el Gloria Patri del Misteri i, a mitjanit, es dispara la Palmera de la Mare de Déu des de la torre de la Basílica. És Festa d'Interés Turístic Nacional.",
+      'guide.alba.desc': "La nit del 13 d'agost, tota la ciutat llança palmeres de foc en honor a la Mare de Déu de l'Assumpció. L'origen es remunta a l'Edat Mitjana, quan cada família oferia un coet per cada fill. A les 23:15 comença el programa oficial amb més de 300 palmeres de color; a les 23:55 s'apaguen les llums, sona el Gloria Patri del Misteri i, a mitjanit, es dispara la Palmera de la Mare de Déu des de la torre de la Basílica. És Festa d'Interés Turístic Nacional.",
       'guide.alba.link': "Informació oficial (VisitElche)",
 
       'guide.misteri.title': "El Misteri d'Elx",
@@ -115,7 +116,7 @@
       'guide.palmeral.museum': "Museu del Palmeral",
 
       'guide.participate.title': "Participar amb les teues palmeres de foc",
-      'guide.participate.desc': "La Nit de l'Albà no és un espectacle passiu: es llancen més de 8.000 palmeres i coets, la majoria per famílies i penyes des de terrats i balcons. Pots patrocinar la teua palmera escrivint a fiestas@elche.es, i comprar pirotècnia només en punts de venda autoritzats. Respecta els horaris (el disparo acaba a les 23:57) i les indicacions de seguretat.",
+      'guide.participate.desc': "La Nit de l'Albà no és un espectacle passiu: es llancen més de 8.000 palmeres i coets, la majoria per famílies i penyes des de terrats i balcons. Pots patrocinar la teua palmera escrivint a fiestas@elche.es, i comprar pirotècnia només en punts de venda autoritzats. Respecta els horaris (el disparo acaba a les 23:55) i les indicacions de seguretat.",
 
       'guide.official.title': "Enllaços oficials",
       'guide.official.ajuntament': "Ajuntament d'Elx",
@@ -207,6 +208,7 @@
       'timeline.all_done': "El programa de esta noche ha terminado. ¡Hasta el año que viene!",
       'timeline.not_started': "Todavía no ha empezado",
       'timeline.progress': "Progreso de la noche",
+      'cd.d': "días", 'cd.h': "horas", 'cd.m': "min", 'cd.s': "seg",
       'timeline.declaration': "Fiesta de Interés Turístico Nacional",
 
       'ar.hint': "Gira sobre ti mismo hasta que la flecha quede recta hacia arriba",
@@ -221,7 +223,7 @@
       'guide.intro': "Información oficial para vivir la Nit de l'Albà y las Fiestas de Agosto con todo el contexto.",
 
       'guide.alba.title': "La Nit de l'Albà",
-      'guide.alba.desc': "La noche del 13 de agosto, toda la ciudad lanza palmeres de foc en honor a la Mare de Déu de l'Assumpció. Su origen se remonta a la Edad Media, cuando cada familia ofrendaba un cohete por cada hijo. A las 23:15 empieza el programa oficial con más de 300 palmeras de color; a las 23:57 se apagan las luces, suena el Gloria Patri del Misteri y, a medianoche, se dispara la Palmera de la Mare de Déu desde la torre de la Basílica. Es Fiesta de Interés Turístico Nacional.",
+      'guide.alba.desc': "La noche del 13 de agosto, toda la ciudad lanza palmeres de foc en honor a la Mare de Déu de l'Assumpció. Su origen se remonta a la Edad Media, cuando cada familia ofrendaba un cohete por cada hijo. A las 23:15 empieza el programa oficial con más de 300 palmeras de color; a las 23:55 se apagan las luces, suena el Gloria Patri del Misteri y, a medianoche, se dispara la Palmera de la Mare de Déu desde la torre de la Basílica. Es Fiesta de Interés Turístico Nacional.",
       'guide.alba.link': "Información oficial (VisitElche)",
 
       'guide.misteri.title': "El Misteri d'Elx",
@@ -236,7 +238,7 @@
       'guide.palmeral.museum': "Museo del Palmeral",
 
       'guide.participate.title': "Participar con tus palmeres de foc",
-      'guide.participate.desc': "La Nit de l'Albà no es un espectáculo pasivo: se lanzan más de 8.000 palmeras y cohetes, la mayoría por familias y peñas desde terrazas y balcones. Puedes patrocinar tu palmera escribiendo a fiestas@elche.es, y comprar pirotecnia solo en puntos de venta autorizados. Respeta los horarios (el disparo termina a las 23:57) y las indicaciones de seguridad.",
+      'guide.participate.desc': "La Nit de l'Albà no es un espectáculo pasivo: se lanzan más de 8.000 palmeras y cohetes, la mayoría por familias y peñas desde terrazas y balcones. Puedes patrocinar tu palmera escribiendo a fiestas@elche.es, y comprar pirotecnia solo en puntos de venta autorizados. Respeta los horarios (el disparo termina a las 23:55) y las indicaciones de seguridad.",
 
       'guide.official.title': "Enlaces oficiales",
       'guide.official.ajuntament': "Ayuntamiento de Elche",

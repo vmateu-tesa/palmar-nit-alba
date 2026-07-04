@@ -6,6 +6,8 @@
   const $$ = (s) => Array.from(document.querySelectorAll(s));
 
   let timelineTick = null;
+  let expandedId = null;   // hito desplegado en el programa
+  let deferredInstall = null;
 
   // Saneamiento: todo texto de datos que se inyecta via innerHTML pasa por aqui.
   function esc(s) {
@@ -13,6 +15,14 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredInstall = e;
+    const card = $('#install-card'), btn = $('#install-btn');
+    if (card) card.hidden = false;
+    if (btn) btn.hidden = false;
+  });
 
   function toast(msg) {
     const t = $('#toast'); if (!t || !msg) return;
@@ -160,16 +170,27 @@
       const cls = isNow ? 'is-now' : (isPast ? 'is-past' : 'is-upcoming');
       const time = new Date(it._start).toLocaleTimeString(I18N.get() === 'cas' ? 'es-ES' : 'ca-ES',
         { hour: '2-digit', minute: '2-digit' });
-      return '<li class="tl-item ' + cls + '">' +
-        '<span class="tl-time">' + time + '</span>' +
-        '<span class="tl-name">' + esc(labelFor(it)) + (it.highlight ? ' <span class="tl-star">✦</span>' : '') + '</span>' +
+      const note = noteFor(it);
+      const lp = Timeline.launchPointOf(schedule, it);
+      const open = expandedId === it.id;
+      return '<li class="tl-item ' + cls + (open ? ' is-open' : '') + '" data-id="' + it.id + '">' +
+        '<div class="tl-row">' +
+          '<span class="tl-time">' + time + '</span>' +
+          '<span class="tl-name">' + esc(labelFor(it)) + (it.highlight ? ' <span class="tl-star">\u2726</span>' : '') + '</span>' +
+          '<span class="tl-caret" aria-hidden="true">\u25BE</span>' +
+        '</div>' +
+        (open ? '<div class="tl-detail">' +
+            (note ? '<p>' + esc(note) + '</p>' : '') +
+            (lp ? '<button class="tl-map-btn" data-point="' + lp.id + '">' + I18N.t('timeline.see_map') + ' \u00B7 ' + esc(lp.name) + '</button>' : '') +
+          '</div>' : '') +
         '</li>';
     }).join('');
   }
 
   function initMapView(schedule) {
     if (!window.ElxMap) return;
-    ElxMap.init('map', schedule);
+    try { ElxMap.init('map', schedule); } catch (e) { console.warn('[map]', e); return; }
+    applyLayerPrefs();
     let gpsToastShown = false;
     ElxMap.startUserLocation((pos, errCode) => {
       if (!pos && !gpsToastShown) {
@@ -177,6 +198,67 @@
         toast(errCode === 1 ? I18N.t('map.gps_denied') : I18N.t('map.no_gps'));
       }
     });
+  }
+
+  function initTimelineInteractions() {
+    const listEl = $('#timeline-list');
+    if (!listEl) return;
+    listEl.addEventListener('click', (e) => {
+      const btn = e.target.closest('.tl-map-btn');
+      if (btn) { setView('map'); ElxMap.focusLaunchPoint(btn.dataset.point); return; }
+      const li = e.target.closest('.tl-item');
+      if (li) { expandedId = expandedId === li.dataset.id ? null : li.dataset.id; renderTimeline(); }
+    });
+  }
+
+  function loadLayerPrefs() {
+    try { return JSON.parse(localStorage.getItem('elx_layers')) || {}; } catch (e) { return {}; }
+  }
+  function initLayers() {
+    const btn = $('#layers-btn'), panel = $('#layers-panel');
+    if (!btn || !panel) return;
+    btn.addEventListener('click', () => { panel.hidden = !panel.hidden; });
+    const prefs = loadLayerPrefs();
+    $$('#layers-panel input[data-layer]').forEach((cb) => {
+      const key = cb.dataset.layer;
+      if (prefs[key] === false) cb.checked = false;
+      cb.addEventListener('change', () => {
+        ElxMap.setLayerVisible(key, cb.checked);
+        const p = loadLayerPrefs(); p[key] = cb.checked;
+        localStorage.setItem('elx_layers', JSON.stringify(p));
+      });
+    });
+  }
+  function applyLayerPrefs() {
+    const prefs = loadLayerPrefs();
+    Object.keys(prefs).forEach((k) => ElxMap.setLayerVisible(k, prefs[k] !== false));
+  }
+
+  function initInstall() {
+    const btn = $('#install-btn');
+    if (btn) btn.addEventListener('click', async () => {
+      if (!deferredInstall) return;
+      deferredInstall.prompt();
+      deferredInstall = null;
+      const card = $('#install-card');
+      if (card) card.hidden = true;
+    });
+    // iOS no dispara beforeinstallprompt: instrucciones manuales
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+    if (isIOS && !standalone) {
+      const card = $('#install-card'), ios = $('#install-ios');
+      if (card) card.hidden = false;
+      if (ios) ios.hidden = false;
+    }
+  }
+
+  function initConnectivity() {
+    const badge = $('#offline-badge');
+    const paint = () => { if (badge) badge.hidden = navigator.onLine; };
+    window.addEventListener('online', paint);
+    window.addEventListener('offline', paint);
+    paint();
   }
 
   function initNav() {
@@ -227,6 +309,10 @@
     initNav();
     initHints();
     initWelcome();
+    initTimelineInteractions();
+    initLayers();
+    initInstall();
+    initConnectivity();
     const arBtn = $('#ar-enable-btn');
     if (arBtn) arBtn.addEventListener('click', () => AR.enable(() => toast(I18N.t('ar.permission_needed'))));
 

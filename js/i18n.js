@@ -54,6 +54,16 @@
 
       'map.legend.viewpoint': "Mirador recomanat",
       'map.next_here': "Pròxim des d'ací",
+      'map.legend.pois': "Punts d'assistència",
+      'timeline.see_map': "Veure al mapa",
+      'map.layers': "Capes del mapa",
+      'map.directions': "Com arribar",
+      'common.offline': "Sense connexió",
+      'install.title': "Porta Elx al Cel a la teua pantalla d'inici",
+      'install.text': "Instal·lada funciona a pantalla completa i sense connexió, ideal per a la nit de l'esdeveniment.",
+      'install.btn': "Instal·lar l'app",
+      'install.ios': "En iPhone: toca el botó Compartir del navegador i tria \"Afegir a pantalla d'inici\".",
+
       'map.legend.launch': "Punt de llançament oficial",
       'map.legend.closure': "Carrer tallat",
       'map.legend.perimeter': "Perímetre de seguretat",
@@ -159,6 +169,16 @@
 
       'map.legend.viewpoint': "Mirador recomendado",
       'map.next_here': "Próximo desde aquí",
+      'map.legend.pois': "Puntos de asistencia",
+      'timeline.see_map': "Ver en el mapa",
+      'map.layers': "Capas del mapa",
+      'map.directions': "Cómo llegar",
+      'common.offline': "Sin conexión",
+      'install.title': "Lleva Elx al Cel a tu pantalla de inicio",
+      'install.text': "Instalada funciona a pantalla completa y sin conexión, ideal para la noche del evento.",
+      'install.btn': "Instalar la app",
+      'install.ios': "En iPhone: toca el botón Compartir del navegador y elige \"Añadir a pantalla de inicio\".",
+
       'map.legend.launch': "Punto de lanzamiento oficial",
       'map.legend.closure': "Calle cortada",
       'map.legend.perimeter': "Perímetro de seguridad",

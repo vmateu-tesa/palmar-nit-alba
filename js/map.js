@@ -14,9 +14,17 @@
   let map = null, userMarker = null, userAccuracyCircle = null, geoWatchId = null, meetingMarker = null;
   let nextInfo = {};
   let lastSchedule = null;
+  let launchMarkers = {};
+  const LAYER_KEYS = ['launch','closures','perimeters','pois','viewpoints'];
   let layerLaunch = null, layerClosures = null, layerPerimeters = null, layerPois = null, layerViewpoints = null;
 
   function hasLeaflet() { return typeof window.L !== 'undefined'; }
+
+  function dirLink(lat, lng) {
+    const label = window.I18N ? I18N.t('map.directions') : 'Cómo llegar';
+    return '<br><a class="pp-dir" target="_blank" rel="noopener" href="https://maps.google.com/?daddr=' +
+      lat.toFixed(5) + ',' + lng.toFixed(5) + '">' + label + ' \u2197</a>';
+  }
 
   function esc(s) {
     return String(s == null ? '' : s)
@@ -110,13 +118,15 @@
     layerPois.clearLayers();
     layerViewpoints.clearLayers();
 
+    launchMarkers = {};
     (schedule.launch_points || []).forEach((p) => {
       const m = L.marker([p.lat, p.lng], { icon: launchIcon(p.id === activeLaunchPointId) });
+      launchMarkers[p.id] = m;
       const lang = window.I18N ? I18N.get() : 'va';
       const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
       const nx = nextInfo[p.id];
       m.bindPopup('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
-        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : ''));
+        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + dirLink(p.lat, p.lng));
       m.addTo(layerLaunch);
     });
 
@@ -139,7 +149,7 @@
       const name = lang === 'cas' ? (v.name_cas || v.name_va) : (v.name_va || v.name_cas);
       const desc = lang === 'cas' ? (v.desc_cas || '') : (v.desc_va || '');
       L.marker([v.lat, v.lng], { icon: viewIcon() })
-        .bindPopup('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : ''))
+        .bindPopup('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + dirLink(v.lat, v.lng))
         .addTo(layerViewpoints);
     });
 
@@ -147,7 +157,7 @@
       const lang = window.I18N ? I18N.get() : 'va';
       const name = lang === 'cas' ? (poi.name_cas || poi.name_va) : (poi.name_va || poi.name_cas);
       L.marker([poi.lat, poi.lng], { icon: poiIcon(poi.type) })
-        .bindPopup(esc(name || poi.type))
+        .bindPopup('<strong>' + esc(name || poi.type) + '</strong>' + dirLink(poi.lat, poi.lng))
         .addTo(layerPois);
     });
   }
@@ -224,12 +234,31 @@
     if (map && userMarker) map.flyTo(userMarker.getLatLng(), zoom || 17, { duration: 0.6 });
   }
   function flyTo(lat, lng, zoom) { if (map) map.flyTo([lat, lng], zoom || 17, { duration: 0.8 }); }
+
+  function focusLaunchPoint(id) {
+    const m = launchMarkers[id];
+    if (!m || !map) return;
+    const ll = m.getLatLng();
+    map.flyTo(ll, 17, { duration: 0.8 });
+    setTimeout(() => { try { m.openPopup(); } catch (e) {} }, 900);
+  }
+
+  function layerByKey(key) {
+    return { launch: layerLaunch, closures: layerClosures, perimeters: layerPerimeters,
+             pois: layerPois, viewpoints: layerViewpoints }[key];
+  }
+  function setLayerVisible(key, on) {
+    const l = layerByKey(key);
+    if (!l || !map) return;
+    if (on) { if (!map.hasLayer(l)) map.addLayer(l); }
+    else { if (map.hasLayer(l)) map.removeLayer(l); }
+  }
   function refresh() { if (map) setTimeout(() => map.invalidateSize(), 60); }
 
   window.ElxMap = {
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
-    setMeetingPoint, shareMeeting, setNextInfo,
+    setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
     hasLeaflet
   };
 })();

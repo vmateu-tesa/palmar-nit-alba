@@ -1,5 +1,14 @@
 # Changelog
 
+## v7 — Fase B: herramienta avanzada (julio 2026)
+
+- Programa interactivo: cada hito se despliega con su descripción y botón "Ver en el mapa" que vuela al punto y abre su ficha.
+- Panel de capas del mapa (lanzamientos, cortes, perímetros, miradores, asistencia) con preferencias recordadas.
+- "Cómo llegar" en todas las fichas del mapa (enlace a navegación).
+- Instalación en pantalla de inicio: aviso nativo en Android/Chrome e instrucciones para iPhone.
+- Indicador "Sin conexión" en la cabecera.
+- Mapa protegido ante fallos de inicialización.
+
 ## v6 — Revisión UX completa + coordenadas verificadas (julio 2026)
 
 - COORDENADAS CORREGIDAS con fuentes verificadas (OSM): Basílica 38.26719,-0.69799; Pont del Bimil·lenari 38.27932,-0.70214 (antes desviado >1 km); Glorieta, Parque Municipal, Pont de la Generalitat, cauce del Vinalopó y POIs triangulados (~50 m).

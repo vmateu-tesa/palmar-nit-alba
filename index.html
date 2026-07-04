@@ -12,19 +12,20 @@
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
   <link rel="apple-touch-icon" href="icons/icon.svg" />
   <link rel="stylesheet" href="css/leaflet.css" />
-  <link rel="stylesheet" href="css/styles.css?v=13" />
+  <link rel="stylesheet" href="css/styles.css?v=14" />
 
   <script defer src="js/leaflet.js"></script>
-  <script defer src="js/clock.js?v=13"></script>
-  <script defer src="js/config.js?v=13"></script>
-  <script defer src="js/i18n.js?v=13"></script>
-  <script defer src="js/map.js?v=13"></script>
-  <script defer src="js/ar.js?v=13"></script>
-  <script defer src="js/timeline.js?v=13"></script>
-  <script defer src="js/data.js?v=13"></script>
-  <script defer src="js/prefetch.js?v=13"></script>
-  <script defer src="js/alerts.js?v=13"></script>
-  <script defer src="js/app.js?v=13"></script>
+  <script defer src="js/clock.js?v=14"></script>
+  <script defer src="js/config.js?v=14"></script>
+  <script defer src="js/i18n.js?v=14"></script>
+  <script defer src="js/map.js?v=14"></script>
+  <script defer src="js/ar.js?v=14"></script>
+  <script defer src="js/timeline.js?v=14"></script>
+  <script defer src="js/data.js?v=14"></script>
+  <script defer src="js/prefetch.js?v=14"></script>
+  <script defer src="js/alerts.js?v=14"></script>
+  <script defer src="js/mypalm.js?v=14"></script>
+  <script defer src="js/app.js?v=14"></script>
 </head>
 <body>
 
@@ -57,6 +58,9 @@
         <span data-i18n="hint.map">Toca cualquier icono del mapa para saber qué es.</span>
         <button class="view-hint-x" data-i18n="hint.close" aria-label="Cerrar">Entendido</button>
       </div>
+      <button id="mypalm-btn" class="fab fab-mypalm" aria-label="La meua palmera de foc">
+        <span aria-hidden="true">🌴</span> <span data-i18n="mypalm.fab">Mi palmera</span>
+      </button>
       <button id="share-btn" class="fab fab-secondary" aria-label="Compartir punt de trobada">
         <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="5.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="18.5" r="2.6" fill="none" stroke="currentColor" stroke-width="2"/><path d="M8.4 10.8l6.8-4M8.4 13.2l6.8 4" stroke="currentColor" stroke-width="2"/></svg>
       </button>
@@ -224,6 +228,30 @@
     </section>
 
   </main>
+
+  <!-- ====== LA MEUA PALMERA (modal) ====== -->
+  <div id="mypalm-modal" class="welcome" hidden>
+    <div class="welcome-card mypalm-card">
+      <h2 data-i18n="mypalm.title">Mi palmera de foc</h2>
+      <p class="welcome-sub" data-i18n="mypalm.sub">Dedica una palmera simbólica y compártela</p>
+      <label class="mp-label" for="mp-dedication" data-i18n="mypalm.dedication">Dedicatoria</label>
+      <input id="mp-dedication" class="mp-input" maxlength="60" autocomplete="off">
+      <label class="mp-label" for="mp-time" data-i18n="mypalm.time">Hora de lanzamiento</label>
+      <select id="mp-time" class="mp-input">
+        <option>23:15</option><option selected>23:30</option><option>23:45</option><option>00:15</option>
+      </select>
+      <p class="mp-label" data-i18n="mypalm.where">¿Dónde la situamos?</p>
+      <div class="mp-where">
+        <button id="mp-gps" class="ar-chip is-active" data-i18n="mypalm.use_gps">En mi ubicación</button>
+        <button id="mp-center" class="ar-chip" data-i18n="mypalm.use_center">En el centro del mapa</button>
+      </div>
+      <p class="mp-note" data-i18n="mypalm.real_note"></p>
+      <div class="mp-actions">
+        <button id="mp-cancel" class="ar-chip" data-i18n="mypalm.cancel">Cancelar</button>
+        <button id="mp-save" class="btn-primary btn-small" data-i18n="mypalm.save">Crear y compartir</button>
+      </div>
+    </div>
+  </div>
 
   <!-- ====== BENVINGUDA (primera visita) ====== -->
   <div id="welcome" class="welcome" hidden>

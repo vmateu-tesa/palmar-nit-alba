@@ -282,6 +282,53 @@
     paint();
   }
 
+  function initMyPalm() {
+    const fab = $('#mypalm-btn'), modal = $('#mypalm-modal');
+    if (!fab || !modal) return;
+    let whereMode = 'gps';
+    const gpsB = $('#mp-gps'), centerB = $('#mp-center');
+    const paintWhere = () => {
+      if (gpsB) gpsB.classList.toggle('is-active', whereMode === 'gps');
+      if (centerB) centerB.classList.toggle('is-active', whereMode === 'center');
+    };
+    if (gpsB) gpsB.addEventListener('click', () => { whereMode = 'gps'; paintWhere(); });
+    if (centerB) centerB.addEventListener('click', () => { whereMode = 'center'; paintWhere(); });
+
+    fab.addEventListener('click', () => {
+      const existing = MyPalm.get();
+      if (existing) { ElxMap.focusMyPalm(); return; }
+      const ded = $('#mp-dedication');
+      if (ded) ded.placeholder = I18N.t('mypalm.ph');
+      modal.hidden = false;
+    });
+    const close = () => { modal.hidden = true; };
+    const cancel = $('#mp-cancel');
+    if (cancel) cancel.addEventListener('click', close);
+
+    const saveBtn = $('#mp-save');
+    if (saveBtn) saveBtn.addEventListener('click', () => {
+      const ded = ($('#mp-dedication').value || '').trim();
+      if (!ded) { toast(I18N.t('mypalm.need_ded')); return; }
+      const time = $('#mp-time').value || '23:30';
+      const finalize = (lat, lng) => {
+        const p = { dedication: ded, time, lat, lng, created: Date.now() };
+        MyPalm.save(p);
+        ElxMap.renderMyPalm(p);
+        close();
+        toast(I18N.t('mypalm.created'));
+        setTimeout(() => { ElxMap.focusMyPalm(); MyPalm.share(); }, 600);
+      };
+      const c = ElxMap.getCenter() || { lat: 38.2685, lng: -0.699 };
+      if (whereMode === 'gps' && 'geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (pos) => finalize(pos.coords.latitude, pos.coords.longitude),
+          () => finalize(c.lat, c.lng),
+          { enableHighAccuracy: true, timeout: 8000 }
+        );
+      } else finalize(c.lat, c.lng);
+    });
+  }
+
   function initNav() {
     $$('.nav-item').forEach((b) => b.addEventListener('click', () => setView(b.dataset.nav)));
     const locateBtn = $('#locate-btn');
@@ -331,6 +378,7 @@
     initHints();
     initWelcome();
     initTimelineInteractions();
+    initMyPalm();
     initLayers();
     initInstall();
     initConnectivity();
@@ -341,6 +389,7 @@
     initDemo(schedule);
     if (schedule) {
       initMapView(schedule);
+      if (window.MyPalm && MyPalm.get()) ElxMap.renderMyPalm(MyPalm.get());
       AR.setTargets(schedule.launch_points || []);
       renderTimeline();
     } else {

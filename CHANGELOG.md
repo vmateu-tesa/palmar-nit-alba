@@ -1,5 +1,12 @@
 # Changelog
 
+## v14 — Mi palmera de foc + compartir en redes (julio 2026)
+
+- Botón dorado "Mi palmera" en el mapa: crea una palmera simbólica con dedicatoria, hora y ubicación (GPS o centro del mapa). Se guarda en el dispositivo (sin backend, coherente con la arquitectura static-first) y aparece en el mapa con icono animado.
+- Compartir en RRSS: genera una tarjeta-imagen 1080x1080 en canvas (palmera dorada sobre cielo nocturno, dedicatoria y marca Elx al Cel) y la comparte por Web Share API con imagen; fallbacks a texto y portapapeles.
+- Puente al patrocinio real: el formulario enlaza el patrocinio oficial del Ayuntamiento (desde 150 EUR, patrociniopalmera@elche.es) — la dedicatoria digital como embudo hacia la palmera real.
+- Ficha de la palmera con botones Compartir y Eliminar.
+
 ## v12 — Brújula corregida, patrocinio oficial y apartado de Fiestas (julio 2026)
 
 - Brújula: corregido el rumbo erróneo en Android (el sensor relativo, con norte arbitrario, pisaba las lecturas absolutas); compensación del ángulo de pantalla y suavizado circular anti-temblor.

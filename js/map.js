@@ -20,6 +20,7 @@
   let map = null, userMarker = null, userAccuracyCircle = null, geoWatchId = null, meetingMarker = null;
   let nextInfo = {};
   let lastSchedule = null;
+  let myPalmMarker = null;
   let launchMarkers = {};
   const LAYER_KEYS = ['launch','closures','perimeters','pois','viewpoints'];
   let layerLaunch = null, layerClosures = null, layerPerimeters = null, layerPois = null, layerViewpoints = null, layerFesta = null, layerPalmeres = null;
@@ -79,6 +80,13 @@
       iconSize: [22, 22], iconAnchor: [11, 11]
     });
   }
+  function myPalmIcon() {
+    return L.divIcon({
+      className: '',
+      html: '<div class="elx-mypalm">\uD83C\uDF34</div>',
+      iconSize: [38, 38], iconAnchor: [19, 19]
+    });
+  }
   function meetingIcon() {
     return L.divIcon({
       className: '',
@@ -115,6 +123,20 @@
 
     // Mantener pulsado el mapa = marcar punt de trobada
     map.on('contextmenu', (e) => setMeetingPoint(e.latlng));
+
+    // Botones dentro de popups (compartir/eliminar mi palmera)
+    map.on('popupopen', (e) => {
+      const node = e.popup && e.popup._contentNode;
+      if (!node) return;
+      const sh = node.querySelector('.mp-pop-share');
+      if (sh) sh.onclick = () => { if (window.MyPalm) MyPalm.share(); };
+      const del = node.querySelector('.mp-pop-del');
+      if (del) del.onclick = () => {
+        if (window.MyPalm) MyPalm.clear();
+        renderMyPalm(null);
+        map.closePopup();
+      };
+    });
 
     if (schedule) renderSchedule(schedule);
     return map;
@@ -281,6 +303,31 @@
   }
   function flyTo(lat, lng, zoom) { if (map) map.flyTo([lat, lng], zoom || 17, { duration: 0.8 }); }
 
+  function renderMyPalm(p) {
+    if (!map) return;
+    if (myPalmMarker) { map.removeLayer(myPalmMarker); myPalmMarker = null; }
+    if (!p) return;
+    myPalmMarker = L.marker([p.lat, p.lng], { icon: myPalmIcon(), zIndexOffset: 1100 }).addTo(map);
+    const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
+    const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
+    myPalmMarker.bindPopup(
+      '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>13/08 \u00B7 ' + esc(p.time) +
+      '<br><button class="mp-pop-share tl-map-btn">' + shareLbl + '</button> ' +
+      '<button class="mp-pop-del pp-dir-btn">' + delLbl + '</button>'
+    );
+  }
+  function focusMyPalm() {
+    if (myPalmMarker && map) {
+      map.flyTo(myPalmMarker.getLatLng(), 16, { duration: 0.7 });
+      setTimeout(() => { try { myPalmMarker.openPopup(); } catch (e) {} }, 800);
+    }
+  }
+  function getCenter() {
+    if (!map) return null;
+    const c = map.getCenter();
+    return { lat: c.lat, lng: c.lng };
+  }
+
   function setBasemap(key) {
     if (!map || !BASEMAPS[key]) return;
     if (baseLayer) map.removeLayer(baseLayer);
@@ -319,6 +366,7 @@
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible, setBasemap, getBasemap,
+    renderMyPalm, focusMyPalm, getCenter,
     hasLeaflet
   };
 })();

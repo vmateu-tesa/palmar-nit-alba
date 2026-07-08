@@ -11,7 +11,7 @@
               attr: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19, subdomains: 'abcd' }
   };
   let baseLayer = null;
-  let currentBase = localStorage.getItem('elx_basemap') || 'detail';
+  let currentBase = localStorage.getItem('elx_basemap') || 'dark';
 
   const POI_GLYPH = {
     first_aid: '✚', info: 'i', water: '💧', accessible: '♿', exit: '➜'

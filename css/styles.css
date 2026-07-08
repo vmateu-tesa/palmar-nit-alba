@@ -89,6 +89,10 @@ h2, h3 { font-weight: 700; letter-spacing: -0.01em; }
 
 /* ---- Mapa ---- */
 .map-canvas { position: absolute; inset: 0; background: #0c1030; }
+.map-vignette {
+  position: absolute; inset: 0; pointer-events: none; z-index: 400;
+  box-shadow: inset 0 0 100px rgba(7, 10, 32, 0.95);
+}
 #view-map.view.is-active { overflow: hidden; }
 .leaflet-container { background: #0c1030; font: inherit; }
 .fab {
@@ -117,11 +121,13 @@ h2, h3 { font-weight: 700; letter-spacing: -0.01em; }
 .lg-view { background: var(--safe); }
 
 .elx-marker {
-  font-size: 20px; color: var(--gold); text-shadow: 0 0 8px rgba(0,0,0,0.9);
+  font-size: 20px; color: var(--gold); text-shadow: 0 0 10px var(--gold);
   display: grid; place-items: center; width: 30px; height: 30px;
+  animation: idleGlow 2.5s ease-in-out infinite alternate;
 }
-.elx-marker.active { color: #fff3c4; filter: drop-shadow(0 0 8px var(--gold)); animation: markerGlow 1.6s ease-in-out infinite alternate; }
-@keyframes markerGlow { from { filter: drop-shadow(0 0 4px var(--gold)); } to { filter: drop-shadow(0 0 12px var(--gold)); } }
+@keyframes idleGlow { from { filter: drop-shadow(0 0 2px var(--gold)); transform: scale(1); } to { filter: drop-shadow(0 0 8px var(--gold)); transform: scale(1.05); } }
+.elx-marker.active { color: #fff3c4; filter: drop-shadow(0 0 12px var(--gold)); animation: markerGlow 1.2s ease-in-out infinite alternate; }
+@keyframes markerGlow { from { filter: drop-shadow(0 0 4px var(--gold)); transform: scale(1.1); } to { filter: drop-shadow(0 0 18px var(--gold)); transform: scale(1.25); } }
 .elx-poi {
   width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center;
   background: rgba(255,255,255,0.94); color: #16123a; font-size: 12px; font-weight: 800;
@@ -396,3 +402,42 @@ h2, h3 { font-weight: 700; letter-spacing: -0.01em; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* Zoom accesible: el gesto de pellizcar no se bloquea (WCAG). */
+
+/* ---- Infografia Palmera ---- */
+.g-history p { margin-bottom: 12px; }
+.info-graphic-container {
+  margin-top: 24px; padding: 18px; border-radius: 16px;
+  background: linear-gradient(180deg, rgba(16,20,47,0.4) 0%, rgba(30,40,90,0.3) 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.info-graphic-container h4 {
+  margin: 0 0 16px; font-size: 15px; color: #fff; text-align: center;
+  letter-spacing: 0.02em; text-transform: uppercase;
+}
+.ig-timeline {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.ig-step {
+  display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; width: 100%;
+}
+.ig-icon {
+  width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  background: rgba(255,255,255,0.06); border: 1.5px solid var(--border);
+  font-size: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 2;
+}
+.ig-glow {
+  background: rgba(255,255,255,0.9); border-color: #fff; color: #16123a;
+  box-shadow: 0 0 24px rgba(255,255,255,0.8), inset 0 0 10px rgba(245,197,66,0.5);
+  animation: explodeGlow 2s ease-in-out infinite alternate;
+}
+@keyframes explodeGlow { from { transform: scale(1); box-shadow: 0 0 16px rgba(255,255,255,0.6); } to { transform: scale(1.1); box-shadow: 0 0 32px rgba(255,255,255,1); } }
+.ig-text {
+  display: flex; flex-direction: column; gap: 4px; padding: 0 10px;
+}
+.ig-text strong { color: var(--gold); font-size: 14px; }
+.ig-text span { color: var(--ink-muted); font-size: 12.5px; line-height: 1.4; }
+.ig-line {
+  width: 2px; height: 32px; background: linear-gradient(180deg, var(--gold) 0%, rgba(255,255,255,0.1) 100%);
+  border-radius: 2px;
+}
+.ig-line:last-of-type { background: rgba(255,255,255,0.1); }

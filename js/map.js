@@ -1,17 +1,13 @@
 /* =====================================================================
-   Elx al Cel — Mapa de orientación (Leaflet)
+   Elx al Cel — Mapa de orientación (MapLibre GL JS 3D)
    Capas: puntos de llançament, cortes de calle, perimetros de seguridad,
    puntos de asistencia (POIs) y ubicacion del usuario en vivo.
    ===================================================================== */
 (function () {
   const BASEMAPS = {
-    detail: { url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              attr: '&copy; OpenStreetMap contributors', maxZoom: 19 },
-    dark:   { url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-              attr: '&copy; OpenStreetMap &copy; CARTO', maxZoom: 19, subdomains: 'abcd' }
+    dark: { url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' }
   };
-  let baseLayer = null;
-  let currentBase = localStorage.getItem('elx_basemap') || 'dark';
+  let currentBase = 'dark';
 
   const POI_GLYPH = {
     first_aid: '✚', info: 'i', water: '💧', accessible: '♿', exit: '➜'
@@ -22,10 +18,14 @@
   let lastSchedule = null;
   let myPalmMarker = null;
   let launchMarkers = {};
-  const LAYER_KEYS = ['launch','closures','perimeters','pois','viewpoints'];
-  let layerLaunch = null, layerClosures = null, layerPerimeters = null, layerPois = null, layerViewpoints = null, layerFesta = null, layerPalmeres = null;
+  
+  // Layer arrays (MapLibre doesn't have LayerGroups for markers, we keep them in arrays)
+  let layerLaunch = [], layerClosures = [], layerPerimeters = [], layerPois = [], layerViewpoints = [], layerFesta = [], layerPalmeres = [];
 
-  function hasLeaflet() { return typeof window.L !== 'undefined'; }
+  // Visibility state
+  let layerVisibility = { launch: true, closures: true, perimeters: true, pois: true, viewpoints: true, festa: true, palmeres: true };
+
+  function hasMapLibre() { return typeof window.maplibregl !== 'undefined'; }
 
   function dirLink(lat, lng) {
     const label = window.I18N ? I18N.t('map.directions') : 'Cómo llegar';
@@ -42,103 +42,94 @@
   function fallback(elId, msg) {
     const el = document.getElementById(elId);
     if (el) el.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;' +
-      'text-align:center;color:#a7a3cc;padding:30px;font-size:14px">' + msg + '</div>';
+      'text-align:center;color:#a7a3cc;padding:30px;font-size:14px;z-index:9999">' + msg + '</div>';
+  }
+
+  function createHtmlElement(html) {
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    return div.firstElementChild;
   }
 
   function launchIcon(active) {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-marker' + (active ? ' active' : '') + '">★</div>',
-      iconSize: [30, 30], iconAnchor: [15, 15]
-    });
+    return createHtmlElement('<div class="elx-marker' + (active ? ' active' : '') + '">★</div>');
   }
   function poiIcon(type) {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-poi elx-poi-' + type + '">' + (POI_GLYPH[type] || '•') + '</div>',
-      iconSize: [26, 26], iconAnchor: [13, 13]
-    });
+    return createHtmlElement('<div class="elx-poi elx-poi-' + type + '">' + (POI_GLYPH[type] || '•') + '</div>');
   }
   function viewIcon() {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-view"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg></div>',
-      iconSize: [26, 26], iconAnchor: [13, 13]
-    });
+    return createHtmlElement('<div class="elx-view"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="2.6" fill="currentColor"/></svg></div>');
   }
   function festaIcon() {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-festa"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M12 3l2.2 4.9 5.3.5-4 3.6 1.2 5.2L12 14.5 7.3 17.2l1.2-5.2-4-3.6 5.3-.5z" fill="currentColor"/></svg></div>',
-      iconSize: [26, 26], iconAnchor: [13, 13]
-    });
+    return createHtmlElement('<div class="elx-festa"><svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path d="M12 3l2.2 4.9 5.3.5-4 3.6 1.2 5.2L12 14.5 7.3 17.2l1.2-5.2-4-3.6 5.3-.5z" fill="currentColor"/></svg></div>');
   }
   function cpalmIcon() {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-cpalm">\uD83C\uDF34</div>',
-      iconSize: [22, 22], iconAnchor: [11, 11]
-    });
+    return createHtmlElement('<div class="elx-cpalm">\uD83C\uDF34</div>');
   }
   function myPalmIcon() {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-mypalm">\uD83C\uDF34</div>',
-      iconSize: [38, 38], iconAnchor: [19, 19]
-    });
+    return createHtmlElement('<div class="elx-mypalm">\uD83C\uDF34</div>');
   }
   function meetingIcon() {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-meet"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 3.5L17 11H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>',
-      iconSize: [30, 30], iconAnchor: [6, 28]
-    });
+    return createHtmlElement('<div class="elx-meet" style="transform:translate(0,-14px)"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 3.5L17 11H6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>');
   }
   function userIcon() {
-    return L.divIcon({
-      className: '',
-      html: '<div class="elx-user-dot"><div class="elx-user-pulse"></div></div>',
-      iconSize: [20, 20], iconAnchor: [10, 10]
-    });
+    return createHtmlElement('<div class="elx-user-dot"><div class="elx-user-pulse"></div></div>');
   }
 
   function init(elId, schedule) {
-    if (!hasLeaflet()) { fallback(elId, "No s'ha pogut carregar el mapa. La resta de l'eina funciona igual."); return null; }
+    if (!hasMapLibre()) { fallback(elId, "No s'ha pogut carregar el mapa. La resta de l'eina funciona igual."); return null; }
     const ev = (schedule && schedule.event) || {};
     const center = ev.center || { lat: 38.2699, lng: -0.7126 };
     const zoom = (ev.zoom && ev.zoom.default) || 15;
 
-    map = L.map(elId, { zoomControl: false, attributionControl: true }).setView([center.lat, center.lng], zoom);
-    // Nota: sin maxBounds a propósito — el usuario puede estar fuera del área del evento
-    setBasemap(currentBase);
-    L.control.zoom({ position: 'bottomleft' }).addTo(map);
-
-    layerLaunch = L.layerGroup().addTo(map);
-    layerClosures = L.layerGroup().addTo(map);
-    layerPerimeters = L.layerGroup().addTo(map);
-    layerPois = L.layerGroup().addTo(map);
-    layerViewpoints = L.layerGroup().addTo(map);
-    layerFesta = L.layerGroup().addTo(map);
-    layerPalmeres = L.layerGroup().addTo(map);
-
-    // Mantener pulsado el mapa = marcar punt de trobada
-    map.on('contextmenu', (e) => setMeetingPoint(e.latlng));
-
-    // Botones dentro de popups (compartir/eliminar mi palmera)
-    map.on('popupopen', (e) => {
-      const node = e.popup && e.popup._contentNode;
-      if (!node) return;
-      const sh = node.querySelector('.mp-pop-share');
-      if (sh) sh.onclick = () => { if (window.MyPalm) MyPalm.share(); };
-      const del = node.querySelector('.mp-pop-del');
-      if (del) del.onclick = () => {
-        if (window.MyPalm) MyPalm.clear();
-        renderMyPalm(null);
-        map.closePopup();
-      };
+    map = new maplibregl.Map({
+      container: elId,
+      style: BASEMAPS.dark.url,
+      center: [center.lng, center.lat],
+      zoom: zoom,
+      pitch: 60,
+      bearing: -15,
+      attributionControl: true
     });
 
-    if (schedule) renderSchedule(schedule);
+    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-left');
+
+    map.on('load', () => {
+      // 3D Buildings layer (Carto uses openmaptiles-like structure sometimes)
+      try {
+        map.addLayer({
+          'id': '3d-buildings',
+          'source': 'carto', // This might need to match the source defined in the style.json
+          'source-layer': 'building',
+          'filter': ['==', 'extrude', 'true'],
+          'type': 'fill-extrusion',
+          'minzoom': 14,
+          'paint': {
+            'fill-extrusion-color': '#181d52',
+            'fill-extrusion-height': ['get', 'height'],
+            'fill-extrusion-base': ['get', 'min_height'],
+            'fill-extrusion-opacity': 0.8
+          }
+        });
+      } catch (e) {}
+      
+      map.addSource('closures', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({
+        id: 'closures-layer', type: 'line', source: 'closures',
+        paint: { 'line-color': '#ff6b6b', 'line-width': 4, 'line-opacity': 0.85, 'line-dasharray': [2, 2] }
+      });
+
+      map.addSource('perimeters', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+      map.addLayer({
+        id: 'perimeters-layer', type: 'fill', source: 'perimeters',
+        paint: { 'fill-color': '#ffb43c', 'fill-opacity': 0.08, 'fill-outline-color': '#ffb43c' }
+      });
+
+      if (schedule) renderSchedule(schedule);
+    });
+
+    map.on('contextmenu', (e) => setMeetingPoint(e.lngLat));
+
     return map;
   }
 
@@ -146,52 +137,64 @@
     nextInfo = info || {};
     if (lastSchedule) renderSchedule(lastSchedule);
   }
+  
+  function clearMarkers(arr) {
+    arr.forEach(m => m.remove());
+    arr.length = 0;
+  }
 
   function renderSchedule(schedule, activeLaunchPointId) {
     if (!map) return;
     lastSchedule = schedule;
-    layerLaunch.clearLayers();
-    layerClosures.clearLayers();
-    layerPerimeters.clearLayers();
-    layerPois.clearLayers();
-    layerViewpoints.clearLayers();
-    layerFesta.clearLayers();
-    layerPalmeres.clearLayers();
+    
+    clearMarkers(layerLaunch);
+    clearMarkers(layerPois);
+    clearMarkers(layerViewpoints);
+    clearMarkers(layerFesta);
+    clearMarkers(layerPalmeres);
 
     launchMarkers = {};
     (schedule.launch_points || []).forEach((p) => {
-      const m = L.marker([p.lat, p.lng], { icon: launchIcon(p.id === activeLaunchPointId) });
+      const el = launchIcon(p.id === activeLaunchPointId);
+      const m = new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat]);
       launchMarkers[p.id] = m;
+      
       const lang = window.I18N ? I18N.get() : 'va';
       const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
       const nx = nextInfo[p.id];
       const pending = p.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
-      m.bindPopup('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
+      
+      const popup = new maplibregl.Popup({ offset: 15, className: 'elx-popup' })
+        .setHTML('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
         (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + pending + dirLink(p.lat, p.lng));
-      m.addTo(layerLaunch);
+      
+      m.setPopup(popup);
+      if (layerVisibility.launch) m.addTo(map);
+      layerLaunch.push(m);
     });
 
-    (schedule.closures || []).forEach((c) => {
-      if (!c.path || c.path.length < 2) return;
-      L.polyline(c.path, { color: '#ff6b6b', weight: 4, opacity: 0.85, dashArray: '2 8' })
-        .bindPopup((window.I18N ? I18N.t('map.legend.closure') : 'Carrer tallat'))
-        .addTo(layerClosures);
-    });
+    if (map.isStyleLoaded()) {
+      const closureFeatures = (schedule.closures || []).map(c => ({
+        type: 'Feature', geometry: { type: 'LineString', coordinates: c.path.map(p => [p[1], p[0]]) }
+      }));
+      map.getSource('closures').setData({ type: 'FeatureCollection', features: closureFeatures });
 
-    (schedule.perimeters || []).forEach((pm) => {
-      if (!pm.polygon || pm.polygon.length < 3) return;
-      L.polygon(pm.polygon, { color: '#ffb43c', weight: 2, fillOpacity: 0.08 })
-        .bindPopup((window.I18N ? I18N.t('map.legend.perimeter') : 'Perímetre de seguretat'))
-        .addTo(layerPerimeters);
-    });
+      const pmFeatures = (schedule.perimeters || []).map(pm => ({
+        type: 'Feature', geometry: { type: 'Polygon', coordinates: [pm.polygon.map(p => [p[1], p[0]])] }
+      }));
+      map.getSource('perimeters').setData({ type: 'FeatureCollection', features: pmFeatures });
+    }
 
     (schedule.viewpoints || []).forEach((v) => {
       const lang = window.I18N ? I18N.get() : 'va';
       const name = lang === 'cas' ? (v.name_cas || v.name_va) : (v.name_va || v.name_cas);
       const desc = lang === 'cas' ? (v.desc_cas || '') : (v.desc_va || '');
-      L.marker([v.lat, v.lng], { icon: viewIcon() })
-        .bindPopup('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + dirLink(v.lat, v.lng))
-        .addTo(layerViewpoints);
+      
+      const m = new maplibregl.Marker({ element: viewIcon() }).setLngLat([v.lng, v.lat]);
+      const popup = new maplibregl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + dirLink(v.lat, v.lng));
+      m.setPopup(popup);
+      if (layerVisibility.viewpoints) m.addTo(map);
+      layerViewpoints.push(m);
     });
 
     (schedule.festa_pois || []).forEach((f) => {
@@ -199,25 +202,33 @@
       const name = lang === 'cas' ? (f.name_cas || f.name_va) : (f.name_va || f.name_cas);
       const desc = lang === 'cas' ? (f.desc_cas || '') : (f.desc_va || '');
       const pending = f.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
-      L.marker([f.lat, f.lng], { icon: festaIcon() })
-        .bindPopup('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + pending + dirLink(f.lat, f.lng))
-        .addTo(layerFesta);
+      
+      const m = new maplibregl.Marker({ element: festaIcon() }).setLngLat([f.lng, f.lat]);
+      const popup = new maplibregl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + pending + dirLink(f.lat, f.lng));
+      m.setPopup(popup);
+      if (layerVisibility.festa) m.addTo(map);
+      layerFesta.push(m);
     });
 
     const cpNote = window.I18N && schedule['citizen_note_' + (I18N.get() === 'cas' ? 'cas' : 'va')];
     (schedule.citizen_palmeras || []).forEach((c) => {
-      L.marker([c.lat, c.lng], { icon: cpalmIcon() })
-        .bindPopup('<strong>' + esc(c.name) + '</strong>' + (c.time ? ' \u00B7 ' + esc(c.time) : '') +
-          (cpNote ? '<br><span class="pp-pending">' + esc(cpNote) + '</span>' : ''))
-        .addTo(layerPalmeres);
+      const m = new maplibregl.Marker({ element: cpalmIcon() }).setLngLat([c.lng, c.lat]);
+      const popup = new maplibregl.Popup({ offset: 11 }).setHTML('<strong>' + esc(c.name) + '</strong>' + (c.time ? ' \u00B7 ' + esc(c.time) : '') +
+          (cpNote ? '<br><span class="pp-pending">' + esc(cpNote) + '</span>' : ''));
+      m.setPopup(popup);
+      if (layerVisibility.palmeres) m.addTo(map);
+      layerPalmeres.push(m);
     });
 
     (schedule.pois || []).forEach((poi) => {
       const lang = window.I18N ? I18N.get() : 'va';
       const name = lang === 'cas' ? (poi.name_cas || poi.name_va) : (poi.name_va || poi.name_cas);
-      L.marker([poi.lat, poi.lng], { icon: poiIcon(poi.type) })
-        .bindPopup('<strong>' + esc(name || poi.type) + '</strong>' + dirLink(poi.lat, poi.lng))
-        .addTo(layerPois);
+      
+      const m = new maplibregl.Marker({ element: poiIcon(poi.type) }).setLngLat([poi.lng, poi.lat]);
+      const popup = new maplibregl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name || poi.type) + '</strong>' + dirLink(poi.lat, poi.lng));
+      m.setPopup(popup);
+      if (layerVisibility.pois) m.addTo(map);
+      layerPois.push(m);
     });
   }
 
@@ -228,30 +239,30 @@
   // ---- Punt de trobada + compartir ----
   function toast(msg) { if (window.ElxApp && ElxApp.toast) ElxApp.toast(msg); }
 
-  function setMeetingPoint(latlng) {
+  function setMeetingPoint(lngLat) {
     if (!map) return;
     const label = window.I18N ? I18N.t('map.meeting_point') : 'Punt de trobada';
     if (!meetingMarker) {
-      meetingMarker = L.marker(latlng, { icon: meetingIcon(), draggable: true, zIndexOffset: 900 }).addTo(map);
-      meetingMarker.on('click', shareMeeting);
+      meetingMarker = new maplibregl.Marker({ element: meetingIcon(), draggable: true })
+        .setLngLat([lngLat.lng, lngLat.lat]).addTo(map);
+      meetingMarker.getElement().addEventListener('click', shareMeeting);
     } else {
-      meetingMarker.setLatLng(latlng);
+      meetingMarker.setLngLat([lngLat.lng, lngLat.lat]);
     }
-    meetingMarker.bindTooltip(label, { direction: 'top', offset: [8, -26] });
     toast(window.I18N ? I18N.t('map.meeting_set') : '');
   }
 
   async function shareMeeting() {
     const src = meetingMarker || userMarker;
     if (!src) { toast(window.I18N ? I18N.t('map.share_no_point') : ''); return; }
-    const p = src.getLatLng();
+    const p = src.getLngLat();
     const url = 'https://maps.google.com/?q=' + p.lat.toFixed(5) + ',' + p.lng.toFixed(5);
     const text = (window.I18N ? I18N.t('map.meeting_text') : '') + ' ' + url;
     try {
       if (navigator.share) { await navigator.share({ title: 'Elx al Cel', text }); return; }
       throw new Error('no-share');
     } catch (e) {
-      if (e && e.name === 'AbortError') return; // el usuario cerró el diálogo
+      if (e && e.name === 'AbortError') return;
       try {
         await navigator.clipboard.writeText(text);
         toast(window.I18N ? I18N.t('map.shared_copied') : url);
@@ -268,16 +279,9 @@
         const { latitude, longitude, accuracy } = pos.coords;
         if (map) {
           if (!userMarker) {
-            userMarker = L.marker([latitude, longitude], { icon: userIcon(), zIndexOffset: 1000 }).addTo(map);
+            userMarker = new maplibregl.Marker({ element: userIcon() }).setLngLat([longitude, latitude]).addTo(map);
           } else {
-            userMarker.setLatLng([latitude, longitude]);
-          }
-          if (accuracy) {
-            if (!userAccuracyCircle) {
-              userAccuracyCircle = L.circle([latitude, longitude], { radius: accuracy, color: '#5ec8ff', weight: 1, fillOpacity: 0.08 }).addTo(map);
-            } else {
-              userAccuracyCircle.setLatLng([latitude, longitude]).setRadius(accuracy);
-            }
+            userMarker.setLngLat([longitude, latitude]);
           }
         }
         if (onUpdate) onUpdate({ lat: latitude, lng: longitude, accuracy });
@@ -291,35 +295,36 @@
   }
   function centerOnUser(zoom) {
     if (!map) return;
-    if (userMarker) { map.flyTo(userMarker.getLatLng(), zoom || 17, { duration: 0.6 }); return; }
-    // Aún sin posición: la pedimos una vez y volamos en cuanto llegue
+    if (userMarker) { map.flyTo({ center: userMarker.getLngLat(), zoom: zoom || 17, duration: 800 }); return; }
     if (!('geolocation' in navigator)) { toast(window.I18N ? I18N.t('map.no_gps') : ''); return; }
     toast(window.I18N ? I18N.t('map.locating') : '');
     navigator.geolocation.getCurrentPosition(
-      (p) => { map.flyTo([p.coords.latitude, p.coords.longitude], zoom || 17, { duration: 0.6 }); },
+      (p) => { map.flyTo({ center: [p.coords.longitude, p.coords.latitude], zoom: zoom || 17, duration: 800 }); },
       (err) => { toast(window.I18N ? I18N.t(err && err.code === 1 ? 'map.gps_denied' : 'map.no_gps') : ''); },
       { enableHighAccuracy: true, timeout: 10000 }
     );
   }
-  function flyTo(lat, lng, zoom) { if (map) map.flyTo([lat, lng], zoom || 17, { duration: 0.8 }); }
+  function flyTo(lat, lng, zoom) { if (map) map.flyTo({ center: [lng, lat], zoom: zoom || 17, duration: 1000 }); }
 
   function renderMyPalm(p) {
     if (!map) return;
-    if (myPalmMarker) { map.removeLayer(myPalmMarker); myPalmMarker = null; }
+    if (myPalmMarker) { myPalmMarker.remove(); myPalmMarker = null; }
     if (!p) return;
-    myPalmMarker = L.marker([p.lat, p.lng], { icon: myPalmIcon(), zIndexOffset: 1100 }).addTo(map);
+    myPalmMarker = new maplibregl.Marker({ element: myPalmIcon() }).setLngLat([p.lng, p.lat]).addTo(map);
     const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
     const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
-    myPalmMarker.bindPopup(
+    
+    const popup = new maplibregl.Popup({ offset: 19 }).setHTML(
       '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>13/08 \u00B7 ' + esc(p.time) +
-      '<br><button class="mp-pop-share tl-map-btn">' + shareLbl + '</button> ' +
-      '<button class="mp-pop-del pp-dir-btn">' + delLbl + '</button>'
+      '<br><button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share()">' + shareLbl + '</button> ' +
+      '<button class="mp-pop-del pp-dir-btn" onclick="if(window.MyPalm) MyPalm.clear(); window.ElxMap.renderMyPalm(null);">' + delLbl + '</button>'
     );
+    myPalmMarker.setPopup(popup);
   }
   function focusMyPalm() {
     if (myPalmMarker && map) {
-      map.flyTo(myPalmMarker.getLatLng(), 16, { duration: 0.7 });
-      setTimeout(() => { try { myPalmMarker.openPopup(); } catch (e) {} }, 800);
+      map.flyTo({ center: myPalmMarker.getLngLat(), zoom: 16, duration: 900 });
+      setTimeout(() => { if (myPalmMarker.getPopup()) myPalmMarker.togglePopup(); }, 1000);
     }
   }
   function getCenter() {
@@ -328,45 +333,42 @@
     return { lat: c.lat, lng: c.lng };
   }
 
-  function setBasemap(key) {
-    if (!map || !BASEMAPS[key]) return;
-    if (baseLayer) map.removeLayer(baseLayer);
-    const b = BASEMAPS[key];
-    baseLayer = L.tileLayer(b.url, {
-      attribution: b.attr, maxZoom: b.maxZoom, minZoom: 3,
-      subdomains: b.subdomains || 'abc'
-    }).addTo(map);
-    currentBase = key;
-    localStorage.setItem('elx_basemap', key);
-    document.body.classList.toggle('map-light', key === 'detail');
-  }
+  function setBasemap(key) { }
   function getBasemap() { return currentBase; }
 
   function focusLaunchPoint(id) {
     const m = launchMarkers[id];
     if (!m || !map) return;
-    const ll = m.getLatLng();
-    map.flyTo(ll, 17, { duration: 0.8 });
-    setTimeout(() => { try { m.openPopup(); } catch (e) {} }, 900);
+    const ll = m.getLngLat();
+    map.flyTo({ center: ll, zoom: 17, duration: 1000 });
+    setTimeout(() => { if (m.getPopup()) m.togglePopup(); }, 1100);
   }
 
   function layerByKey(key) {
-    return { launch: layerLaunch, closures: layerClosures, perimeters: layerPerimeters,
-             pois: layerPois, viewpoints: layerViewpoints, festa: layerFesta, palmeres: layerPalmeres }[key];
+    return { launch: layerLaunch, pois: layerPois, viewpoints: layerViewpoints, festa: layerFesta, palmeres: layerPalmeres }[key];
   }
   function setLayerVisible(key, on) {
-    const l = layerByKey(key);
-    if (!l || !map) return;
-    if (on) { if (!map.hasLayer(l)) map.addLayer(l); }
-    else { if (map.hasLayer(l)) map.removeLayer(l); }
+    layerVisibility[key] = on;
+    if (key === 'closures' || key === 'perimeters') {
+      if (map && map.getLayer(key + '-layer')) {
+        map.setLayoutProperty(key + '-layer', 'visibility', on ? 'visible' : 'none');
+      }
+      return;
+    }
+    const arr = layerByKey(key);
+    if (!arr || !map) return;
+    arr.forEach(m => {
+      if (on) m.addTo(map);
+      else m.remove();
+    });
   }
-  function refresh() { if (map) setTimeout(() => map.invalidateSize(), 60); }
+  function refresh() { if (map) setTimeout(() => map.resize(), 60); }
 
   window.ElxMap = {
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible, setBasemap, getBasemap,
     renderMyPalm, focusMyPalm, getCenter,
-    hasLeaflet
+    hasLeaflet: hasMapLibre // alias for app.js
   };
 })();

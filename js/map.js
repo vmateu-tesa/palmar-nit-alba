@@ -1,13 +1,13 @@
 /* =====================================================================
-   Elx al Cel — Mapa de orientación (MapLibre GL JS 3D)
+   Elx al Cel — Mapa de orientación (Mapbox GL JS 3D)
    Capas: puntos de llançament, cortes de calle, perimetros de seguridad,
    puntos de asistencia (POIs) y ubicacion del usuario en vivo.
    ===================================================================== */
 (function () {
   const BASEMAPS = {
-    dark: { url: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json' }
+    standard: { url: 'mapbox://styles/mapbox/standard' }
   };
-  let currentBase = 'dark';
+  let currentBase = 'standard';
 
   const POI_GLYPH = {
     first_aid: '✚', info: 'i', water: '💧', accessible: '♿', exit: '➜'
@@ -19,13 +19,13 @@
   let myPalmMarker = null;
   let launchMarkers = {};
   
-  // Layer arrays (MapLibre doesn't have LayerGroups for markers, we keep them in arrays)
+  // Layer arrays (Mapbox doesn't have LayerGroups for markers, we keep them in arrays)
   let layerLaunch = [], layerClosures = [], layerPerimeters = [], layerPois = [], layerViewpoints = [], layerFesta = [], layerPalmeres = [];
 
   // Visibility state
   let layerVisibility = { launch: true, closures: true, perimeters: true, pois: true, viewpoints: true, festa: true, palmeres: true };
 
-  function hasMapLibre() { return typeof window.maplibregl !== 'undefined'; }
+  function hasMapbox() { return typeof window.mapboxgl !== 'undefined'; }
 
   function dirLink(lat, lng) {
     const label = window.I18N ? I18N.t('map.directions') : 'Cómo llegar';
@@ -77,14 +77,20 @@
   }
 
   function init(elId, schedule) {
-    if (!hasMapLibre()) { fallback(elId, "No s'ha pogut carregar el mapa. La resta de l'eina funciona igual."); return null; }
+    if (!hasMapbox()) { fallback(elId, "No s'ha pogut carregar el mapa. La resta de l'eina funciona igual."); return null; }
+    
+    // User's provided Mapbox token
+    // PLEASE NOTE: GitHub blocked pushing the 'sk...' secret token for security reasons.
+    // Please provide a PUBLIC token ('pk...') from your Mapbox account.
+    mapboxgl.accessToken = 'pk.YOUR_MAPBOX_PUBLIC_TOKEN_HERE';
+    
     const ev = (schedule && schedule.event) || {};
     const center = ev.center || { lat: 38.2699, lng: -0.7126 };
     const zoom = (ev.zoom && ev.zoom.default) || 15;
 
-    map = new maplibregl.Map({
+    map = new mapboxgl.Map({
       container: elId,
-      style: BASEMAPS.dark.url,
+      style: BASEMAPS.standard.url,
       center: [center.lng, center.lat],
       zoom: zoom,
       pitch: 60,
@@ -92,27 +98,15 @@
       attributionControl: true
     });
 
-    map.addControl(new maplibregl.NavigationControl({ showCompass: true }), 'bottom-left');
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: true, showZoom: true, visualizePitch: true }), 'bottom-left');
+
+    map.on('style.load', () => {
+      // Configure Mapbox Standard style to use the "night" theme for fireworks
+      map.setConfigProperty('basemap', 'lightPreset', 'night');
+    });
 
     map.on('load', () => {
-      // 3D Buildings layer (Carto uses openmaptiles-like structure sometimes)
-      try {
-        map.addLayer({
-          'id': '3d-buildings',
-          'source': 'carto', // This might need to match the source defined in the style.json
-          'source-layer': 'building',
-          'filter': ['==', 'extrude', 'true'],
-          'type': 'fill-extrusion',
-          'minzoom': 14,
-          'paint': {
-            'fill-extrusion-color': '#181d52',
-            'fill-extrusion-height': ['get', 'height'],
-            'fill-extrusion-base': ['get', 'min_height'],
-            'fill-extrusion-opacity': 0.8
-          }
-        });
-      } catch (e) {}
-      
+      // We manage polygons/lines here, markers elsewhere
       map.addSource('closures', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
       map.addLayer({
         id: 'closures-layer', type: 'line', source: 'closures',
@@ -156,7 +150,7 @@
     launchMarkers = {};
     (schedule.launch_points || []).forEach((p) => {
       const el = launchIcon(p.id === activeLaunchPointId);
-      const m = new maplibregl.Marker({ element: el }).setLngLat([p.lng, p.lat]);
+      const m = new mapboxgl.Marker({ element: el }).setLngLat([p.lng, p.lat]);
       launchMarkers[p.id] = m;
       
       const lang = window.I18N ? I18N.get() : 'va';
@@ -164,7 +158,7 @@
       const nx = nextInfo[p.id];
       const pending = p.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
       
-      const popup = new maplibregl.Popup({ offset: 15, className: 'elx-popup' })
+      const popup = new mapboxgl.Popup({ offset: 15, className: 'elx-popup' })
         .setHTML('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
         (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + pending + dirLink(p.lat, p.lng));
       
@@ -190,8 +184,8 @@
       const name = lang === 'cas' ? (v.name_cas || v.name_va) : (v.name_va || v.name_cas);
       const desc = lang === 'cas' ? (v.desc_cas || '') : (v.desc_va || '');
       
-      const m = new maplibregl.Marker({ element: viewIcon() }).setLngLat([v.lng, v.lat]);
-      const popup = new maplibregl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + dirLink(v.lat, v.lng));
+      const m = new mapboxgl.Marker({ element: viewIcon() }).setLngLat([v.lng, v.lat]);
+      const popup = new mapboxgl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + dirLink(v.lat, v.lng));
       m.setPopup(popup);
       if (layerVisibility.viewpoints) m.addTo(map);
       layerViewpoints.push(m);
@@ -203,8 +197,8 @@
       const desc = lang === 'cas' ? (f.desc_cas || '') : (f.desc_va || '');
       const pending = f.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
       
-      const m = new maplibregl.Marker({ element: festaIcon() }).setLngLat([f.lng, f.lat]);
-      const popup = new maplibregl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + pending + dirLink(f.lat, f.lng));
+      const m = new mapboxgl.Marker({ element: festaIcon() }).setLngLat([f.lng, f.lat]);
+      const popup = new mapboxgl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + pending + dirLink(f.lat, f.lng));
       m.setPopup(popup);
       if (layerVisibility.festa) m.addTo(map);
       layerFesta.push(m);
@@ -212,8 +206,8 @@
 
     const cpNote = window.I18N && schedule['citizen_note_' + (I18N.get() === 'cas' ? 'cas' : 'va')];
     (schedule.citizen_palmeras || []).forEach((c) => {
-      const m = new maplibregl.Marker({ element: cpalmIcon() }).setLngLat([c.lng, c.lat]);
-      const popup = new maplibregl.Popup({ offset: 11 }).setHTML('<strong>' + esc(c.name) + '</strong>' + (c.time ? ' \u00B7 ' + esc(c.time) : '') +
+      const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c.lng, c.lat]);
+      const popup = new mapboxgl.Popup({ offset: 11 }).setHTML('<strong>' + esc(c.name) + '</strong>' + (c.time ? ' \u00B7 ' + esc(c.time) : '') +
           (cpNote ? '<br><span class="pp-pending">' + esc(cpNote) + '</span>' : ''));
       m.setPopup(popup);
       if (layerVisibility.palmeres) m.addTo(map);
@@ -224,8 +218,8 @@
       const lang = window.I18N ? I18N.get() : 'va';
       const name = lang === 'cas' ? (poi.name_cas || poi.name_va) : (poi.name_va || poi.name_cas);
       
-      const m = new maplibregl.Marker({ element: poiIcon(poi.type) }).setLngLat([poi.lng, poi.lat]);
-      const popup = new maplibregl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name || poi.type) + '</strong>' + dirLink(poi.lat, poi.lng));
+      const m = new mapboxgl.Marker({ element: poiIcon(poi.type) }).setLngLat([poi.lng, poi.lat]);
+      const popup = new mapboxgl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name || poi.type) + '</strong>' + dirLink(poi.lat, poi.lng));
       m.setPopup(popup);
       if (layerVisibility.pois) m.addTo(map);
       layerPois.push(m);
@@ -243,7 +237,7 @@
     if (!map) return;
     const label = window.I18N ? I18N.t('map.meeting_point') : 'Punt de trobada';
     if (!meetingMarker) {
-      meetingMarker = new maplibregl.Marker({ element: meetingIcon(), draggable: true })
+      meetingMarker = new mapboxgl.Marker({ element: meetingIcon(), draggable: true })
         .setLngLat([lngLat.lng, lngLat.lat]).addTo(map);
       meetingMarker.getElement().addEventListener('click', shareMeeting);
     } else {
@@ -279,7 +273,7 @@
         const { latitude, longitude, accuracy } = pos.coords;
         if (map) {
           if (!userMarker) {
-            userMarker = new maplibregl.Marker({ element: userIcon() }).setLngLat([longitude, latitude]).addTo(map);
+            userMarker = new mapboxgl.Marker({ element: userIcon() }).setLngLat([longitude, latitude]).addTo(map);
           } else {
             userMarker.setLngLat([longitude, latitude]);
           }
@@ -310,11 +304,11 @@
     if (!map) return;
     if (myPalmMarker) { myPalmMarker.remove(); myPalmMarker = null; }
     if (!p) return;
-    myPalmMarker = new maplibregl.Marker({ element: myPalmIcon() }).setLngLat([p.lng, p.lat]).addTo(map);
+    myPalmMarker = new mapboxgl.Marker({ element: myPalmIcon() }).setLngLat([p.lng, p.lat]).addTo(map);
     const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
     const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
     
-    const popup = new maplibregl.Popup({ offset: 19 }).setHTML(
+    const popup = new mapboxgl.Popup({ offset: 19 }).setHTML(
       '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>13/08 \u00B7 ' + esc(p.time) +
       '<br><button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share()">' + shareLbl + '</button> ' +
       '<button class="mp-pop-del pp-dir-btn" onclick="if(window.MyPalm) MyPalm.clear(); window.ElxMap.renderMyPalm(null);">' + delLbl + '</button>'
@@ -369,6 +363,6 @@
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible, setBasemap, getBasemap,
     renderMyPalm, focusMyPalm, getCenter,
-    hasLeaflet: hasMapLibre // alias for app.js
+    hasLeaflet: hasMapbox // alias for app.js
   };
 })();

@@ -7,7 +7,6 @@
   const BASEMAPS = {
     standard: { url: 'mapbox://styles/mapbox/standard' }
   };
-  let currentBase = 'standard';
 
   const POI_GLYPH = {
     first_aid: '✚', info: 'i', water: '💧', accessible: '♿', exit: '➜'
@@ -521,9 +520,6 @@
     return { lat: c.lat, lng: c.lng };
   }
 
-  function setBasemap(key) { }
-  function getBasemap() { return currentBase; }
-
   function focusLaunchPoint(id) {
     const m = launchMarkers[id];
     if (!m || !map) return;
@@ -555,7 +551,7 @@
   window.ElxMap = {
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
-    setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible, setBasemap, getBasemap,
+    setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
     renderMyPalm, focusMyPalm, getCenter,
     playFirework, closeFirework,
     hasLeaflet: hasMapbox // alias for app.js

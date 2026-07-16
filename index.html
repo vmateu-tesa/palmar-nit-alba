@@ -12,21 +12,21 @@
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
   <link rel="apple-touch-icon" href="icons/icon.svg" />
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=23" />
+  <link rel="stylesheet" href="css/styles.css?v=24" />
 
   <script defer src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
-  <script defer src="js/clock.js?v=23"></script>
-  <script defer src="js/config.js?v=23"></script>
-  <script defer src="js/i18n.js?v=23"></script>
-  <script defer src="js/map.js?v=23"></script>
-  <script defer src="js/ar.js?v=23"></script>
-  <script defer src="js/ar-camera.js?v=23"></script>
-  <script defer src="js/timeline.js?v=23"></script>
-  <script defer src="js/data.js?v=23"></script>
-  <script defer src="js/prefetch.js?v=23"></script>
-  <script defer src="js/alerts.js?v=23"></script>
-  <script defer src="js/mypalm.js?v=23"></script>
-  <script defer src="js/app.js?v=23"></script>
+  <script defer src="js/clock.js?v=24"></script>
+  <script defer src="js/config.js?v=24"></script>
+  <script defer src="js/i18n.js?v=24"></script>
+  <script defer src="js/map.js?v=24"></script>
+  <script defer src="js/ar.js?v=24"></script>
+  <script defer src="js/ar-camera.js?v=24"></script>
+  <script defer src="js/timeline.js?v=24"></script>
+  <script defer src="js/data.js?v=24"></script>
+  <script defer src="js/prefetch.js?v=24"></script>
+  <script defer src="js/alerts.js?v=24"></script>
+  <script defer src="js/mypalm.js?v=24"></script>
+  <script defer src="js/app.js?v=24"></script>
 </head>
 <body>
 
@@ -81,10 +81,6 @@
         <label><input type="checkbox" data-layer="viewpoints" checked> <span data-i18n="map.legend.viewpoint">Miradores</span></label>
         <label><input type="checkbox" data-layer="pois" checked> <span data-i18n="map.legend.pois">Puntos de asistencia</span></label>
         <label><input type="checkbox" data-layer="festa" checked> <span data-i18n="map.legend.festa">Actos de las fiestas</span></label>
-        <label><input type="checkbox" data-layer="palmeres" checked> <span data-i18n="map.legend.palmeres">Palmeras ciudadanas (ejemplo)</span></label>
-        <strong data-i18n="map.base">Fondo del mapa</strong>
-        <label><input type="radio" name="basemap" value="detail"> <span data-i18n="map.base_detail">Detallado</span></label>
-        <label><input type="radio" name="basemap" value="dark"> <span data-i18n="map.base_dark">Nocturno</span></label>
       </div>
       <div class="map-legend">
         <span><i class="lg-dot lg-launch"></i><span data-i18n="map.legend.launch">Punt de llançament oficial</span></span>
@@ -271,17 +267,18 @@
     <div class="welcome-card mypalm-card">
       <h2 data-i18n="mypalm.title">Mi palmera de foc</h2>
       <p class="welcome-sub" data-i18n="mypalm.sub">Dedica una palmera simbólica y compártela</p>
+      <label class="mp-label" for="mp-name" data-i18n="mypalm.name">Tu nombre</label>
+      <input id="mp-name" class="mp-input" maxlength="40" autocomplete="name">
       <label class="mp-label" for="mp-dedication" data-i18n="mypalm.dedication">Dedicatoria</label>
-      <input id="mp-dedication" class="mp-input" maxlength="60" autocomplete="off">
+      <input id="mp-dedication" class="mp-input" maxlength="80" autocomplete="off">
       <label class="mp-label" for="mp-time" data-i18n="mypalm.time">Hora de lanzamiento</label>
-      <select id="mp-time" class="mp-input">
-        <option>23:15</option><option selected>23:30</option><option>23:45</option><option>00:15</option>
-      </select>
+      <input id="mp-time" class="mp-input" type="time" value="23:30">
       <p class="mp-label" data-i18n="mypalm.where">¿Dónde la situamos?</p>
       <div class="mp-where">
         <button id="mp-gps" class="ar-chip is-active" data-i18n="mypalm.use_gps">En mi ubicación</button>
         <button id="mp-center" class="ar-chip" data-i18n="mypalm.use_center">En el centro del mapa</button>
       </div>
+      <p id="mp-loc-status" class="mp-loc-status"></p>
       <p class="mp-note" data-i18n="mypalm.real_note"></p>
       <div class="mp-actions">
         <button id="mp-cancel" class="ar-chip" data-i18n="mypalm.cancel">Cancelar</button>

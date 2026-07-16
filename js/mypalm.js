@@ -77,12 +77,14 @@
     x.fillText(window.I18N ? I18N.t('mypalm.card_title') : 'La meua palmera de foc', 540, 872);
     x.fillStyle = '#f5c542';
     x.font = '800 56px -apple-system, "Segoe UI", Roboto, sans-serif';
-    wrapText(x, '\u201C' + (p.dedication || '') + '\u201D', 540, 946, 920, 64);
+    const lines = wrapText(x, '\u201C' + (p.dedication || '') + '\u201D', 540, 946, 920, 64);
 
-    // Pie
+    // Pie (nombre + hora)
     x.fillStyle = '#9c99c0';
     x.font = '600 28px -apple-system, "Segoe UI", Roboto, sans-serif';
-    x.fillText('13/08 \u00B7 ' + p.time + '  \u00B7  Elx al Cel', 540, 1046);
+    const footY = 946 + lines * 64 + 36;
+    const footer = (p.name ? p.name + '  \u00B7  ' : '') + '13/08 \u00B7 ' + p.time + '  \u00B7  Elx al Cel';
+    x.fillText(footer, 540, Math.min(footY, 1046));
 
     return new Promise((res) => c.toBlob(res, 'image/png'));
   }

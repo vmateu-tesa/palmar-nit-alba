@@ -5,14 +5,14 @@
    · schedule.json      -> stale-while-revalidate (rápido + se actualiza en segundo plano)
    · status.json          -> siempre red, nunca caché persistente (avisos en vivo)
 */
-const VERSION = 'v23';
+const VERSION = 'v24';
 const CORE_CACHE = 'elx-core-' + VERSION;
 
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css?v=23',
+  './css/styles.css?v=24',
   './css/leaflet.css',
   './css/images/marker-icon.png',
   './css/images/marker-icon-2x.png',
@@ -20,20 +20,20 @@ const CORE = [
   './css/images/layers.png',
   './css/images/layers-2x.png',
   './js/leaflet.js',
-  './js/clock.js?v=23',
-  './js/config.js?v=23',
-  './js/i18n.js?v=23',
-  './js/map.js?v=23',
-  './js/ar.js?v=23',
-  './js/ar-camera.js?v=23',
-  './js/timeline.js?v=23',
-  './js/data.js?v=23',
-  './js/app.js?v=23',
-  './js/prefetch.js?v=23',
-  './js/alerts.js?v=23',
-  './js/mypalm.js?v=23',
+  './js/clock.js?v=24',
+  './js/config.js?v=24',
+  './js/i18n.js?v=24',
+  './js/map.js?v=24',
+  './js/ar.js?v=24',
+  './js/ar-camera.js?v=24',
+  './js/timeline.js?v=24',
+  './js/data.js?v=24',
+  './js/app.js?v=24',
+  './js/prefetch.js?v=24',
+  './js/alerts.js?v=24',
+  './js/mypalm.js?v=24',
   './icons/icon.svg',
-  './data/schedule.json?v=23'
+  './data/schedule.json?v=24'
 ];
 
 self.addEventListener('install', (e) => {

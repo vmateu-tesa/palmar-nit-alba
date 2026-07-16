@@ -205,7 +205,6 @@
     if (!window.ElxMap) return;
     try { ElxMap.init('map', schedule); } catch (e) { console.warn('[map]', e); return; }
     applyLayerPrefs();
-    initBasemap();
     let gpsToastShown = false;
     ElxMap.startUserLocation((pos, errCode) => {
       if (!pos && !gpsToastShown) {
@@ -244,12 +243,6 @@
       });
     });
   }
-  function initBasemap() {
-    $$('#layers-panel input[name="basemap"]').forEach((r) => {
-      r.checked = (r.value === (ElxMap.getBasemap ? ElxMap.getBasemap() : 'detail'));
-      r.addEventListener('change', () => { if (r.checked) ElxMap.setBasemap(r.value); });
-    });
-  }
   function applyLayerPrefs() {
     const prefs = loadLayerPrefs();
     Object.keys(prefs).forEach((k) => ElxMap.setLayerVisible(k, prefs[k] !== false));
@@ -286,20 +279,43 @@
     const fab = $('#mypalm-btn'), modal = $('#mypalm-modal');
     if (!fab || !modal) return;
     let whereMode = 'gps';
-    const gpsB = $('#mp-gps'), centerB = $('#mp-center');
+    let gpsPos = null, gpsLookedUp = false;
+    const gpsB = $('#mp-gps'), centerB = $('#mp-center'), statusEl = $('#mp-loc-status');
     const paintWhere = () => {
       if (gpsB) gpsB.classList.toggle('is-active', whereMode === 'gps');
       if (centerB) centerB.classList.toggle('is-active', whereMode === 'center');
     };
-    if (gpsB) gpsB.addEventListener('click', () => { whereMode = 'gps'; paintWhere(); });
+    if (gpsB) gpsB.addEventListener('click', () => { whereMode = 'gps'; paintWhere(); autoLocate(); });
     if (centerB) centerB.addEventListener('click', () => { whereMode = 'center'; paintWhere(); });
+
+    function autoLocate() {
+      if (!('geolocation' in navigator)) return;
+      if (statusEl) statusEl.textContent = I18N.t('mypalm.locating');
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          gpsPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          gpsLookedUp = true;
+          if (statusEl) statusEl.textContent = I18N.t('mypalm.located');
+        },
+        () => {
+          gpsLookedUp = true;
+          if (statusEl) statusEl.textContent = I18N.t('map.no_gps');
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
 
     fab.addEventListener('click', () => {
       const existing = MyPalm.get();
       if (existing) { ElxMap.focusMyPalm(); return; }
       const ded = $('#mp-dedication');
       if (ded) ded.placeholder = I18N.t('mypalm.ph');
+      const nameEl = $('#mp-name');
+      if (nameEl) nameEl.placeholder = I18N.t('mypalm.name_ph');
       modal.hidden = false;
+      gpsPos = null; gpsLookedUp = false;
+      whereMode = 'gps'; paintWhere();
+      autoLocate();
     });
     const close = () => { modal.hidden = true; };
     const cancel = $('#mp-cancel');
@@ -309,9 +325,10 @@
     if (saveBtn) saveBtn.addEventListener('click', () => {
       const ded = ($('#mp-dedication').value || '').trim();
       if (!ded) { toast(I18N.t('mypalm.need_ded')); return; }
+      const name = ($('#mp-name').value || '').trim();
       const time = $('#mp-time').value || '23:30';
       const finalize = (lat, lng) => {
-        const p = { dedication: ded, time, lat, lng, created: Date.now() };
+        const p = { name, dedication: ded, time, lat, lng, created: Date.now() };
         MyPalm.save(p);
         ElxMap.renderMyPalm(p);
         close();
@@ -319,7 +336,8 @@
         setTimeout(() => { ElxMap.focusMyPalm(); MyPalm.share(); }, 600);
       };
       const c = ElxMap.getCenter() || { lat: 38.2685, lng: -0.699 };
-      if (whereMode === 'gps' && 'geolocation' in navigator) {
+      if (whereMode === 'gps' && gpsPos) { finalize(gpsPos.lat, gpsPos.lng); return; }
+      if (whereMode === 'gps' && !gpsLookedUp && 'geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => finalize(pos.coords.latitude, pos.coords.longitude),
           () => finalize(c.lat, c.lng),

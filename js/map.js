@@ -80,7 +80,7 @@
     if (!hasMapbox()) { fallback(elId, "No s'ha pogut carregar el mapa. La resta de l'eina funciona igual."); return null; }
     
     // User's provided Mapbox token
-    mapboxgl.accessToken = 'pk.eyJ1Ijoidm1hdGV1IiwiYSI' + ':ImNrMjR6bnRmNjFmcDIzbm55aHRkeDZmYXMifQ.zumQNOFYrIh6fmpS5xxSVg';
+    mapboxgl.accessToken = 'pk.eyJ1Ijoidm1hdGV1IiwiYSI' + '6ImNrMjR6bnRmNjFmcDIzbm55aHRkeDZmYXMifQ.zumQNOFYrIh6fmpS5xxSVg';
     
     const ev = (schedule && schedule.event) || {};
     const center = ev.center || { lat: 38.2699, lng: -0.7126 };

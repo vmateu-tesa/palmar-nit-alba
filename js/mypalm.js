@@ -51,22 +51,28 @@
     x.font = '700 34px -apple-system, "Segoe UI", Roboto, sans-serif';
     x.fillText((window.I18N ? I18N.t('mypalm.card_kicker') : "NIT DE L'ALBÀ · ELX").toUpperCase(), 540, 96);
 
-    // Palmera de foc (trazos dorados con brillo)
+    // Palmera de foc (trazos con el estilo elegido, con brillo)
+    const style = window.FWStyles ? FWStyles.get(p.style) : null;
+    const colors = style ? style.colors : ['#f5c542', '#ffe9a8'];
     const cx = 540, cy = 470;
-    x.strokeStyle = '#f5c542'; x.lineCap = 'round';
-    x.shadowColor = '#f5c542'; x.shadowBlur = 26;
+    x.strokeStyle = colors[0]; x.lineCap = 'round';
+    x.shadowColor = colors[0]; x.shadowBlur = 26;
     x.lineWidth = 7;
     x.beginPath(); x.moveTo(cx, 790); x.lineTo(cx, cy); x.stroke(); // ascenso
+    let ci = 0;
     for (let a = -84; a <= 84; a += 12) {
       const rad = a * Math.PI / 180;
       const len = 250 + Math.random() * 50;
       const ex = cx + Math.sin(rad) * len;
       const ey = cy - Math.cos(rad) * len * 0.5 + Math.abs(a) * 2.1;
+      const col = colors[ci++ % colors.length];
       x.lineWidth = 4.5;
+      x.strokeStyle = col;
+      x.shadowColor = col;
       x.beginPath(); x.moveTo(cx, cy);
       x.quadraticCurveTo(cx + Math.sin(rad) * len * 0.55, cy - Math.cos(rad) * len * 0.85, ex, ey);
       x.stroke();
-      x.fillStyle = '#ffe9a8';
+      x.fillStyle = colors[(ci + 1) % colors.length];
       x.beginPath(); x.arc(ex, ey, 6.5, 0, 7); x.fill();
     }
     x.shadowBlur = 0;

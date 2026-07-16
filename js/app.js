@@ -305,6 +305,33 @@
       );
     }
 
+    // ---- Selector d'estil + previsualització animada ----
+    let selectedStyle = (window.FWStyles && FWStyles.list[0].id) || 'dorada';
+    let previewHandle = null;
+    const styleList = $('#mp-style-list'), previewCanvas = $('#mp-preview-canvas');
+    function startPreview() {
+      if (previewHandle) previewHandle.stop();
+      if (window.FWStyles && previewCanvas) previewHandle = FWStyles.renderPreview(previewCanvas, selectedStyle);
+    }
+    function stopPreview() { if (previewHandle) { previewHandle.stop(); previewHandle = null; } }
+    function paintStyles() {
+      if (!styleList) return;
+      $$('.mp-style-chip', styleList).forEach((b) => b.classList.toggle('is-active', b.dataset.style === selectedStyle));
+    }
+    if (styleList && window.FWStyles && !styleList.childElementCount) {
+      styleList.innerHTML = FWStyles.list.map((s) =>
+        '<button type="button" class="mp-style-chip" data-style="' + s.id + '" style="--sw:' + s.colors[0] + '">' +
+        '<span class="mp-style-dot"></span>' + esc(FWStyles.label(s)) + '</button>'
+      ).join('');
+      styleList.addEventListener('click', (e) => {
+        const b = e.target.closest('.mp-style-chip');
+        if (!b) return;
+        selectedStyle = b.dataset.style;
+        paintStyles();
+        startPreview();
+      });
+    }
+
     fab.addEventListener('click', () => {
       const existing = MyPalm.get();
       if (existing) { ElxMap.focusMyPalm(); return; }
@@ -316,8 +343,11 @@
       gpsPos = null; gpsLookedUp = false;
       whereMode = 'gps'; paintWhere();
       autoLocate();
+      selectedStyle = (window.FWStyles && FWStyles.list[0].id) || 'dorada';
+      paintStyles();
+      startPreview();
     });
-    const close = () => { modal.hidden = true; };
+    const close = () => { modal.hidden = true; stopPreview(); };
     const cancel = $('#mp-cancel');
     if (cancel) cancel.addEventListener('click', close);
 
@@ -328,7 +358,7 @@
       const name = ($('#mp-name').value || '').trim();
       const time = $('#mp-time').value || '23:30';
       const finalize = (lat, lng) => {
-        const p = { name, dedication: ded, time, lat, lng, created: Date.now() };
+        const p = { name, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() };
         MyPalm.save(p);
         ElxMap.renderMyPalm(p);
         close();

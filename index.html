@@ -12,21 +12,22 @@
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
   <link rel="apple-touch-icon" href="icons/icon.svg" />
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=24" />
+  <link rel="stylesheet" href="css/styles.css?v=25" />
 
   <script defer src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
-  <script defer src="js/clock.js?v=24"></script>
-  <script defer src="js/config.js?v=24"></script>
-  <script defer src="js/i18n.js?v=24"></script>
-  <script defer src="js/map.js?v=24"></script>
-  <script defer src="js/ar.js?v=24"></script>
-  <script defer src="js/ar-camera.js?v=24"></script>
-  <script defer src="js/timeline.js?v=24"></script>
-  <script defer src="js/data.js?v=24"></script>
-  <script defer src="js/prefetch.js?v=24"></script>
-  <script defer src="js/alerts.js?v=24"></script>
-  <script defer src="js/mypalm.js?v=24"></script>
-  <script defer src="js/app.js?v=24"></script>
+  <script defer src="js/clock.js?v=25"></script>
+  <script defer src="js/config.js?v=25"></script>
+  <script defer src="js/i18n.js?v=25"></script>
+  <script defer src="js/fw-styles.js?v=25"></script>
+  <script defer src="js/map.js?v=25"></script>
+  <script defer src="js/ar.js?v=25"></script>
+  <script defer src="js/ar-camera.js?v=25"></script>
+  <script defer src="js/timeline.js?v=25"></script>
+  <script defer src="js/data.js?v=25"></script>
+  <script defer src="js/prefetch.js?v=25"></script>
+  <script defer src="js/alerts.js?v=25"></script>
+  <script defer src="js/mypalm.js?v=25"></script>
+  <script defer src="js/app.js?v=25"></script>
 </head>
 <body>
 
@@ -279,6 +280,11 @@
         <button id="mp-center" class="ar-chip" data-i18n="mypalm.use_center">En el centro del mapa</button>
       </div>
       <p id="mp-loc-status" class="mp-loc-status"></p>
+      <p class="mp-label" data-i18n="mypalm.style">Estilo de tu palmera de foc</p>
+      <div id="mp-style-list" class="mp-style-list"></div>
+      <div class="mp-preview">
+        <canvas id="mp-preview-canvas" width="220" height="220"></canvas>
+      </div>
       <p class="mp-note" data-i18n="mypalm.real_note"></p>
       <div class="mp-actions">
         <button id="mp-cancel" class="ar-chip" data-i18n="mypalm.cancel">Cancelar</button>

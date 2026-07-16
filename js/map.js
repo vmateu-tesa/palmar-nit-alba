@@ -32,6 +32,31 @@
       lat.toFixed(5) + ',' + lng.toFixed(5) + '">' + label + ' \u2197</a>';
   }
 
+  // ---- Rumb i distancia des de la ubicacio de l'usuari (informatiu, per als popups) ----
+  const toRad = (d) => d * Math.PI / 180;
+  const toDeg = (r) => r * 180 / Math.PI;
+  const CARDINALS = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'];
+  function bearingTo(a, b) {
+    const phi1 = toRad(a.lat), phi2 = toRad(b.lat), dLambda = toRad(b.lng - a.lng);
+    const y = Math.sin(dLambda) * Math.cos(phi2);
+    const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(dLambda);
+    return (toDeg(Math.atan2(y, x)) + 360) % 360;
+  }
+  function distanceTo(a, b) {
+    const R = 6371000, dphi = toRad(b.lat - a.lat), dLambda = toRad(b.lng - a.lng);
+    const s = Math.sin(dphi / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLambda / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(s));
+  }
+  function bearingHtml(lat, lng) {
+    if (!userMarker) return '';
+    const u = userMarker.getLngLat();
+    const dist = distanceTo({ lat: u.lat, lng: u.lng }, { lat: lat, lng: lng });
+    const brg = bearingTo({ lat: u.lat, lng: u.lng }, { lat: lat, lng: lng });
+    const card = CARDINALS[Math.round(((brg % 360) + 360) % 360 / 45) % 8];
+    const distTxt = dist < 1000 ? Math.round(dist) + ' m' : (dist / 1000).toFixed(1) + ' km';
+    return '<br><span class="pp-bearing">🧭 ' + distTxt + ' al ' + card + '</span>';
+  }
+
   function esc(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -192,11 +217,15 @@
       const nx = nextInfo[p.id];
       const pending = p.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
       const fwLabel = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
-      const fwBtn = '<br><button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFirework(\'' + p.id + '\')">🎆 ' + esc(fwLabel) + '</button>';
+      const camLabel = window.I18N ? I18N.t('fw.camera_cta') : '';
+      const fwBtn = '<div class="pp-fw-actions">' +
+        '<button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFirework(\'' + p.id + '\')">🎆 ' + esc(fwLabel) + '</button>' +
+        '<button class="tl-map-btn fw-cta-btn" onclick="window.ARCamera && window.ARCamera.open({lat:' + p.lat + ',lng:' + p.lng + ',name:\'' + esc(p.name).replace(/'/g, '&#39;') + '\'})">📷 ' + esc(camLabel) + '</button>' +
+        '</div>';
 
       const popup = new mapboxgl.Popup({ offset: 15, className: 'elx-popup' })
         .setHTML('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
-        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + pending + dirLink(p.lat, p.lng) + fwBtn);
+        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + pending + bearingHtml(p.lat, p.lng) + dirLink(p.lat, p.lng) + fwBtn);
       
       m.setPopup(popup);
       if (layerVisibility.launch) m.addTo(map);
@@ -290,17 +319,10 @@
     return ring;
   }
 
-  const FW_KINDS = {
-    palmera: { apex: 130, riseMs: 1400, burstMs: 2600, petals: 42, spread: 46, colors: ['#ffe9a8', '#f5c542', '#ffb43c', '#fff6d8'] },
-    coheta: { apex: 55, riseMs: 700, burstMs: 1600, petals: 30, spread: 22, colors: ['#ff8a5c', '#ff6b6b', '#fff3c4', '#ffffff'] },
-    carcasses: { apex: 95, riseMs: 1100, burstMs: 2200, petals: 34, spread: 34, colors: ['#7ee8fa', '#ff6b6b', '#f5c542', '#ffffff', '#c9a6ff'] }
-  };
-  function classifyKind(p) {
-    const text = ((p.note_va || '') + ' ' + (p.note_cas || '') + ' ' + (p.name || '')).toLowerCase();
-    if (text.indexOf('palmera') !== -1) return 'palmera';
-    if (text.indexOf('cohet') !== -1) return 'coheta';
-    return 'carcasses';
-  }
+  // Preset únic i espectacular: no representa cap tipus real de pirotecnia
+  // (carcasses, cohetà...) — la varietat ve només del color, triat de forma
+  // determinista segons l'id del punt perquè cada palmera es veja diferent.
+  const FW_PRESET = { apex: 150, riseMs: 1300, burstMs: 2800, petals: 46, spread: 50 };
 
   let fwToken = 0, fwCard = null, fwPrevCam = null, fwHideTimer = null;
 
@@ -317,17 +339,26 @@
     if (!map || !lastSchedule || !map.getSource('fw-trail')) return;
     const p = (lastSchedule.launch_points || []).find((x) => x.id === id);
     if (!p) return;
-
-    const token = ++fwToken;
-    const kind = classifyKind(p);
-    const cfg = FW_KINDS[kind];
     const lang = window.I18N ? I18N.get() : 'cas';
     const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
-    const kindLabel = window.I18N ? I18N.t('fw.type.' + kind) : kind;
-    const heightLabel = window.I18N ? I18N.t('fw.height') : '';
+    const style = window.FWStyles ? FWStyles.hashPick(p.id) : { colors: ['#f5c542', '#ffe9a8'] };
+    showFirework({ lat: p.lat, lng: p.lng, name: p.name, note: note, safety: true }, style);
+  }
+
+  // Simulació amb estil lliure (usada també per "Mi palmera")
+  function playFireworkCustom(point, styleId) {
+    if (!map || !map.getSource('fw-trail')) return;
+    const style = window.FWStyles ? FWStyles.get(styleId) : { colors: ['#f5c542', '#ffe9a8'] };
+    showFirework({ lat: point.lat, lng: point.lng, name: point.name, note: '', safety: false }, style);
+  }
+
+  function showFirework(p, style) {
+    const token = ++fwToken;
     const safetyLabel = window.I18N ? I18N.t('fw.safety') : '';
     const closeLabel = window.I18N ? I18N.t('fw.close') : '';
     const camLabel = window.I18N ? I18N.t('fw.camera_cta') : '';
+    const kicker = window.I18N ? I18N.t('fw.kicker') : '🎆';
+    const styleLabel = window.FWStyles ? FWStyles.label(style) : '';
 
     fwPrevCam = { center: map.getCenter(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing() };
     map.flyTo({ center: [p.lng, p.lat], zoom: 17.3, pitch: 68, bearing: (map.getBearing() + 35) % 360, duration: 1100, essential: true });
@@ -336,10 +367,10 @@
     card.hidden = false;
     card.innerHTML =
       '<button class="fw-close" aria-label="' + esc(closeLabel) + '">✕</button>' +
-      '<div class="fw-kicker">🎆 ' + esc(kindLabel) + '</div>' +
+      '<div class="fw-kicker">' + esc(kicker) + (styleLabel ? ' · ' + esc(styleLabel) : '') + '</div>' +
       '<h3 class="fw-title">' + esc(p.name) + '</h3>' +
-      (note ? '<p class="fw-note">' + esc(note) + '</p>' : '') +
-      '<div class="fw-stats"><span>↑ ' + esc(heightLabel) + ' ~' + cfg.apex + ' m</span><span>' + esc(safetyLabel) + '</span></div>' +
+      (p.note ? '<p class="fw-note">' + esc(p.note) + '</p>' : '') +
+      (p.safety ? '<div class="fw-stats"><span>' + esc(safetyLabel) + '</span></div>' : '') +
       '<button class="fw-cam-btn">📷 ' + esc(camLabel) + '</button>';
     card.querySelector('.fw-close').addEventListener('click', () => closeFirework());
     card.querySelector('.fw-cam-btn').addEventListener('click', () => {
@@ -347,10 +378,10 @@
     });
     requestAnimationFrame(() => card.classList.add('is-in'));
 
-    setTimeout(() => { if (token === fwToken) runBurst(p, cfg, token); }, 200);
+    setTimeout(() => { if (token === fwToken) runBurst(p, FW_PRESET, style.colors, token); }, 200);
 
     if (fwHideTimer) clearTimeout(fwHideTimer);
-    fwHideTimer = setTimeout(() => { if (token === fwToken) closeFirework(); }, cfg.riseMs + cfg.burstMs + 4500);
+    fwHideTimer = setTimeout(() => { if (token === fwToken) closeFirework(); }, FW_PRESET.riseMs + FW_PRESET.burstMs + 4500);
   }
 
   function closeFirework() {
@@ -370,7 +401,7 @@
     fwPrevCam = null;
   }
 
-  function runBurst(p, cfg, token) {
+  function runBurst(p, cfg, colors, token) {
     if (!map || !map.getSource('fw-trail')) return;
     const trailSrc = map.getSource('fw-trail'), burstSrc = map.getSource('fw-burst');
     const trailRing = circleRing(p.lng, p.lat, 3, 8);
@@ -381,7 +412,7 @@
       const dist = cfg.spread * (0.55 + Math.random() * 0.55);
       const [plng, plat] = offsetLngLat(p.lng, p.lat, Math.cos(angle) * dist, Math.sin(angle) * dist);
       petals.push({
-        color: cfg.colors[i % cfg.colors.length],
+        color: colors[i % colors.length],
         apex: cfg.apex * (0.75 + Math.random() * 0.4),
         ring: circleRing(plng, plat, 2 + Math.random() * 2, 6)
       });
@@ -500,10 +531,15 @@
     myPalmMarker = new mapboxgl.Marker({ element: myPalmIcon() }).setLngLat([p.lng, p.lat]).addTo(map);
     const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
     const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
-    
+    const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
+    const nameLine = p.name ? esc(p.name) + ' \u00B7 ' : '';
+
     const popup = new mapboxgl.Popup({ offset: 19 }).setHTML(
-      '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>13/08 \u00B7 ' + esc(p.time) +
-      '<br><button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share()">' + shareLbl + '</button> ' +
+      '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>' + nameLine + '13/08 \u00B7 ' + esc(p.time) +
+      '<div class="pp-fw-actions">' +
+      '<button class="mp-pop-sim tl-map-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + p.lat + ',lng:' + p.lng + ',name:\'' + esc(p.dedication).replace(/'/g, '&#39;') + '\'},\'' + (p.style || 'dorada') + '\')">\uD83C\uDF86 ' + simLbl + '</button>' +
+      '</div>' +
+      '<button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share()">' + shareLbl + '</button> ' +
       '<button class="mp-pop-del pp-dir-btn" onclick="if(window.MyPalm) MyPalm.clear(); window.ElxMap.renderMyPalm(null);">' + delLbl + '</button>'
     );
     myPalmMarker.setPopup(popup);
@@ -553,7 +589,7 @@
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
     renderMyPalm, focusMyPalm, getCenter,
-    playFirework, closeFirework,
+    playFirework, playFireworkCustom, closeFirework,
     hasLeaflet: hasMapbox // alias for app.js
   };
 })();

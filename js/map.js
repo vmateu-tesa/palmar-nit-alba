@@ -117,7 +117,44 @@
         paint: { 'fill-color': '#ffb43c', 'fill-opacity': 0.08, 'fill-outline-color': '#ffb43c' }
       });
 
+      // Nota: 'fill-extrusion-opacity' no admet expressions basades en dades
+      // (a diferència de color/height), així que s'anima amb setPaintProperty
+      // per capa sencera en compte de per feature (vore runBurst).
+      map.addSource('fw-trail', { type: 'geojson', data: emptyFC() });
+      map.addLayer({
+        id: 'fw-trail-layer', type: 'fill-extrusion', source: 'fw-trail', slot: 'top',
+        paint: {
+          'fill-extrusion-color': ['coalesce', ['get', 'color'], '#fff6d8'],
+          'fill-extrusion-height': ['coalesce', ['get', 'h'], 0],
+          'fill-extrusion-base': 0,
+          'fill-extrusion-opacity': 0
+        }
+      });
+      map.addSource('fw-burst', { type: 'geojson', data: emptyFC() });
+      map.addLayer({
+        id: 'fw-burst-layer', type: 'fill-extrusion', source: 'fw-burst', slot: 'top',
+        paint: {
+          'fill-extrusion-color': ['coalesce', ['get', 'color'], '#f5c542'],
+          'fill-extrusion-height': ['coalesce', ['get', 'h'], 0],
+          'fill-extrusion-base': 0,
+          'fill-extrusion-opacity': 0
+        }
+      });
+
       if (schedule) renderSchedule(schedule);
+
+      ['closures-layer', 'perimeters-layer'].forEach((layerId) => {
+        map.on('mouseenter', layerId, () => { map.getCanvas().style.cursor = 'pointer'; });
+        map.on('mouseleave', layerId, () => { map.getCanvas().style.cursor = ''; });
+        map.on('click', layerId, (e) => {
+          const f = e.features && e.features[0];
+          const name = (f && f.properties && f.properties.name) || '';
+          const label = window.I18N ? I18N.t('map.unofficial_note') : '';
+          new mapboxgl.Popup({ offset: 6 }).setLngLat(e.lngLat)
+            .setHTML((name ? '<strong>' + esc(name) + '</strong><br>' : '') + '<span class="pp-pending">' + esc(label) + '</span>')
+            .addTo(map);
+        });
+      });
     });
 
     map.on('contextmenu', (e) => setMeetingPoint(e.lngLat));
@@ -155,10 +192,12 @@
       const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
       const nx = nextInfo[p.id];
       const pending = p.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
-      
+      const fwLabel = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
+      const fwBtn = '<br><button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFirework(\'' + p.id + '\')">🎆 ' + esc(fwLabel) + '</button>';
+
       const popup = new mapboxgl.Popup({ offset: 15, className: 'elx-popup' })
         .setHTML('<strong>' + esc(p.name) + '</strong>' + (note ? '<br>' + esc(note) : '') +
-        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + pending + dirLink(p.lat, p.lng));
+        (nx ? '<br><em class="pp-next">' + esc(nx) + '</em>' : '') + pending + dirLink(p.lat, p.lng) + fwBtn);
       
       m.setPopup(popup);
       if (layerVisibility.launch) m.addTo(map);
@@ -166,13 +205,18 @@
     });
 
     if (map.isStyleLoaded()) {
+      const lang = window.I18N ? I18N.get() : 'cas';
       const closureFeatures = (schedule.closures || []).map(c => ({
-        type: 'Feature', geometry: { type: 'LineString', coordinates: c.path.map(p => [p[1], p[0]]) }
+        type: 'Feature',
+        properties: { name: lang === 'cas' ? (c.name_cas || c.name_va) : (c.name_va || c.name_cas) },
+        geometry: { type: 'LineString', coordinates: c.path.map(p => [p[1], p[0]]) }
       }));
       map.getSource('closures').setData({ type: 'FeatureCollection', features: closureFeatures });
 
       const pmFeatures = (schedule.perimeters || []).map(pm => ({
-        type: 'Feature', geometry: { type: 'Polygon', coordinates: [pm.polygon.map(p => [p[1], p[0]])] }
+        type: 'Feature',
+        properties: { name: lang === 'cas' ? (pm.name_cas || pm.name_va) : (pm.name_va || pm.name_cas) },
+        geometry: { type: 'Polygon', coordinates: [pm.polygon.map(p => [p[1], p[0]])] }
       }));
       map.getSource('perimeters').setData({ type: 'FeatureCollection', features: pmFeatures });
     }
@@ -226,6 +270,158 @@
 
   function setActiveLaunchPoint(schedule, launchPointId) {
     if (schedule) renderSchedule(schedule, launchPointId);
+  }
+
+  // ---- Infografia 3D de la palmera de foc ----
+  function emptyFC() { return { type: 'FeatureCollection', features: [] }; }
+  function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+
+  function offsetLngLat(lng, lat, dxM, dyM) {
+    const R = 6378137;
+    const dLat = (dyM / R) * (180 / Math.PI);
+    const dLng = (dxM / (R * Math.cos(lat * Math.PI / 180))) * (180 / Math.PI);
+    return [lng + dLng, lat + dLat];
+  }
+  function circleRing(lng, lat, radiusM, sides) {
+    const ring = [];
+    for (let i = 0; i <= sides; i++) {
+      const a = (i / sides) * Math.PI * 2;
+      ring.push(offsetLngLat(lng, lat, Math.cos(a) * radiusM, Math.sin(a) * radiusM));
+    }
+    return ring;
+  }
+
+  const FW_KINDS = {
+    palmera: { apex: 130, riseMs: 1400, burstMs: 2600, petals: 42, spread: 46, colors: ['#ffe9a8', '#f5c542', '#ffb43c', '#fff6d8'] },
+    coheta: { apex: 55, riseMs: 700, burstMs: 1600, petals: 30, spread: 22, colors: ['#ff8a5c', '#ff6b6b', '#fff3c4', '#ffffff'] },
+    carcasses: { apex: 95, riseMs: 1100, burstMs: 2200, petals: 34, spread: 34, colors: ['#7ee8fa', '#ff6b6b', '#f5c542', '#ffffff', '#c9a6ff'] }
+  };
+  function classifyKind(p) {
+    const text = ((p.note_va || '') + ' ' + (p.note_cas || '') + ' ' + (p.name || '')).toLowerCase();
+    if (text.indexOf('palmera') !== -1) return 'palmera';
+    if (text.indexOf('cohet') !== -1) return 'coheta';
+    return 'carcasses';
+  }
+
+  let fwToken = 0, fwCard = null, fwPrevCam = null, fwHideTimer = null;
+
+  function ensureFwCard() {
+    if (fwCard) return fwCard;
+    fwCard = document.createElement('div');
+    fwCard.className = 'fw-card';
+    fwCard.hidden = true;
+    document.body.appendChild(fwCard);
+    return fwCard;
+  }
+
+  function playFirework(id) {
+    if (!map || !lastSchedule || !map.getSource('fw-trail')) return;
+    const p = (lastSchedule.launch_points || []).find((x) => x.id === id);
+    if (!p) return;
+
+    const token = ++fwToken;
+    const kind = classifyKind(p);
+    const cfg = FW_KINDS[kind];
+    const lang = window.I18N ? I18N.get() : 'cas';
+    const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
+    const kindLabel = window.I18N ? I18N.t('fw.type.' + kind) : kind;
+    const heightLabel = window.I18N ? I18N.t('fw.height') : '';
+    const safetyLabel = window.I18N ? I18N.t('fw.safety') : '';
+    const closeLabel = window.I18N ? I18N.t('fw.close') : '';
+    const camLabel = window.I18N ? I18N.t('fw.camera_cta') : '';
+
+    fwPrevCam = { center: map.getCenter(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing() };
+    map.flyTo({ center: [p.lng, p.lat], zoom: 17.3, pitch: 68, bearing: (map.getBearing() + 35) % 360, duration: 1100, essential: true });
+
+    const card = ensureFwCard();
+    card.hidden = false;
+    card.innerHTML =
+      '<button class="fw-close" aria-label="' + esc(closeLabel) + '">✕</button>' +
+      '<div class="fw-kicker">🎆 ' + esc(kindLabel) + '</div>' +
+      '<h3 class="fw-title">' + esc(p.name) + '</h3>' +
+      (note ? '<p class="fw-note">' + esc(note) + '</p>' : '') +
+      '<div class="fw-stats"><span>↑ ' + esc(heightLabel) + ' ~' + cfg.apex + ' m</span><span>' + esc(safetyLabel) + '</span></div>' +
+      '<button class="fw-cam-btn">📷 ' + esc(camLabel) + '</button>';
+    card.querySelector('.fw-close').addEventListener('click', () => closeFirework());
+    card.querySelector('.fw-cam-btn').addEventListener('click', () => {
+      if (window.ARCamera) ARCamera.open({ lat: p.lat, lng: p.lng, name: p.name });
+    });
+    requestAnimationFrame(() => card.classList.add('is-in'));
+
+    setTimeout(() => { if (token === fwToken) runBurst(p, cfg, token); }, 200);
+
+    if (fwHideTimer) clearTimeout(fwHideTimer);
+    fwHideTimer = setTimeout(() => { if (token === fwToken) closeFirework(); }, cfg.riseMs + cfg.burstMs + 4500);
+  }
+
+  function closeFirework() {
+    fwToken++;
+    if (fwHideTimer) { clearTimeout(fwHideTimer); fwHideTimer = null; }
+    if (fwCard) {
+      fwCard.classList.remove('is-in');
+      setTimeout(() => { if (fwCard) fwCard.hidden = true; }, 300);
+    }
+    if (map) {
+      if (map.getSource('fw-trail')) map.getSource('fw-trail').setData(emptyFC());
+      if (map.getSource('fw-burst')) map.getSource('fw-burst').setData(emptyFC());
+      if (map.getLayer('fw-trail-layer')) map.setPaintProperty('fw-trail-layer', 'fill-extrusion-opacity', 0);
+      if (map.getLayer('fw-burst-layer')) map.setPaintProperty('fw-burst-layer', 'fill-extrusion-opacity', 0);
+      if (fwPrevCam) map.flyTo({ center: fwPrevCam.center, zoom: fwPrevCam.zoom, pitch: fwPrevCam.pitch, bearing: fwPrevCam.bearing, duration: 1200 });
+    }
+    fwPrevCam = null;
+  }
+
+  function runBurst(p, cfg, token) {
+    if (!map || !map.getSource('fw-trail')) return;
+    const trailSrc = map.getSource('fw-trail'), burstSrc = map.getSource('fw-burst');
+    const trailRing = circleRing(p.lng, p.lat, 3, 8);
+
+    const petals = [];
+    for (let i = 0; i < cfg.petals; i++) {
+      const angle = (i / cfg.petals) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
+      const dist = cfg.spread * (0.55 + Math.random() * 0.55);
+      const [plng, plat] = offsetLngLat(p.lng, p.lat, Math.cos(angle) * dist, Math.sin(angle) * dist);
+      petals.push({
+        color: cfg.colors[i % cfg.colors.length],
+        apex: cfg.apex * (0.75 + Math.random() * 0.4),
+        ring: circleRing(plng, plat, 2 + Math.random() * 2, 6)
+      });
+    }
+
+    const start = performance.now();
+    function frame(now) {
+      if (token !== fwToken) return;
+      const t = now - start;
+
+      const riseT = Math.min(1, t / cfg.riseMs);
+      const h = cfg.apex * easeOutCubic(riseT);
+      const trailOp = riseT < 1 ? 0.95 : Math.max(0, 0.95 - (t - cfg.riseMs) / 300);
+      map.setPaintProperty('fw-trail-layer', 'fill-extrusion-opacity', trailOp);
+      trailSrc.setData({
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: { h, color: '#fff6d8' }, geometry: { type: 'Polygon', coordinates: [trailRing] } }]
+      });
+
+      if (t >= cfg.riseMs) {
+        const bt = Math.min(1, (t - cfg.riseMs) / cfg.burstMs);
+        const popIn = Math.min(1, bt / 0.18);
+        map.setPaintProperty('fw-burst-layer', 'fill-extrusion-opacity', Math.max(0, (1 - bt) * popIn));
+        const feats = petals.map((f) => ({
+          type: 'Feature',
+          properties: { h: f.apex * (1 - bt * 0.55) * popIn, color: f.color },
+          geometry: { type: 'Polygon', coordinates: [f.ring] }
+        }));
+        burstSrc.setData({ type: 'FeatureCollection', features: feats });
+      }
+
+      if (t < cfg.riseMs + cfg.burstMs) requestAnimationFrame(frame);
+      else {
+        trailSrc.setData(emptyFC()); burstSrc.setData(emptyFC());
+        map.setPaintProperty('fw-trail-layer', 'fill-extrusion-opacity', 0);
+        map.setPaintProperty('fw-burst-layer', 'fill-extrusion-opacity', 0);
+      }
+    }
+    requestAnimationFrame(frame);
   }
 
   // ---- Punt de trobada + compartir ----
@@ -361,6 +557,7 @@
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible, setBasemap, getBasemap,
     renderMyPalm, focusMyPalm, getCenter,
+    playFirework, closeFirework,
     hasLeaflet: hasMapbox // alias for app.js
   };
 })();

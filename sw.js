@@ -1,20 +1,18 @@
 /* Elx al Cel — Service Worker
-   3 políticas de caché:
+   Políticas de caché (solo recursos same-origin; Mapbox y otros recursos
+   de terceros no se interceptan, ver guard en el listener de 'fetch'):
    · CORE (app-shell)   -> cache-first, precargado en la instalación
    · schedule.json      -> stale-while-revalidate (rápido + se actualiza en segundo plano)
-   · tiles del mapa      -> stale-while-revalidate con caché LRU acotada (evita crecer sin límite)
    · status.json          -> siempre red, nunca caché persistente (avisos en vivo)
 */
-const VERSION = 'v15';
+const VERSION = 'v23';
 const CORE_CACHE = 'elx-core-' + VERSION;
-const TILE_CACHE = 'elx-tiles-' + VERSION;
-const MAX_TILES = 400; // límite duro de tiles guardados (evita saturar el almacenamiento del móvil)
 
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css?v=15',
+  './css/styles.css?v=23',
   './css/leaflet.css',
   './css/images/marker-icon.png',
   './css/images/marker-icon-2x.png',
@@ -22,19 +20,20 @@ const CORE = [
   './css/images/layers.png',
   './css/images/layers-2x.png',
   './js/leaflet.js',
-  './js/clock.js?v=15',
-  './js/config.js?v=15',
-  './js/i18n.js?v=15',
-  './js/map.js?v=15',
-  './js/ar.js?v=15',
-  './js/timeline.js?v=15',
-  './js/data.js?v=15',
-  './js/app.js?v=15',
-  './js/prefetch.js?v=15',
-  './js/alerts.js?v=15',
-  './js/mypalm.js?v=15',
+  './js/clock.js?v=23',
+  './js/config.js?v=23',
+  './js/i18n.js?v=23',
+  './js/map.js?v=23',
+  './js/ar.js?v=23',
+  './js/ar-camera.js?v=23',
+  './js/timeline.js?v=23',
+  './js/data.js?v=23',
+  './js/app.js?v=23',
+  './js/prefetch.js?v=23',
+  './js/alerts.js?v=23',
+  './js/mypalm.js?v=23',
   './icons/icon.svg',
-  './data/schedule.json?v=15'
+  './data/schedule.json?v=23'
 ];
 
 self.addEventListener('install', (e) => {
@@ -48,14 +47,11 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CORE_CACHE && k !== TILE_CACHE).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => k !== CORE_CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-function isTile(url) {
-  return /basemaps\.cartocdn\.com|tile\.openstreetmap\.org/.test(url.hostname);
-}
 function isSchedule(url) {
   return /schedule\.json/.test(url.pathname);
 }
@@ -63,25 +59,11 @@ function isStatus(url) {
   return /status\.json/.test(url.pathname);
 }
 
-// Mantiene la caché de tiles por debajo de MAX_TILES (política simple FIFO).
-async function trimTileCache() {
-  const cache = await caches.open(TILE_CACHE);
-  const keys = await cache.keys();
-  const excess = keys.length - MAX_TILES;
-  if (excess > 0) {
-    for (let i = 0; i < excess; i++) await cache.delete(keys[i]);
-  }
-}
-
-async function staleWhileRevalidate(req, cacheName, trim) {
+async function staleWhileRevalidate(req, cacheName) {
   const cache = await caches.open(cacheName);
   const cached = await cache.match(req);
   const network = fetch(req).then((res) => {
-    // Los tiles llegan como respuestas "opacas" (sin CORS): status 0 pero validas.
-    if (res && (res.status === 200 || res.type === 'opaque')) {
-      cache.put(req, res.clone());
-      if (trim) trimTileCache();
-    }
+    if (res && res.status === 200) cache.put(req, res.clone());
     return res;
   }).catch(() => cached);
   return cached || network;
@@ -92,6 +74,11 @@ self.addEventListener('fetch', (e) => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
 
+  // Recursos de tercers (Mapbox, etc.): els deixem passar sense interceptar.
+  // Mapbox GL JS gestiona el seu propi caching intern; interceptar-los amb
+  // cache-first genèric trencava la càrrega del mapa en visites repetides.
+  if (url.origin !== self.location.origin) return;
+
   // status.json: siempre red, sin caché persistente (avisos en vivo).
   if (isStatus(url)) {
     e.respondWith(fetch(req).catch(() => new Response('{}', { headers: { 'Content-Type': 'application/json' } })));
@@ -100,13 +87,7 @@ self.addEventListener('fetch', (e) => {
 
   // schedule.json: stale-while-revalidate.
   if (isSchedule(url)) {
-    e.respondWith(staleWhileRevalidate(req, CORE_CACHE, false));
-    return;
-  }
-
-  // tiles del mapa: stale-while-revalidate con caché acotada.
-  if (isTile(url)) {
-    e.respondWith(staleWhileRevalidate(req, TILE_CACHE, true));
+    e.respondWith(staleWhileRevalidate(req, CORE_CACHE));
     return;
   }
 

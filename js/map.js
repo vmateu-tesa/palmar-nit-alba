@@ -197,20 +197,54 @@
     arr.length = 0;
   }
 
+  // ---- Separa marcadors massa junts (evita que es tapen i no es puguen tocar) ----
+  // Nomes ajusta la posicio visual del marker (p._mLat/_mLng); les coordenades
+  // reals (p.lat/p.lng) es mantenen intactes per a "Com arribar", la simulacio 3D, etc.
+  function declutter(points, minDistM) {
+    const used = new Array(points.length).fill(false);
+    for (let i = 0; i < points.length; i++) {
+      points[i]._mLat = points[i].lat; points[i]._mLng = points[i].lng;
+    }
+    for (let i = 0; i < points.length; i++) {
+      if (used[i]) continue;
+      const cluster = [i];
+      for (let j = i + 1; j < points.length; j++) {
+        if (used[j]) continue;
+        if (distanceTo(points[i], points[j]) < minDistM) { cluster.push(j); used[j] = true; }
+      }
+      used[i] = true;
+      if (cluster.length > 1) {
+        const radius = minDistM * 0.55;
+        cluster.forEach((idx, k) => {
+          const angle = (k / cluster.length) * Math.PI * 2;
+          const [nlng, nlat] = offsetLngLat(points[i].lng, points[i].lat, Math.cos(angle) * radius, Math.sin(angle) * radius);
+          points[idx]._mLat = nlat; points[idx]._mLng = nlng;
+        });
+      }
+    }
+  }
+
   function renderSchedule(schedule, activeLaunchPointId) {
     if (!map) return;
     lastSchedule = schedule;
-    
+
     clearMarkers(layerLaunch);
     clearMarkers(layerPois);
     clearMarkers(layerViewpoints);
     clearMarkers(layerFesta);
     clearMarkers(layerPalmeres);
 
+    const allPoints = []
+      .concat(schedule.launch_points || [])
+      .concat(schedule.viewpoints || [])
+      .concat(schedule.festa_pois || [])
+      .concat(schedule.pois || []);
+    declutter(allPoints, 12);
+
     launchMarkers = {};
     (schedule.launch_points || []).forEach((p) => {
       const el = launchIcon(p.id === activeLaunchPointId);
-      const m = new mapboxgl.Marker({ element: el }).setLngLat([p.lng, p.lat]);
+      const m = new mapboxgl.Marker({ element: el }).setLngLat([p._mLng, p._mLat]);
       launchMarkers[p.id] = m;
       
       const lang = window.I18N ? I18N.get() : 'va';
@@ -255,7 +289,7 @@
       const name = lang === 'cas' ? (v.name_cas || v.name_va) : (v.name_va || v.name_cas);
       const desc = lang === 'cas' ? (v.desc_cas || '') : (v.desc_va || '');
       
-      const m = new mapboxgl.Marker({ element: viewIcon() }).setLngLat([v.lng, v.lat]);
+      const m = new mapboxgl.Marker({ element: viewIcon() }).setLngLat([v._mLng, v._mLat]);
       const popup = new mapboxgl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + dirLink(v.lat, v.lng));
       m.setPopup(popup);
       if (layerVisibility.viewpoints) m.addTo(map);
@@ -268,7 +302,7 @@
       const desc = lang === 'cas' ? (f.desc_cas || '') : (f.desc_va || '');
       const pending = f.provisional ? '<br><span class="pp-pending">' + (window.I18N ? I18N.t('map.pending') : '') + '</span>' : '';
       
-      const m = new mapboxgl.Marker({ element: festaIcon() }).setLngLat([f.lng, f.lat]);
+      const m = new mapboxgl.Marker({ element: festaIcon() }).setLngLat([f._mLng, f._mLat]);
       const popup = new mapboxgl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name) + '</strong>' + (desc ? '<br>' + esc(desc) : '') + pending + dirLink(f.lat, f.lng));
       m.setPopup(popup);
       if (layerVisibility.festa) m.addTo(map);
@@ -281,7 +315,7 @@
       const lang = window.I18N ? I18N.get() : 'va';
       const name = lang === 'cas' ? (poi.name_cas || poi.name_va) : (poi.name_va || poi.name_cas);
       
-      const m = new mapboxgl.Marker({ element: poiIcon(poi.type) }).setLngLat([poi.lng, poi.lat]);
+      const m = new mapboxgl.Marker({ element: poiIcon(poi.type) }).setLngLat([poi._mLng, poi._mLat]);
       const popup = new mapboxgl.Popup({ offset: 13 }).setHTML('<strong>' + esc(name || poi.type) + '</strong>' + dirLink(poi.lat, poi.lng));
       m.setPopup(popup);
       if (layerVisibility.pois) m.addTo(map);
@@ -519,15 +553,15 @@
 
   // ---- Palmeres ciutadanes publiques (Supabase, visibles per a tots els usuaris) ----
   function renderPublicPalmeras(list) {
-    lastPublicPalmeras = list || [];
+    lastPublicPalmeras = (list || []).filter((c) => typeof c.lat === 'number' && typeof c.lng === 'number');
     if (!map) return;
     clearMarkers(layerPalmeres);
+    declutter(lastPublicPalmeras, 10);
     const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
     const voteLbl = window.I18N ? I18N.t('vote.cta') : '👍';
     const votedLbl = window.I18N ? I18N.t('vote.voted') : '✓';
     lastPublicPalmeras.forEach((c) => {
-      if (typeof c.lat !== 'number' || typeof c.lng !== 'number') return;
-      const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c.lng, c.lat]);
+      const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c._mLng, c._mLat]);
       const nameLine = c.name ? esc(c.name) + ' · ' : '';
       const votes = c.votes || 0;
       const voteBtn = c.id

@@ -327,31 +327,39 @@
       );
     }
 
-    // ---- Selector d'estil + previsualització animada ----
+    // ---- Carrusel d'estils amb previsualització animada per targeta ----
     let selectedStyle = (window.FWStyles && FWStyles.list[0].id) || 'dorada';
-    let previewHandle = null;
-    const styleList = $('#mp-style-list'), previewCanvas = $('#mp-preview-canvas');
-    function startPreview() {
-      if (previewHandle) previewHandle.stop();
-      if (window.FWStyles && previewCanvas) previewHandle = FWStyles.renderPreview(previewCanvas, selectedStyle);
-    }
-    function stopPreview() { if (previewHandle) { previewHandle.stop(); previewHandle = null; } }
-    function paintStyles() {
-      if (!styleList) return;
-      $$('.mp-style-chip', styleList).forEach((b) => b.classList.toggle('is-active', b.dataset.style === selectedStyle));
-    }
-    if (styleList && window.FWStyles && !styleList.childElementCount) {
-      styleList.innerHTML = FWStyles.list.map((s) =>
-        '<button type="button" class="mp-style-chip" data-style="' + s.id + '" style="--sw:' + s.colors[0] + '">' +
-        '<span class="mp-style-dot"></span>' + esc(FWStyles.label(s)) + '</button>'
+    let previewHandles = [];
+    const styleCarousel = $('#mp-style-carousel');
+    function buildStyleCarousel() {
+      if (!styleCarousel || !window.FWStyles || styleCarousel.childElementCount) return;
+      styleCarousel.innerHTML = FWStyles.list.map((s) =>
+        '<button type="button" class="mp-style-card" data-style="' + s.id + '">' +
+        '<canvas width="150" height="170"></canvas>' +
+        '<span class="mp-style-name">' + esc(FWStyles.label(s)) + '</span></button>'
       ).join('');
-      styleList.addEventListener('click', (e) => {
-        const b = e.target.closest('.mp-style-chip');
+      styleCarousel.addEventListener('click', (e) => {
+        const b = e.target.closest('.mp-style-card');
         if (!b) return;
         selectedStyle = b.dataset.style;
         paintStyles();
-        startPreview();
+        b.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
       });
+    }
+    function paintStyles() {
+      if (!styleCarousel) return;
+      $$('.mp-style-card').forEach((b) => b.classList.toggle('is-active', b.dataset.style === selectedStyle));
+    }
+    function startPreviews() {
+      stopPreviews();
+      if (!styleCarousel || !window.FWStyles) return;
+      $$('.mp-style-card').forEach((b) => {
+        previewHandles.push(FWStyles.renderPreview(b.querySelector('canvas'), b.dataset.style));
+      });
+    }
+    function stopPreviews() {
+      previewHandles.forEach((h) => { if (h) h.stop(); });
+      previewHandles = [];
     }
 
     fab.addEventListener('click', () => {
@@ -365,11 +373,12 @@
       gpsPos = null; gpsLookedUp = false;
       whereMode = 'gps'; paintWhere();
       autoLocate();
+      buildStyleCarousel();
       selectedStyle = (window.FWStyles && FWStyles.list[0].id) || 'dorada';
       paintStyles();
-      startPreview();
+      startPreviews();
     });
-    const close = () => { modal.hidden = true; stopPreview(); };
+    const close = () => { modal.hidden = true; stopPreviews(); };
     const cancel = $('#mp-cancel');
     if (cancel) cancel.addEventListener('click', close);
 

@@ -142,30 +142,6 @@
         paint: { 'fill-color': '#ffb43c', 'fill-opacity': 0.08, 'fill-outline-color': '#ffb43c' }
       });
 
-      // Nota: 'fill-extrusion-opacity' no admet expressions basades en dades
-      // (a diferència de color/height), així que s'anima amb setPaintProperty
-      // per capa sencera en compte de per feature (vore runBurst).
-      map.addSource('fw-trail', { type: 'geojson', data: emptyFC() });
-      map.addLayer({
-        id: 'fw-trail-layer', type: 'fill-extrusion', source: 'fw-trail', slot: 'top',
-        paint: {
-          'fill-extrusion-color': ['coalesce', ['get', 'color'], '#fff6d8'],
-          'fill-extrusion-height': ['coalesce', ['get', 'h'], 0],
-          'fill-extrusion-base': 0,
-          'fill-extrusion-opacity': 0
-        }
-      });
-      map.addSource('fw-burst', { type: 'geojson', data: emptyFC() });
-      map.addLayer({
-        id: 'fw-burst-layer', type: 'fill-extrusion', source: 'fw-burst', slot: 'top',
-        paint: {
-          'fill-extrusion-color': ['coalesce', ['get', 'color'], '#f5c542'],
-          'fill-extrusion-height': ['coalesce', ['get', 'h'], 0],
-          'fill-extrusion-base': 0,
-          'fill-extrusion-opacity': 0
-        }
-      });
-
       if (schedule) renderSchedule(schedule);
 
       ['closures-layer', 'perimeters-layer'].forEach((layerId) => {
@@ -327,31 +303,19 @@
     if (schedule) renderSchedule(schedule, launchPointId);
   }
 
-  // ---- Infografia 3D de la palmera de foc ----
-  function emptyFC() { return { type: 'FeatureCollection', features: [] }; }
-  function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
-
+  // ---- Simulació de palmera de foc (canvas de partícules sobre el mapa) ----
+  // El motor de partícules viu a js/fw-styles.js (FWStyles.createSim); ací
+  // només s'ancora al punt geogràfic: cada frame es reprojecta la base del
+  // llançament amb map.project(), així la simulació seguix la càmera 3D.
   function offsetLngLat(lng, lat, dxM, dyM) {
     const R = 6378137;
     const dLat = (dyM / R) * (180 / Math.PI);
     const dLng = (dxM / (R * Math.cos(lat * Math.PI / 180))) * (180 / Math.PI);
     return [lng + dLng, lat + dLat];
   }
-  function circleRing(lng, lat, radiusM, sides) {
-    const ring = [];
-    for (let i = 0; i <= sides; i++) {
-      const a = (i / sides) * Math.PI * 2;
-      ring.push(offsetLngLat(lng, lat, Math.cos(a) * radiusM, Math.sin(a) * radiusM));
-    }
-    return ring;
-  }
-
-  // Preset únic i espectacular: no representa cap tipus real de pirotecnia
-  // (carcasses, cohetà...) — la varietat ve només del color, triat de forma
-  // determinista segons l'id del punt perquè cada palmera es veja diferent.
-  const FW_PRESET = { apex: 150, riseMs: 1300, burstMs: 2800, petals: 46, spread: 50 };
 
   let fwToken = 0, fwCard = null, fwPrevCam = null, fwHideTimer = null;
+  let fwCanvas = null, fwCtx = null;
 
   function ensureFwCard() {
     if (fwCard) return fwCard;
@@ -362,20 +326,76 @@
     return fwCard;
   }
 
+  function ensureFwCanvas() {
+    if (fwCanvas) return fwCanvas;
+    fwCanvas = document.createElement('canvas');
+    fwCanvas.className = 'fw-overlay-canvas';
+    map.getContainer().appendChild(fwCanvas);
+    fwCtx = fwCanvas.getContext('2d');
+    return fwCanvas;
+  }
+
+  function metersPerPixel(lat, zoom) {
+    return 40075016.686 * Math.abs(Math.cos(lat * Math.PI / 180)) / Math.pow(2, zoom + 9);
+  }
+
+  function runFireworkShow(p, style, token) {
+    if (!window.FWStyles) return;
+    const canvas = ensureFwCanvas();
+    const dpr = Math.min(1.5, window.devicePixelRatio || 1);
+    const box = map.getContainer().getBoundingClientRect();
+    canvas.width = Math.round(box.width * dpr);
+    canvas.height = Math.round(box.height * dpr);
+
+    // Tres coets: el principal i dos laterals més menuts, en cascada.
+    const sims = [
+      FWStyles.createSim(style.id, { heightM: 150 }),
+      FWStyles.createSim(style.id, { heightM: 100, offsetXM: -32, delayS: 0.55 }),
+      FWStyles.createSim(style.id, { heightM: 115, offsetXM: 30, delayS: 1.05 })
+    ];
+    const done = [false, false, false];
+    let last = performance.now();
+
+    function frame(now) {
+      if (token !== fwToken) { fwCtx.clearRect(0, 0, canvas.width, canvas.height); return; }
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+
+      // Esvaïx el frame anterior cap a transparent → deixa cues lluminoses.
+      fwCtx.globalCompositeOperation = 'destination-out';
+      fwCtx.globalAlpha = 1;
+      fwCtx.fillStyle = 'rgba(0,0,0,0.3)';
+      fwCtx.fillRect(0, 0, canvas.width, canvas.height);
+      fwCtx.globalCompositeOperation = 'lighter';
+
+      const pt = map.project([p.lng, p.lat]);
+      const pxm = dpr / metersPerPixel(p.lat, map.getZoom());
+      sims.forEach((s, i) => {
+        if (!done[i]) done[i] = s.update(dt);
+        s.render(fwCtx, pt.x * dpr, pt.y * dpr, pxm);
+      });
+      fwCtx.globalCompositeOperation = 'source-over';
+
+      if (done.every(Boolean)) { fwCtx.clearRect(0, 0, canvas.width, canvas.height); return; }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
   function playFirework(id) {
-    if (!map || !lastSchedule || !map.getSource('fw-trail')) return;
+    if (!map || !lastSchedule) return;
     const p = (lastSchedule.launch_points || []).find((x) => x.id === id);
     if (!p) return;
     const lang = window.I18N ? I18N.get() : 'cas';
     const note = lang === 'cas' ? (p.note_cas || '') : (p.note_va || '');
-    const style = window.FWStyles ? FWStyles.hashPick(p.id) : { colors: ['#f5c542', '#ffe9a8'] };
+    const style = window.FWStyles ? FWStyles.hashPick(p.id) : null;
     showFirework({ lat: p.lat, lng: p.lng, name: p.name, note: note, safety: true }, style);
   }
 
   // Simulació amb estil lliure (usada també per "Mi palmera")
   function playFireworkCustom(point, styleId) {
-    if (!map || !map.getSource('fw-trail')) return;
-    const style = window.FWStyles ? FWStyles.get(styleId) : { colors: ['#f5c542', '#ffe9a8'] };
+    if (!map) return;
+    const style = window.FWStyles ? FWStyles.get(styleId) : null;
     showFirework({ lat: point.lat, lng: point.lng, name: point.name, note: '', safety: false }, style);
   }
 
@@ -385,7 +405,7 @@
     const closeLabel = window.I18N ? I18N.t('fw.close') : '';
     const camLabel = window.I18N ? I18N.t('fw.camera_cta') : '';
     const kicker = window.I18N ? I18N.t('fw.kicker') : '🎆';
-    const styleLabel = window.FWStyles ? FWStyles.label(style) : '';
+    const styleLabel = (window.FWStyles && style) ? FWStyles.label(style) : '';
 
     fwPrevCam = { center: map.getCenter(), zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing() };
     map.flyTo({ center: [p.lng, p.lat], zoom: 17.3, pitch: 68, bearing: (map.getBearing() + 35) % 360, duration: 1100, essential: true });
@@ -405,10 +425,10 @@
     });
     requestAnimationFrame(() => card.classList.add('is-in'));
 
-    setTimeout(() => { if (token === fwToken) runBurst(p, FW_PRESET, style.colors, token); }, 200);
+    if (style) setTimeout(() => { if (token === fwToken) runFireworkShow(p, style, token); }, 150);
 
     if (fwHideTimer) clearTimeout(fwHideTimer);
-    fwHideTimer = setTimeout(() => { if (token === fwToken) closeFirework(); }, FW_PRESET.riseMs + FW_PRESET.burstMs + 4500);
+    fwHideTimer = setTimeout(() => { if (token === fwToken) closeFirework(); }, 9500);
   }
 
   function closeFirework() {
@@ -418,67 +438,11 @@
       fwCard.classList.remove('is-in');
       setTimeout(() => { if (fwCard) fwCard.hidden = true; }, 300);
     }
-    if (map) {
-      if (map.getSource('fw-trail')) map.getSource('fw-trail').setData(emptyFC());
-      if (map.getSource('fw-burst')) map.getSource('fw-burst').setData(emptyFC());
-      if (map.getLayer('fw-trail-layer')) map.setPaintProperty('fw-trail-layer', 'fill-extrusion-opacity', 0);
-      if (map.getLayer('fw-burst-layer')) map.setPaintProperty('fw-burst-layer', 'fill-extrusion-opacity', 0);
-      if (fwPrevCam) map.flyTo({ center: fwPrevCam.center, zoom: fwPrevCam.zoom, pitch: fwPrevCam.pitch, bearing: fwPrevCam.bearing, duration: 1200 });
+    if (fwCanvas && fwCtx) fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+    if (map && fwPrevCam) {
+      map.flyTo({ center: fwPrevCam.center, zoom: fwPrevCam.zoom, pitch: fwPrevCam.pitch, bearing: fwPrevCam.bearing, duration: 1200 });
     }
     fwPrevCam = null;
-  }
-
-  function runBurst(p, cfg, colors, token) {
-    if (!map || !map.getSource('fw-trail')) return;
-    const trailSrc = map.getSource('fw-trail'), burstSrc = map.getSource('fw-burst');
-    const trailRing = circleRing(p.lng, p.lat, 3, 8);
-
-    const petals = [];
-    for (let i = 0; i < cfg.petals; i++) {
-      const angle = (i / cfg.petals) * Math.PI * 2 + (Math.random() - 0.5) * 0.4;
-      const dist = cfg.spread * (0.55 + Math.random() * 0.55);
-      const [plng, plat] = offsetLngLat(p.lng, p.lat, Math.cos(angle) * dist, Math.sin(angle) * dist);
-      petals.push({
-        color: colors[i % colors.length],
-        apex: cfg.apex * (0.75 + Math.random() * 0.4),
-        ring: circleRing(plng, plat, 2 + Math.random() * 2, 6)
-      });
-    }
-
-    const start = performance.now();
-    function frame(now) {
-      if (token !== fwToken) return;
-      const t = now - start;
-
-      const riseT = Math.min(1, t / cfg.riseMs);
-      const h = cfg.apex * easeOutCubic(riseT);
-      const trailOp = riseT < 1 ? 0.95 : Math.max(0, 0.95 - (t - cfg.riseMs) / 300);
-      map.setPaintProperty('fw-trail-layer', 'fill-extrusion-opacity', trailOp);
-      trailSrc.setData({
-        type: 'FeatureCollection',
-        features: [{ type: 'Feature', properties: { h, color: '#fff6d8' }, geometry: { type: 'Polygon', coordinates: [trailRing] } }]
-      });
-
-      if (t >= cfg.riseMs) {
-        const bt = Math.min(1, (t - cfg.riseMs) / cfg.burstMs);
-        const popIn = Math.min(1, bt / 0.18);
-        map.setPaintProperty('fw-burst-layer', 'fill-extrusion-opacity', Math.max(0, (1 - bt) * popIn));
-        const feats = petals.map((f) => ({
-          type: 'Feature',
-          properties: { h: f.apex * (1 - bt * 0.55) * popIn, color: f.color },
-          geometry: { type: 'Polygon', coordinates: [f.ring] }
-        }));
-        burstSrc.setData({ type: 'FeatureCollection', features: feats });
-      }
-
-      if (t < cfg.riseMs + cfg.burstMs) requestAnimationFrame(frame);
-      else {
-        trailSrc.setData(emptyFC()); burstSrc.setData(emptyFC());
-        map.setPaintProperty('fw-trail-layer', 'fill-extrusion-opacity', 0);
-        map.setPaintProperty('fw-burst-layer', 'fill-extrusion-opacity', 0);
-      }
-    }
-    requestAnimationFrame(frame);
   }
 
   // ---- Punt de trobada + compartir ----

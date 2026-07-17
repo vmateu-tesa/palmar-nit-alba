@@ -236,8 +236,13 @@
   }
 
   // ---------- Marca d'aigua (logo + nom app) ----------
+  function fmtCoord(lat, lng) {
+    const ns = lat >= 0 ? 'N' : 'S', ew = lng >= 0 ? 'E' : 'O';
+    return Math.abs(lat).toFixed(4) + '°' + ns + ', ' + Math.abs(lng).toFixed(4) + '°' + ew;
+  }
+
   function drawWatermark(ctx, w, h) {
-    const barH = Math.round(h * 0.1);
+    const barH = Math.round(h * 0.14);
     const grad = ctx.createLinearGradient(0, h - barH, 0, h);
     grad.addColorStop(0, 'rgba(7,10,32,0)');
     grad.addColorStop(1, 'rgba(7,10,32,0.82)');
@@ -266,11 +271,14 @@
 
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = '#f5c542';
-    ctx.font = '700 ' + Math.round(barH * 0.32) + 'px -apple-system, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText('Elx al Cel · ' + (target.name || ''), textX, h - barH * 0.44);
+    ctx.font = '700 ' + Math.round(barH * 0.24) + 'px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('Elx al Cel · ' + (target.name || ''), textX, h - barH * 0.68);
     ctx.fillStyle = '#f3f1ea';
-    ctx.font = '600 ' + Math.round(barH * 0.24) + 'px -apple-system, "Segoe UI", Roboto, sans-serif';
-    ctx.fillText("Nit de l'Albà · 13/08", textX, h - barH * 0.15);
+    ctx.font = '600 ' + Math.round(barH * 0.18) + 'px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText("Nit de l'Albà · 13/08 · " + fmtCoord(target.lat, target.lng), textX, h - barH * 0.4);
+    ctx.fillStyle = '#9c99c0';
+    ctx.font = '600 ' + Math.round(barH * 0.16) + 'px -apple-system, "Segoe UI", Roboto, sans-serif';
+    ctx.fillText('📍 ' + location.host + location.pathname.replace(/\/$/, '/'), textX, h - barH * 0.14);
   }
 
   // ---------- Fluxe live / previsualització ----------
@@ -428,15 +436,23 @@
     toast(t('arcam.saved'));
   }
 
+  function shareText() {
+    const url = location.origin + location.pathname;
+    return t('arcam.share_text', { name: target.name || '', url }) ||
+      ("🎆 " + (target.name || '') + " · Nit de l'Albà, Elx\n" + url + '\n#NitDeLAlba #Elx #ElxAlCel');
+  }
+
   async function shareMedia() {
     if (!lastMediaUrl) return;
     try {
       const blob = await fetch(lastMediaUrl).then((r) => r.blob());
       const file = new File([blob], fileBase() + '.' + ext(), { type: mime() });
+      const text = shareText();
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], text: "Nit de l'Albà · " + (target.name || '') + ' · Elx al Cel' });
+        await navigator.share({ files: [file], text });
         return;
       }
+      if (navigator.share) { await navigator.share({ text }); return; }
       throw new Error('no-share');
     } catch (e) {
       if (e && e.name === 'AbortError') return;

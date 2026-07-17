@@ -523,13 +523,24 @@
     if (!map) return;
     clearMarkers(layerPalmeres);
     const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
+    const voteLbl = window.I18N ? I18N.t('vote.cta') : '👍';
+    const votedLbl = window.I18N ? I18N.t('vote.voted') : '✓';
     lastPublicPalmeras.forEach((c) => {
       if (typeof c.lat !== 'number' || typeof c.lng !== 'number') return;
       const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c.lng, c.lat]);
       const nameLine = c.name ? esc(c.name) + ' · ' : '';
+      const votes = c.votes || 0;
+      const voteBtn = c.id
+        ? '<button class="tl-map-btn fw-cta-btn pp-vote-btn' + (c.voted ? ' is-voted' : '') + '" ' +
+          (c.voted ? 'disabled' : "onclick=\"window.ElxApp && window.ElxApp.voteFor('" + c.id + "')\"") + '>' +
+          (c.voted ? '✓ ' + esc(votedLbl) : '👍 ' + esc(voteLbl)) + ' (' + votes + ')</button>'
+        : '';
       const popup = new mapboxgl.Popup({ offset: 11 }).setHTML(
         '<strong>' + esc(c.dedication) + '</strong><br>' + nameLine + (c.time ? esc(c.time) : '') +
-        '<div class="pp-fw-actions"><button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + c.lat + ',lng:' + c.lng + ',name:\'' + esc(c.dedication).replace(/'/g, '&#39;') + '\'},\'' + (c.style || 'dorada') + '\')">🎆 ' + esc(simLbl) + '</button></div>'
+        '<div class="pp-fw-actions">' +
+        '<button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + c.lat + ',lng:' + c.lng + ',name:\'' + esc(c.dedication).replace(/'/g, '&#39;') + '\'},\'' + (c.style || 'dorada') + '\')">🎆 ' + esc(simLbl) + '</button>' +
+        voteBtn +
+        '</div>'
       );
       m.setPopup(popup);
       if (layerVisibility.palmeres) m.addTo(map);

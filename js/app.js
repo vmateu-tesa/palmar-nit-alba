@@ -217,9 +217,23 @@
   async function refreshPublicPalmeras() {
     if (!window.ElxPalmerasDB || !ElxPalmerasDB.ready() || !window.ElxMap) return;
     try {
-      const list = await ElxPalmerasDB.list();
+      const [list, counts, mine] = await Promise.all([
+        ElxPalmerasDB.list(),
+        ElxPalmerasDB.voteCounts().catch(() => ({})),
+        ElxPalmerasDB.myVotes().catch(() => ({}))
+      ]);
+      list.forEach((p) => { p.votes = counts[p.id] || 0; p.voted = !!mine[p.id]; });
       ElxMap.renderPublicPalmeras(list);
     } catch (e) { console.warn('[palmeras]', e); }
+  }
+
+  async function voteFor(id) {
+    if (!window.ElxPalmerasDB) return;
+    try {
+      await ElxPalmerasDB.vote(id);
+      toast(I18N.t('vote.thanks'));
+      refreshPublicPalmeras();
+    } catch (e) { console.warn('[vote]', e); toast(I18N.t('vote.error')); }
   }
 
   function initTimelineInteractions() {
@@ -498,5 +512,5 @@
   }
 
   document.addEventListener('DOMContentLoaded', boot);
-  window.ElxApp = { toast, setView };
+  window.ElxApp = { toast, setView, voteFor, refreshPublicPalmeras };
 })();

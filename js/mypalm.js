@@ -85,12 +85,17 @@
     x.font = '800 56px -apple-system, "Segoe UI", Roboto, sans-serif';
     const lines = wrapText(x, '\u201C' + (p.dedication || '') + '\u201D', 540, 946, 920, 64);
 
-    // Pie (nombre + hora)
+    // Pie (nombre + hora + ubicaci\u00F3n + dominio, para que quien lo vea use la app)
     x.fillStyle = '#9c99c0';
-    x.font = '600 28px -apple-system, "Segoe UI", Roboto, sans-serif';
-    const footY = 946 + lines * 64 + 36;
-    const footer = (p.name ? p.name + '  \u00B7  ' : '') + '13/08 \u00B7 ' + p.time + '  \u00B7  Elx al Cel';
-    x.fillText(footer, 540, Math.min(footY, 1046));
+    x.font = '600 26px -apple-system, "Segoe UI", Roboto, sans-serif';
+    const footY = 946 + lines * 64 + 34;
+    const footer = (p.name ? p.name + '  \u00B7  ' : '') + '13/08 \u00B7 ' + p.time;
+    x.fillText(footer, 540, Math.min(footY, 1010));
+    x.fillStyle = '#f5c542';
+    x.font = '700 24px -apple-system, "Segoe UI", Roboto, sans-serif';
+    const ns = p.lat >= 0 ? 'N' : 'S', ew = p.lng >= 0 ? 'E' : 'O';
+    const coordTxt = typeof p.lat === 'number' ? Math.abs(p.lat).toFixed(4) + '\u00B0' + ns + ', ' + Math.abs(p.lng).toFixed(4) + '\u00B0' + ew + '  \u00B7  ' : '';
+    x.fillText('\uD83D\uDCCD ' + coordTxt + location.host, 540, Math.min(footY, 1010) + 36);
 
     return new Promise((res) => c.toBlob(res, 'image/png'));
   }
@@ -100,7 +105,7 @@
     const p = get();
     if (!p) return;
     const url = location.origin + location.pathname;
-    const text = I18N.t('mypalm.share_text', { ded: p.dedication, time: p.time }) + ' ' + url;
+    const text = I18N.t('mypalm.share_text', { ded: p.dedication, time: p.time, url });
     try {
       const blob = await buildCard(p);
       const file = new File([blob], 'palmera-elx-al-cel.png', { type: 'image/png' });

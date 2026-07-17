@@ -214,6 +214,28 @@
     });
   }
 
+  async function refreshPublicPalmeras() {
+    if (!window.ElxPalmerasDB || !ElxPalmerasDB.ready() || !window.ElxMap) return;
+    try {
+      const [list, counts, mine] = await Promise.all([
+        ElxPalmerasDB.list(),
+        ElxPalmerasDB.voteCounts().catch(() => ({})),
+        ElxPalmerasDB.myVotes().catch(() => ({}))
+      ]);
+      list.forEach((p) => { p.votes = counts[p.id] || 0; p.voted = !!mine[p.id]; });
+      ElxMap.renderPublicPalmeras(list);
+    } catch (e) { console.warn('[palmeras]', e); }
+  }
+
+  async function voteFor(id) {
+    if (!window.ElxPalmerasDB) return;
+    try {
+      await ElxPalmerasDB.vote(id);
+      toast(I18N.t('vote.thanks'));
+      refreshPublicPalmeras();
+    } catch (e) { console.warn('[vote]', e); toast(I18N.t('vote.error')); }
+  }
+
   function initTimelineInteractions() {
     const listEl = $('#timeline-list');
     if (!listEl) return;
@@ -357,12 +379,16 @@
       if (!ded) { toast(I18N.t('mypalm.need_ded')); return; }
       const name = ($('#mp-name').value || '').trim();
       const time = $('#mp-time').value || '23:30';
-      const finalize = (lat, lng) => {
+      const finalize = async (lat, lng) => {
         const p = { name, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() };
         MyPalm.save(p);
         ElxMap.renderMyPalm(p);
         close();
         toast(I18N.t('mypalm.created'));
+        if (window.ElxPalmerasDB && ElxPalmerasDB.ready()) {
+          try { await ElxPalmerasDB.create(p); refreshPublicPalmeras(); }
+          catch (e) { console.warn('[palmeras]', e); toast(I18N.t('mypalm.publish_error')); }
+        }
         setTimeout(() => { ElxMap.focusMyPalm(); MyPalm.share(); }, 600);
       };
       const c = ElxMap.getCenter() || { lat: 38.2685, lng: -0.699 };
@@ -444,6 +470,9 @@
       toast(I18N.t('common.offline_bad'));
     }
 
+    refreshPublicPalmeras();
+    setInterval(refreshPublicPalmeras, 60000);
+
     if (schedule && window.TilePrefetch) TilePrefetch.schedule(schedule);
 
     DB.startStatusPolling();
@@ -483,5 +512,5 @@
   }
 
   document.addEventListener('DOMContentLoaded', boot);
-  window.ElxApp = { toast, setView };
+  window.ElxApp = { toast, setView, voteFor, refreshPublicPalmeras };
 })();

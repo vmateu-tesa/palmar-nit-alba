@@ -50,6 +50,12 @@
       'mypalm.locating': "Localitzant-te…",
       'mypalm.located': "Ubicació detectada ✓",
       'mypalm.style': "Estil de la teua palmera de foc",
+      'mypalm.publish_error': "S'ha guardat al teu dispositiu, però no s'ha pogut publicar per a tots (revisa la connexió).",
+
+      'vote.cta': "M'agrada",
+      'vote.voted': "Votada",
+      'vote.thanks': "Gràcies pel teu vot! 🎆",
+      'vote.error': "No s'ha pogut registrar el vot. Torna-ho a provar.",
       'mypalm.real_note': "Vols que siga de veritat? Patrocina una palmera oficial des de 150 \u20AC \u00B7 patrociniopalmera@elche.es",
       'mypalm.cancel': "Cancel\u00B7lar",
       'mypalm.save': "Crear i compartir",
@@ -59,7 +65,7 @@
       'mypalm.delete': "Eliminar",
       'mypalm.card_kicker': "Nit de l'Alb\u00E0 \u00B7 Elx",
       'mypalm.card_title': "La meua palmera de foc",
-      'mypalm.share_text': "He dedicat la meua palmera de foc: \u201C{ded}\u201D \uD83C\uDF34\u2728 Nit de l'Alb\u00E0 d'Elx, 13/08 a les {time}. Crea i compartix la teua:",
+      'mypalm.share_text': "He dedicat la meua palmera de foc: \u201C{ded}\u201D \uD83C\uDF34\u2728 Nit de l'Alb\u00E0 d'Elx, 13/08 a les {time}. Crea i compartix la teua a {url} #NitDeLAlba #Elx #ElxAlCel",
 
 
       'map.locating': "Localitzant-te…",
@@ -81,7 +87,7 @@
       'map.next_here': "Pròxim des d'ací",
       'map.legend.pois': "Punts d'assistència",
       'map.legend.festa': "Actes de les festes",
-      'map.legend.palmeres': "Palmeres ciutadanes (exemple)",
+      'map.legend.palmeres': "Palmeres ciutadanes",
       'map.pending': "Ubicació exacta per confirmar amb l'Ajuntament",
       'timeline.see_map': "Veure al mapa",
       'map.layers': "Capes del mapa",
@@ -109,6 +115,7 @@
       'arcam.share': "Compartir",
       'arcam.saved': "Guardat al dispositiu",
       'arcam.record_unsupported': "Este navegador no permet gravar vídeo. Prova amb la foto.",
+      'arcam.share_text': "🎆 {name} · Nit de l'Albà, Elx\n{url}\n#NitDeLAlba #Elx #ElxAlCel",
 
       'poi.first_aid': "Assistència sanitària",
       'poi.info': "Informació",
@@ -224,6 +231,12 @@
       'mypalm.locating': "Localizándote…",
       'mypalm.located': "Ubicación detectada ✓",
       'mypalm.style': "Estilo de tu palmera de foc",
+      'mypalm.publish_error': "Se guardó en tu dispositivo, pero no se pudo publicar para todos (revisa la conexión).",
+
+      'vote.cta': "Me gusta",
+      'vote.voted': "Votada",
+      'vote.thanks': "¡Gracias por tu voto! 🎆",
+      'vote.error': "No se pudo registrar el voto. Inténtalo de nuevo.",
       'mypalm.use_gps': "En mi ubicación",
       'mypalm.use_center': "En el centro del mapa",
       'mypalm.real_note': "¿Quieres que sea de verdad? Patrocina una palmera oficial desde 150 \u20AC \u00B7 patrociniopalmera@elche.es",
@@ -235,7 +248,7 @@
       'mypalm.delete': "Eliminar",
       'mypalm.card_kicker': "Nit de l'Alb\u00E0 \u00B7 Elx",
       'mypalm.card_title': "Mi palmera de foc",
-      'mypalm.share_text': "He dedicado mi palmera de foc: \u201C{ded}\u201D \uD83C\uDF34\u2728 Nit de l'Alb\u00E0 de Elche, 13/08 a las {time}. Crea y comparte la tuya:",
+      'mypalm.share_text': "He dedicado mi palmera de foc: \u201C{ded}\u201D \uD83C\uDF34\u2728 Nit de l'Alb\u00E0 de Elche, 13/08 a las {time}. Crea y comparte la tuya en {url} #NitDeLAlba #Elche #ElxAlCel",
 
 
       'map.locating': "Localizándote…",
@@ -257,7 +270,7 @@
       'map.next_here': "Próximo desde aquí",
       'map.legend.pois': "Puntos de asistencia",
       'map.legend.festa': "Actos de las fiestas",
-      'map.legend.palmeres': "Palmeras ciudadanas (ejemplo)",
+      'map.legend.palmeres': "Palmeras ciudadanas",
       'map.pending': "Ubicación exacta por confirmar con el Ayuntamiento",
       'timeline.see_map': "Ver en el mapa",
       'map.layers': "Capas del mapa",
@@ -285,6 +298,7 @@
       'arcam.share': "Compartir",
       'arcam.saved': "Guardado en el dispositivo",
       'arcam.record_unsupported': "Este navegador no permite grabar vídeo. Prueba con la foto.",
+      'arcam.share_text': "🎆 {name} · Nit de l'Albà, Elx\n{url}\n#NitDeLAlba #Elche #ElxAlCel",
 
       'poi.first_aid': "Asistencia sanitaria",
       'poi.info': "Información",

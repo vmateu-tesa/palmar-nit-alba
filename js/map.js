@@ -16,6 +16,7 @@
   let nextInfo = {};
   let lastSchedule = null;
   let myPalmMarker = null;
+  let lastPublicPalmeras = null;
   let launchMarkers = {};
   
   // Layer arrays (Mapbox doesn't have LayerGroups for markers, we keep them in arrays)
@@ -274,15 +275,7 @@
       layerFesta.push(m);
     });
 
-    const cpNote = window.I18N && schedule['citizen_note_' + (I18N.get() === 'cas' ? 'cas' : 'va')];
-    (schedule.citizen_palmeras || []).forEach((c) => {
-      const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c.lng, c.lat]);
-      const popup = new mapboxgl.Popup({ offset: 11 }).setHTML('<strong>' + esc(c.name) + '</strong>' + (c.time ? ' \u00B7 ' + esc(c.time) : '') +
-          (cpNote ? '<br><span class="pp-pending">' + esc(cpNote) + '</span>' : ''));
-      m.setPopup(popup);
-      if (layerVisibility.palmeres) m.addTo(map);
-      layerPalmeres.push(m);
-    });
+    if (lastPublicPalmeras) renderPublicPalmeras(lastPublicPalmeras);
 
     (schedule.pois || []).forEach((poi) => {
       const lang = window.I18N ? I18N.get() : 'va';
@@ -524,6 +517,26 @@
   }
   function flyTo(lat, lng, zoom) { if (map) map.flyTo({ center: [lng, lat], zoom: zoom || 17, duration: 1000 }); }
 
+  // ---- Palmeres ciutadanes publiques (Supabase, visibles per a tots els usuaris) ----
+  function renderPublicPalmeras(list) {
+    lastPublicPalmeras = list || [];
+    if (!map) return;
+    clearMarkers(layerPalmeres);
+    const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
+    lastPublicPalmeras.forEach((c) => {
+      if (typeof c.lat !== 'number' || typeof c.lng !== 'number') return;
+      const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c.lng, c.lat]);
+      const nameLine = c.name ? esc(c.name) + ' · ' : '';
+      const popup = new mapboxgl.Popup({ offset: 11 }).setHTML(
+        '<strong>' + esc(c.dedication) + '</strong><br>' + nameLine + (c.time ? esc(c.time) : '') +
+        '<div class="pp-fw-actions"><button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + c.lat + ',lng:' + c.lng + ',name:\'' + esc(c.dedication).replace(/'/g, '&#39;') + '\'},\'' + (c.style || 'dorada') + '\')">🎆 ' + esc(simLbl) + '</button></div>'
+      );
+      m.setPopup(popup);
+      if (layerVisibility.palmeres) m.addTo(map);
+      layerPalmeres.push(m);
+    });
+  }
+
   function renderMyPalm(p) {
     if (!map) return;
     if (myPalmMarker) { myPalmMarker.remove(); myPalmMarker = null; }
@@ -588,7 +601,7 @@
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
-    renderMyPalm, focusMyPalm, getCenter,
+    renderMyPalm, focusMyPalm, getCenter, renderPublicPalmeras,
     playFirework, playFireworkCustom, closeFirework,
     hasLeaflet: hasMapbox // alias for app.js
   };

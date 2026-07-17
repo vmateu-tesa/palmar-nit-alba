@@ -214,6 +214,14 @@
     });
   }
 
+  async function refreshPublicPalmeras() {
+    if (!window.ElxPalmerasDB || !ElxPalmerasDB.ready() || !window.ElxMap) return;
+    try {
+      const list = await ElxPalmerasDB.list();
+      ElxMap.renderPublicPalmeras(list);
+    } catch (e) { console.warn('[palmeras]', e); }
+  }
+
   function initTimelineInteractions() {
     const listEl = $('#timeline-list');
     if (!listEl) return;
@@ -357,12 +365,16 @@
       if (!ded) { toast(I18N.t('mypalm.need_ded')); return; }
       const name = ($('#mp-name').value || '').trim();
       const time = $('#mp-time').value || '23:30';
-      const finalize = (lat, lng) => {
+      const finalize = async (lat, lng) => {
         const p = { name, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() };
         MyPalm.save(p);
         ElxMap.renderMyPalm(p);
         close();
         toast(I18N.t('mypalm.created'));
+        if (window.ElxPalmerasDB && ElxPalmerasDB.ready()) {
+          try { await ElxPalmerasDB.create(p); refreshPublicPalmeras(); }
+          catch (e) { console.warn('[palmeras]', e); toast(I18N.t('mypalm.publish_error')); }
+        }
         setTimeout(() => { ElxMap.focusMyPalm(); MyPalm.share(); }, 600);
       };
       const c = ElxMap.getCenter() || { lat: 38.2685, lng: -0.699 };
@@ -443,6 +455,9 @@
     } else {
       toast(I18N.t('common.offline_bad'));
     }
+
+    refreshPublicPalmeras();
+    setInterval(refreshPublicPalmeras, 60000);
 
     if (schedule && window.TilePrefetch) TilePrefetch.schedule(schedule);
 

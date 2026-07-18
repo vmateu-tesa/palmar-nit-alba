@@ -226,25 +226,27 @@
 
     function frame(ts) {
       if (stopped) return;
-      if (last == null) last = ts;
-      const dt = Math.min(0.05, (ts - last) / 1000);
-      last = ts;
+      try {
+        if (last == null) last = ts;
+        const dt = Math.min(0.05, (ts - last) / 1000);
+        last = ts;
 
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = 'rgba(10,14,42,0.26)';
-      ctx.fillRect(0, 0, w, h);
-      ctx.globalCompositeOperation = 'lighter';
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = 'rgba(10,14,42,0.26)';
+        ctx.fillRect(0, 0, w, h);
+        ctx.globalCompositeOperation = 'lighter';
 
-      if (pause > 0) {
-        pause -= dt;
-        if (pause <= 0) sim = createSim(styleId, { heightM: H });
-      } else {
-        const done = sim.update(dt);
-        sim.render(ctx, ax, ay, pxm);
-        if (done) pause = 0.5;
-      }
-      ctx.globalCompositeOperation = 'source-over';
+        if (pause > 0) {
+          pause -= dt;
+          if (pause <= 0) sim = createSim(styleId, { heightM: H });
+        } else {
+          const done = sim.update(dt);
+          sim.render(ctx, ax, ay, pxm);
+          if (done) pause = 0.5;
+        }
+        ctx.globalCompositeOperation = 'source-over';
+      } catch (e) { console.error('[fw-preview]', e); }
       raf = requestAnimationFrame(frame);
     }
     raf = requestAnimationFrame(frame);

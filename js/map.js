@@ -358,25 +358,27 @@
 
     function frame(now) {
       if (token !== fwToken) { fwCtx.clearRect(0, 0, canvas.width, canvas.height); return; }
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
+      try {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        last = now;
 
-      // Esvaïx el frame anterior cap a transparent → deixa cues lluminoses.
-      fwCtx.globalCompositeOperation = 'destination-out';
-      fwCtx.globalAlpha = 1;
-      fwCtx.fillStyle = 'rgba(0,0,0,0.3)';
-      fwCtx.fillRect(0, 0, canvas.width, canvas.height);
-      fwCtx.globalCompositeOperation = 'lighter';
+        // Esvaïx el frame anterior cap a transparent → deixa cues lluminoses.
+        fwCtx.globalCompositeOperation = 'destination-out';
+        fwCtx.globalAlpha = 1;
+        fwCtx.fillStyle = 'rgba(0,0,0,0.3)';
+        fwCtx.fillRect(0, 0, canvas.width, canvas.height);
+        fwCtx.globalCompositeOperation = 'lighter';
 
-      const pt = map.project([p.lng, p.lat]);
-      const pxm = dpr / metersPerPixel(p.lat, map.getZoom());
-      sims.forEach((s, i) => {
-        if (!done[i]) done[i] = s.update(dt);
-        s.render(fwCtx, pt.x * dpr, pt.y * dpr, pxm);
-      });
-      fwCtx.globalCompositeOperation = 'source-over';
+        const pt = map.project([p.lng, p.lat]);
+        const pxm = dpr / metersPerPixel(p.lat, map.getZoom());
+        sims.forEach((s, i) => {
+          if (!done[i]) done[i] = s.update(dt);
+          s.render(fwCtx, pt.x * dpr, pt.y * dpr, pxm);
+        });
+        fwCtx.globalCompositeOperation = 'source-over';
 
-      if (done.every(Boolean)) { fwCtx.clearRect(0, 0, canvas.width, canvas.height); return; }
+        if (done.every(Boolean)) { fwCtx.clearRect(0, 0, canvas.width, canvas.height); return; }
+      } catch (e) { console.error('[fw-show]', e); fwCtx.clearRect(0, 0, canvas.width, canvas.height); return; }
       requestAnimationFrame(frame);
     }
     requestAnimationFrame(frame);

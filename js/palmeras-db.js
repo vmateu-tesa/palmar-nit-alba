@@ -42,12 +42,15 @@
 
   async function create(p) {
     if (!ready()) throw new Error('Supabase no configurado');
-    const url = ElxConfig.SUPABASE_URL + '/rest/v1/palmeras';
+    // select= limita lo que devuelve el INSERT: el email nunca vuelve en la
+    // respuesta (además de estar bloqueado a nivel de columna para "anon").
+    const url = ElxConfig.SUPABASE_URL + '/rest/v1/palmeras?select=id,name,dedication,time,lat,lng,style,created_at';
     const res = await fetch(url, {
       method: 'POST',
       headers: headers({ 'Content-Type': 'application/json', Prefer: 'return=representation' }),
       body: JSON.stringify({
         name: p.name || null,
+        email: p.email,
         dedication: p.dedication,
         time: p.time,
         lat: p.lat,

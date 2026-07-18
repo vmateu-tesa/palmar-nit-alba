@@ -369,6 +369,8 @@
       if (ded) ded.placeholder = I18N.t('mypalm.ph');
       const nameEl = $('#mp-name');
       if (nameEl) nameEl.placeholder = I18N.t('mypalm.name_ph');
+      const emailEl = $('#mp-email');
+      if (emailEl) emailEl.placeholder = I18N.t('mypalm.email_ph');
       modal.hidden = false;
       gpsPos = null; gpsLookedUp = false;
       whereMode = 'gps'; paintWhere();
@@ -386,10 +388,12 @@
     if (saveBtn) saveBtn.addEventListener('click', () => {
       const ded = ($('#mp-dedication').value || '').trim();
       if (!ded) { toast(I18N.t('mypalm.need_ded')); return; }
+      const email = ($('#mp-email').value || '').trim();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { toast(I18N.t('mypalm.need_email')); return; }
       const name = ($('#mp-name').value || '').trim();
       const time = $('#mp-time').value || '23:30';
       const finalize = async (lat, lng) => {
-        const p = { name, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() };
+        const p = { name, email, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() };
         MyPalm.save(p);
         ElxMap.renderMyPalm(p);
         close();

@@ -15,6 +15,7 @@ create table if not exists public.palmera_votes (
 alter table public.palmera_votes enable row level security;
 
 -- Cualquiera puede leer los votos (para contar y saber si ya votó).
+drop policy if exists "votes_public_read" on public.palmera_votes;
 create policy "votes_public_read"
   on public.palmera_votes for select
   to anon
@@ -22,6 +23,7 @@ create policy "votes_public_read"
 
 -- Cualquiera puede votar una vez por palmera (la unicidad la garantiza
 -- la restricción UNIQUE de la tabla, no hace falta lógica extra aquí).
+drop policy if exists "votes_public_insert" on public.palmera_votes;
 create policy "votes_public_insert"
   on public.palmera_votes for insert
   to anon

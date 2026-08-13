@@ -1,5 +1,12 @@
 # Changelog
 
+## v21 — Espectáculo 3D automático de apertura (agosto 2026)
+
+- Al abrir la aplicación se lanzan automáticamente las 312 palmeras oficiales desde sus 12 puntos de disparo sobre el mapa 3D de Elche.
+- El motor conserva un lanzamiento por palmera, agrupa la proyección por coordenadas y reduce dinámicamente la densidad de partículas en móvil para mantener la fluidez.
+- Nuevo indicador de progreso accesible, cierre manual y final automático; el mapa permanece interactivo durante el espectáculo.
+- Caché PWA actualizada a v44.
+
 ## v20 — Entrada 3D municipal y endurecimiento de producción (agosto 2026)
 
 - Nueva primera impresión del mapa: Elche se encuadra automáticamente en 3D para mostrar las 138 palmeras municipales oficiales, con marcadores dorados de mayor jerarquía y aparición escalonada compatible con `prefers-reduced-motion`.

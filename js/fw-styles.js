@@ -40,34 +40,35 @@
 
   // Partícules de l'explosió segons la forma de l'estil.
   // Coordenades en "metres de món": x lateral, y altitud (positiva amunt).
-  function burstParticles(style, H) {
+  function burstParticles(style, H, particleScale) {
     const P = [];
+    const scaled = (count) => Math.max(12, Math.round(count * (particleScale || 1)));
     const add = (vx, vy, o) => P.push(Object.assign(
       { x: 0, y: H, px: 0, py: H, vx: vx, vy: vy, age: 0 }, o));
 
     if (style.shape === 'palm') {
-      for (let i = 0; i < 90; i++) {
+      for (let i = 0; i < scaled(90); i++) {
         const th = rand(-1.1, 1.1) * (0.3 + Math.random() * 0.7);
         const s = rand(50, 78);
         add(Math.sin(th) * s, Math.cos(th) * s,
           { life: rand(2.4, 3.3), color: pick(style.colors), drag: 0.985, grav: 26, w: 2.8 });
       }
     } else if (style.shape === 'peony') {
-      for (let i = 0; i < 150; i++) {
+      for (let i = 0; i < scaled(150); i++) {
         const a = Math.random() * Math.PI * 2;
         const s = rand(26, 46);
         add(Math.cos(a) * s, Math.sin(a) * s,
           { life: rand(1.7, 2.4), color: pick(style.colors), drag: 0.976, grav: 18, w: 2.3 });
       }
     } else if (style.shape === 'willow') {
-      for (let i = 0; i < 130; i++) {
+      for (let i = 0; i < scaled(130); i++) {
         const a = Math.random() * Math.PI * 2;
         const s = rand(20, 34);
         add(Math.cos(a) * s, Math.sin(a) * s,
           { life: rand(3.2, 4.5), color: pick(style.colors), drag: 0.993, grav: 11, w: 1.9 });
       }
     } else if (style.shape === 'ring') {
-      const n = 110;
+      const n = scaled(110);
       for (let i = 0; i < n; i++) {
         const a = (i / n) * Math.PI * 2;
         const s = 44 + rand(-2.5, 2.5);
@@ -75,7 +76,7 @@
           { life: rand(1.7, 2.2), color: pick(style.colors), drag: 0.979, grav: 14, w: 2.5 });
       }
     } else { // crackle
-      for (let i = 0; i < 95; i++) {
+      for (let i = 0; i < scaled(95); i++) {
         const a = Math.random() * Math.PI * 2;
         const s = rand(24, 42);
         add(Math.cos(a) * s, Math.sin(a) * s,
@@ -93,6 +94,7 @@
     const style = get(styleId);
     const H = (opts && opts.heightM) || 120;
     const ox = (opts && opts.offsetXM) || 0;
+    const particleScale = (opts && opts.particleScale) || 1;
     let delay = (opts && opts.delayS) || 0;
     const riseDur = 0.85 + H / 420;
     let t = 0, phase = 'delay', particles = null, sparks = [], rocketY = 0, prevRocketY = 0;
@@ -122,7 +124,7 @@
         });
         if (k >= 1) {
           phase = 'burst'; burstAge = 0;
-          particles = burstParticles(style, H).map((p) => { p.x += ox; p.px += ox; return p; });
+          particles = burstParticles(style, H, particleScale).map((p) => { p.x += ox; p.px += ox; return p; });
         }
       } else if (phase === 'burst') {
         let alive = 0;

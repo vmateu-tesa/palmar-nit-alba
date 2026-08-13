@@ -122,6 +122,10 @@
       'fw.safety': "Mantín-te darrere del perímetre de seguretat",
       'fw.close': "Tancar",
       'fw.camera_cta': "Apuntar amb la càmera",
+      'fw.opening_title': "Elx al Cel · Espectacle 3D",
+      'fw.opening_progress': "{launched} de {total} palmeres · {points} punts oficials",
+      'fw.opening_complete': "{total} palmeres de {points} punts en el cel",
+      'fw.opening_skip': "Tancar l'espectacle d'obertura",
 
       'arcam.camera_denied': "No s'ha pogut accedir a la càmera. Comprova els permisos del navegador.",
       'arcam.retry': "Repetir",
@@ -315,6 +319,10 @@
       'fw.safety': "Mantente detrás del perímetro de seguridad",
       'fw.close': "Cerrar",
       'fw.camera_cta': "Apuntar con la cámara",
+      'fw.opening_title': "Elx al Cel · Espectáculo 3D",
+      'fw.opening_progress': "{launched} de {total} palmeras · {points} puntos oficiales",
+      'fw.opening_complete': "{total} palmeras de {points} puntos en el cielo",
+      'fw.opening_skip': "Cerrar el espectáculo de apertura",
 
       'arcam.camera_denied': "No se ha podido acceder a la cámara. Comprueba los permisos del navegador.",
       'arcam.retry': "Repetir",

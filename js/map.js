@@ -8,6 +8,10 @@
     standard: { url: 'mapbox://styles/mapbox/standard' }
   };
 
+  // Vista inicial estable: la app siempre abre centrada en Elche.
+  // La ubicacion del usuario solo cambia la camara cuando pulsa el boton GPS.
+  const ELCHE_DEFAULT_VIEW = Object.freeze({ lat: 38.2685, lng: -0.699, zoom: 15 });
+
   const POI_GLYPH = {
     first_aid: '✚', info: 'i', water: '💧', accessible: '♿', exit: '➜'
   };
@@ -15,15 +19,20 @@
   let map = null, userMarker = null, userAccuracyCircle = null, geoWatchId = null, meetingMarker = null;
   let nextInfo = {};
   let lastSchedule = null;
-  let myPalmMarker = null;
+  let myPalmMarkers = {};
   let lastPublicPalmeras = null;
+  let lastOfficialPalmeras = null;
+  let officialRenderSig = '';
+  let initialOfficialFrameDone = false;
   let launchMarkers = {};
+  let officialMarkers = {};
+  let publicPalmMarkers = {};
   
   // Layer arrays (Mapbox doesn't have LayerGroups for markers, we keep them in arrays)
-  let layerLaunch = [], layerClosures = [], layerPerimeters = [], layerPois = [], layerViewpoints = [], layerFesta = [], layerPalmeres = [];
+  let layerLaunch = [], layerClosures = [], layerPerimeters = [], layerPois = [], layerViewpoints = [], layerFesta = [], layerOfficial = [], layerPalmeres = [];
 
   // Visibility state
-  let layerVisibility = { launch: true, closures: true, perimeters: true, pois: true, viewpoints: true, festa: true, palmeres: true };
+  let layerVisibility = { launch: true, closures: true, perimeters: true, pois: true, viewpoints: true, festa: true, official: true, palmeres: true };
 
   function hasMapbox() { return typeof window.mapboxgl !== 'undefined'; }
 
@@ -64,6 +73,29 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  function validCitizenPalm(p) {
+    return p && Number.isFinite(p.lat) && Number.isFinite(p.lng) &&
+      p.lat >= -90 && p.lat <= 90 && p.lng >= -180 && p.lng <= 180 &&
+      String(p.dedication || '').trim().length > 0;
+  }
+
+  function citizenStyle(styleId) {
+    return window.FWStyles ? FWStyles.get(styleId).id : 'dorada';
+  }
+
+  // Los datos ciudadanos nunca se interpolan dentro de JavaScript inline.
+  // Cada popup recibe listeners seguros mediante cierres.
+  function wirePopupActions(popup, actions) {
+    popup.on('open', () => {
+      const root = popup.getElement();
+      if (!root) return;
+      Object.keys(actions).forEach((selector) => {
+        const button = root.querySelector(selector);
+        if (button) button.onclick = actions[selector];
+      });
+    });
+  }
+
   function fallback(elId, msg) {
     const el = document.getElementById(elId);
     if (el) el.innerHTML = '<div style="position:absolute;inset:0;display:grid;place-items:center;' +
@@ -91,6 +123,10 @@
   function cpalmIcon() {
     return createHtmlElement('<div class="elx-cpalm">\uD83C\uDF34</div>');
   }
+  function officialPalmIcon(type) {
+    const cls = type === 'municipal' ? ' elx-opalm-municipal' : (type === 'association' ? ' elx-opalm-association' : '');
+    return createHtmlElement('<div class="elx-opalm' + cls + '"><span>\uD83C\uDF34</span></div>');
+  }
   function myPalmIcon() {
     return createHtmlElement('<div class="elx-mypalm">\uD83C\uDF34</div>');
   }
@@ -107,15 +143,11 @@
     // User's provided Mapbox token
     mapboxgl.accessToken = 'pk.eyJ1Ijoidm1hdGV1IiwiYSI' + '6ImNrMjR6bnRmNjFmcDIzbm55aHRkeDZmYXMifQ.zumQNOFYrIh6fmpS5xxSVg';
     
-    const ev = (schedule && schedule.event) || {};
-    const center = ev.center || { lat: 38.2699, lng: -0.7126 };
-    const zoom = (ev.zoom && ev.zoom.default) || 15;
-
     map = new mapboxgl.Map({
       container: elId,
       style: BASEMAPS.standard.url,
-      center: [center.lng, center.lat],
-      zoom: zoom,
+      center: [ELCHE_DEFAULT_VIEW.lng, ELCHE_DEFAULT_VIEW.lat],
+      zoom: ELCHE_DEFAULT_VIEW.zoom,
       pitch: 60,
       bearing: -15,
       attributionControl: true
@@ -193,6 +225,34 @@
         const radius = minDistM * 0.55;
         cluster.forEach((idx, k) => {
           const angle = (k / cluster.length) * Math.PI * 2;
+          const [nlng, nlat] = offsetLngLat(points[i].lng, points[i].lat, Math.cos(angle) * radius, Math.sin(angle) * radius);
+          points[idx]._mLat = nlat; points[idx]._mLng = nlng;
+        });
+      }
+    }
+  }
+
+  function declutterOfficial(points, minDistM) {
+    const used = new Array(points.length).fill(false);
+    for (let i = 0; i < points.length; i++) {
+      points[i]._mLat = points[i].lat; points[i]._mLng = points[i].lng;
+    }
+    for (let i = 0; i < points.length; i++) {
+      if (used[i]) continue;
+      const cluster = [i];
+      for (let j = i + 1; j < points.length; j++) {
+        if (used[j]) continue;
+        if (distanceTo(points[i], points[j]) < minDistM) { cluster.push(j); used[j] = true; }
+      }
+      used[i] = true;
+      if (cluster.length > 1) {
+        cluster.forEach((idx, k) => {
+          const ring = Math.floor(k / 10);
+          const pos = k % 10;
+          const remaining = cluster.length - ring * 10;
+          const inRing = Math.min(10, Math.max(1, remaining));
+          const angle = (pos / inRing) * Math.PI * 2 + ring * 0.33;
+          const radius = 8 + ring * 7;
           const [nlng, nlat] = offsetLngLat(points[i].lng, points[i].lat, Math.cos(angle) * radius, Math.sin(angle) * radius);
           points[idx]._mLat = nlat; points[idx]._mLng = nlng;
         });
@@ -284,6 +344,8 @@
       if (layerVisibility.festa) m.addTo(map);
       layerFesta.push(m);
     });
+
+    renderOfficialPalmeras(schedule.official_palmeras || []);
 
     if (lastPublicPalmeras) renderPublicPalmeras(lastPublicPalmeras);
 
@@ -517,11 +579,118 @@
   }
   function flyTo(lat, lng, zoom) { if (map) map.flyTo({ center: [lng, lat], zoom: zoom || 17, duration: 1000 }); }
 
+  // ---- Palmeres oficials 2026 (PDF oficial Fiestas en Elche / Ajuntament) ----
+  function palmNumber(n) { return '#' + String(n || 0).padStart(3, '0'); }
+  function shortText(s, max) {
+    s = String(s == null ? '' : s).trim();
+    return s.length > max ? s.slice(0, max - 1).trim() + '…' : s;
+  }
+  function officialLocationName(p) {
+    const lang = window.I18N ? I18N.get() : 'cas';
+    return lang === 'cas' ? (p.location_name_cas || p.location_name_va || p.official_location) : (p.location_name_va || p.location_name_cas || p.official_location);
+  }
+  function officialTypeLabel(type) {
+    const key = 'official.type.' + (type || 'official_public');
+    if (window.I18N) return I18N.t(key);
+    return type === 'municipal' ? 'Ayuntamiento de Elche' : (type === 'association' ? 'asociación o colectivo' : 'patrocinio publicado');
+  }
+  function officialTitle(p) {
+    return palmNumber(p.number) + ' · ' + (p.sponsor || officialLocationName(p) || 'Palmera oficial');
+  }
+  function findOfficialPalm(id) {
+    const list = lastOfficialPalmeras || (lastSchedule && lastSchedule.official_palmeras) || [];
+    return list.find((p) => p.id === id);
+  }
+  function renderOfficialPalmeras(list) {
+    lastOfficialPalmeras = (list || []).filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
+    if (!map) return;
+    const lang = window.I18N ? I18N.get() : 'cas';
+    const first = lastOfficialPalmeras[0] && lastOfficialPalmeras[0].id;
+    const last = lastOfficialPalmeras[lastOfficialPalmeras.length - 1] && lastOfficialPalmeras[lastOfficialPalmeras.length - 1].id;
+    const sig = lang + '|' + lastOfficialPalmeras.length + '|' + first + '|' + last;
+    if (sig === officialRenderSig && layerOfficial.length === lastOfficialPalmeras.length) return;
+    clearMarkers(layerOfficial);
+    officialMarkers = {};
+    officialRenderSig = sig;
+    const points = lastOfficialPalmeras.slice();
+    declutterOfficial(points, 18);
+    const simLbl = window.I18N ? I18N.t('fw.cta') : 'Ver en 3D';
+    const camLbl = window.I18N ? I18N.t('fw.camera_cta') : 'Apuntar con la cámara';
+    points.forEach((p, index) => {
+      const icon = officialPalmIcon(p.sponsor_type);
+      if (!initialOfficialFrameDone) icon.style.setProperty('--palm-delay', Math.min(index, 48) * 18 + 'ms');
+      const m = new mapboxgl.Marker({ element: icon }).setLngLat([p._mLng, p._mLat]);
+      officialMarkers[p.id] = m;
+      const tag = (window.I18N ? I18N.t('official.tag') : 'Palmera oficial') + ' · ' + officialTypeLabel(p.sponsor_type);
+      const loc = officialLocationName(p);
+      const note = shortText(p.dedication || p.official_text || '', 180);
+      const pending = p.provisional ? '<br><span class="pp-pending">' + esc(window.I18N ? I18N.t('official.approx') : 'Punto aproximado del lugar oficial.') + '</span>' : '';
+      const source = '<br><a class="pp-source" target="_blank" rel="noopener" href="https://fiestasenelche.es/wp-content/uploads/2026/07/patrocinio-nit-l-alba-2026.pdf">↗ ' + esc(window.I18N ? I18N.t('official.source_pdf') : 'PDF oficial') + '</a>';
+      const popup = new mapboxgl.Popup({ offset: 12, className: 'elx-popup' }).setHTML(
+        '<strong>' + esc(officialTitle(p)) + '</strong>' +
+        '<br><span class="pp-official-tag pp-official-' + esc(p.sponsor_type || 'official_public') + '">' + esc(tag) + '</span>' +
+        '<br><span class="pp-official-time">⏱ ' + esc(window.I18N ? I18N.t('official.time') : 'Hora oficial') + ': ' + esc(p.time || '') + '</span>' +
+        '<br><span class="pp-official-loc">' + esc(loc) + '</span>' +
+        (note ? '<p class="pp-official-note">' + esc(note) + '</p>' : '') +
+        pending + bearingHtml(p.lat, p.lng) + dirLink(p.lat, p.lng) + source +
+        '<div class="pp-fw-actions">' +
+        '<button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playOfficialFirework(\'' + esc(p.id) + '\')">🎆 ' + esc(simLbl) + '</button>' +
+        '<button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.openOfficialAR(\'' + esc(p.id) + '\')">📷 ' + esc(camLbl) + '</button>' +
+        '</div>'
+      );
+      m.setPopup(popup);
+      if (layerVisibility.official) m.addTo(map);
+      layerOfficial.push(m);
+    });
+    if (!initialOfficialFrameDone && layerVisibility.official && points.length) {
+      initialOfficialFrameDone = true;
+      // Primera impresión: encuadra todos los puntos municipales de Elche
+      // con profundidad 3D para que el mapa muestre de inmediato el conjunto.
+      const municipal = points.filter((p) => p.sponsor_type === 'municipal');
+      const visible = municipal.length ? municipal : points;
+      const bounds = new mapboxgl.LngLatBounds();
+      visible.forEach((p) => bounds.extend([p._mLng, p._mLat]));
+      requestAnimationFrame(() => {
+        map.fitBounds(bounds, {
+          padding: { top: 92, right: 52, bottom: 148, left: 52 },
+          maxZoom: 14.45,
+          pitch: 63,
+          bearing: -17,
+          duration: 1250,
+          essential: true
+        });
+      });
+    }
+  }
+  function playOfficialFirework(id) {
+    const p = findOfficialPalm(id);
+    if (!p) return;
+    const style = window.FWStyles ? FWStyles.hashPick(p.id + '-' + (p.sponsor_type || 'official')) : null;
+    const noteParts = [
+      (p.time ? p.time + ' · ' : '') + officialLocationName(p),
+      officialTypeLabel(p.sponsor_type),
+      shortText(p.dedication || '', 140)
+    ].filter(Boolean);
+    showFirework({ lat: p.lat, lng: p.lng, name: officialTitle(p), note: noteParts.join(' · '), safety: true }, style);
+  }
+  function openOfficialAR(id) {
+    const p = findOfficialPalm(id);
+    if (!p || !window.ARCamera) return;
+    ARCamera.open({ lat: p.lat, lng: p.lng, name: officialTitle(p) });
+  }
+  function focusOfficialPalm(id) {
+    const m = officialMarkers[id];
+    if (!m || !map) return;
+    map.flyTo({ center: m.getLngLat(), zoom: 17, pitch: 66, duration: 1000 });
+    setTimeout(() => { if (m.getPopup()) m.togglePopup(); }, 1100);
+  }
+
   // ---- Palmeres ciutadanes publiques (Supabase, visibles per a tots els usuaris) ----
   function renderPublicPalmeras(list) {
-    lastPublicPalmeras = (list || []).filter((c) => typeof c.lat === 'number' && typeof c.lng === 'number');
+    lastPublicPalmeras = (list || []).filter(validCitizenPalm);
     if (!map) return;
     clearMarkers(layerPalmeres);
+    publicPalmMarkers = {};
     declutter(lastPublicPalmeras, 10);
     const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
     const voteLbl = window.I18N ? I18N.t('vote.cta') : '👍';
@@ -529,50 +698,84 @@
     lastPublicPalmeras.forEach((c) => {
       const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c._mLng, c._mLat]);
       const nameLine = c.name ? esc(c.name) + ' · ' : '';
-      const votes = c.votes || 0;
+      const votes = Math.max(0, Number.parseInt(c.votes, 10) || 0);
       const voteBtn = c.id
-        ? '<button class="tl-map-btn fw-cta-btn pp-vote-btn' + (c.voted ? ' is-voted' : '') + '" ' +
-          (c.voted ? 'disabled' : "onclick=\"window.ElxApp && window.ElxApp.voteFor('" + c.id + "')\"") + '>' +
+        ? '<button class="tl-map-btn fw-cta-btn pp-vote-btn js-public-vote' + (c.voted ? ' is-voted' : '') + '" ' +
+          (c.voted ? 'disabled' : '') + '>' +
           (c.voted ? '✓ ' + esc(votedLbl) : '👍 ' + esc(voteLbl)) + ' (' + votes + ')</button>'
         : '';
       const popup = new mapboxgl.Popup({ offset: 11 }).setHTML(
         '<strong>' + esc(c.dedication) + '</strong><br>' + nameLine + (c.time ? esc(c.time) : '') +
         '<div class="pp-fw-actions">' +
-        '<button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + c.lat + ',lng:' + c.lng + ',name:\'' + esc(c.dedication).replace(/'/g, '&#39;') + '\'},\'' + (c.style || 'dorada') + '\')">🎆 ' + esc(simLbl) + '</button>' +
+        '<button class="tl-map-btn fw-cta-btn js-public-sim">🎆 ' + esc(simLbl) + '</button>' +
         voteBtn +
         '</div>'
       );
+      wirePopupActions(popup, {
+        '.js-public-sim': () => playFireworkCustom(
+          { lat: c.lat, lng: c.lng, name: String(c.dedication || '') }, citizenStyle(c.style)
+        ),
+        '.js-public-vote': () => { if (c.id && window.ElxApp) ElxApp.voteFor(c.id); }
+      });
       m.setPopup(popup);
+      if (c.id) publicPalmMarkers[c.id] = m;
       if (layerVisibility.palmeres) m.addTo(map);
       layerPalmeres.push(m);
     });
+    if (window.MyPalm) renderMyPalms(MyPalm.getAll());
   }
 
-  function renderMyPalm(p) {
+  function renderMyPalms(list) {
     if (!map) return;
-    if (myPalmMarker) { myPalmMarker.remove(); myPalmMarker = null; }
-    if (!p) return;
-    myPalmMarker = new mapboxgl.Marker({ element: myPalmIcon() }).setLngLat([p.lng, p.lat]).addTo(map);
-    const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
-    const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
-    const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
-    const nameLine = p.name ? esc(p.name) + ' \u00B7 ' : '';
+    Object.keys(myPalmMarkers).forEach((key) => myPalmMarkers[key].remove());
+    myPalmMarkers = {};
+    const publicIds = new Set((lastPublicPalmeras || []).map((p) => p.id).filter(Boolean));
+    const localPoints = (list || []).filter(validCitizenPalm);
+    declutter(localPoints, 42);
+    localPoints.forEach((p) => {
+      // Una palmera sincronizada ya se dibuja como publica; el marcador dorado
+      // queda para altas locales pendientes o cuando aun no llego el listado.
+      if (p.id && publicIds.has(p.id)) return;
+      const key = p.client_id || p.id;
+      if (!key) return;
+      const marker = new mapboxgl.Marker({ element: myPalmIcon() }).setLngLat([p._mLng, p._mLat]).addTo(map);
+      const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
+      const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
+      const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
+      const nameLine = p.name ? esc(p.name) + ' \u00B7 ' : '';
 
-    const popup = new mapboxgl.Popup({ offset: 19 }).setHTML(
-      '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>' + nameLine + '13/08 \u00B7 ' + esc(p.time) +
-      '<div class="pp-fw-actions">' +
-      '<button class="mp-pop-sim tl-map-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + p.lat + ',lng:' + p.lng + ',name:\'' + esc(p.dedication).replace(/'/g, '&#39;') + '\'},\'' + (p.style || 'dorada') + '\')">\uD83C\uDF86 ' + simLbl + '</button>' +
-      '</div>' +
-      '<button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share()">' + shareLbl + '</button> ' +
-      '<button class="mp-pop-del pp-dir-btn" onclick="if(window.MyPalm) MyPalm.clear(); window.ElxMap.renderMyPalm(null);">' + delLbl + '</button>'
-    );
-    myPalmMarker.setPopup(popup);
+      const popup = new mapboxgl.Popup({ offset: 19 }).setHTML(
+        '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>' + nameLine + '13/08 \u00B7 ' + esc(p.time) +
+        '<div class="pp-fw-actions">' +
+        '<button class="mp-pop-sim tl-map-btn">\uD83C\uDF86 ' + esc(simLbl) + '</button>' +
+        '</div>' +
+        '<button class="mp-pop-share tl-map-btn">' + esc(shareLbl) + '</button> ' +
+        '<button class="mp-pop-del pp-dir-btn">' + esc(delLbl) + '</button>'
+      );
+      wirePopupActions(popup, {
+        '.mp-pop-sim': () => playFireworkCustom(
+          { lat: p.lat, lng: p.lng, name: String(p.dedication || '') }, citizenStyle(p.style)
+        ),
+        '.mp-pop-share': () => { if (window.MyPalm) MyPalm.share(key); },
+        '.mp-pop-del': () => { if (window.ElxApp) ElxApp.removeMyPalm(key); }
+      });
+      marker.setPopup(popup);
+      myPalmMarkers[key] = marker;
+    });
   }
-  function focusMyPalm() {
-    if (myPalmMarker && map) {
-      map.flyTo({ center: myPalmMarker.getLngLat(), zoom: 16, duration: 900 });
-      setTimeout(() => { if (myPalmMarker.getPopup()) myPalmMarker.togglePopup(); }, 1000);
+  function renderMyPalm(p) { renderMyPalms(p ? [p] : []); }
+  function focusMyPalm(id) {
+    const marker = (id && myPalmMarkers[id]) || Object.values(myPalmMarkers)[0];
+    if (marker && map) {
+      map.flyTo({ center: marker.getLngLat(), zoom: 16, duration: 900 });
+      setTimeout(() => { if (marker.getPopup()) marker.togglePopup(); }, 1000);
     }
+  }
+  function focusPublicPalm(id) {
+    const marker = publicPalmMarkers[id];
+    if (!marker || !map) return;
+    map.flyTo({ center: marker.getLngLat(), zoom: 16, duration: 900 });
+    setTimeout(() => { if (marker.getPopup()) marker.togglePopup(); }, 1000);
   }
   function getCenter() {
     if (!map) return null;
@@ -589,7 +792,7 @@
   }
 
   function layerByKey(key) {
-    return { launch: layerLaunch, pois: layerPois, viewpoints: layerViewpoints, festa: layerFesta, palmeres: layerPalmeres }[key];
+    return { launch: layerLaunch, pois: layerPois, viewpoints: layerViewpoints, festa: layerFesta, official: layerOfficial, palmeres: layerPalmeres }[key];
   }
   function setLayerVisible(key, on) {
     layerVisibility[key] = on;
@@ -612,8 +815,8 @@
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
-    renderMyPalm, focusMyPalm, getCenter, renderPublicPalmeras,
-    playFirework, playFireworkCustom, closeFirework,
+    renderMyPalm, renderMyPalms, focusMyPalm, focusPublicPalm, getCenter, renderPublicPalmeras, renderOfficialPalmeras,
+    playFirework, playFireworkCustom, playOfficialFirework, openOfficialAR, focusOfficialPalm, closeFirework,
     hasLeaflet: hasMapbox // alias for app.js
   };
 })();

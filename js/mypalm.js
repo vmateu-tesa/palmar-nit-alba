@@ -1,17 +1,60 @@
 /* =====================================================================
    Elx al Cel — La meua palmera de foc
-   El usuario dedica una palmera simbólica (dedicatoria + hora + lugar),
-   se guarda EN SU DISPOSITIVO (sin backend, coherente con static-first),
-   aparece en el mapa y se comparte en redes como tarjeta-imagen generada
+   El usuario puede dedicar tantas palmeras simbólicas como quiera. Se
+   conservan en su dispositivo mientras se sincronizan con la base compartida,
+   aparecen en el mapa y se comparten como tarjeta-imagen generada
    en canvas (Web Share API con imagen → texto → portapapeles).
-   Puente institucional: el formulario enlaza al patrocinio real del Ajuntament.
    ===================================================================== */
 (function () {
-  const KEY = 'elx_my_palmera';
+  const KEY = 'elx_my_palmeras';
+  const LEGACY_KEY = 'elx_my_palmera';
 
-  function get() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } }
-  function save(p) { localStorage.setItem(KEY, JSON.stringify(p)); }
-  function clear() { localStorage.removeItem(KEY); }
+  function localId(p) {
+    if (p && (p.client_id || p.id)) return p.client_id || p.id;
+    return 'local-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+  }
+  function readArray() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY));
+      if (Array.isArray(saved)) return saved;
+    } catch (e) { /* usa la migracion legacy */ }
+    try {
+      const legacy = JSON.parse(localStorage.getItem(LEGACY_KEY));
+      if (legacy && typeof legacy === 'object') {
+        legacy.client_id = localId(legacy);
+        localStorage.setItem(KEY, JSON.stringify([legacy]));
+        localStorage.removeItem(LEGACY_KEY);
+        return [legacy];
+      }
+    } catch (e) { /* almacenamiento vacio o corrupto */ }
+    return [];
+  }
+  function writeArray(items) { localStorage.setItem(KEY, JSON.stringify(items)); }
+  function getAll() { return readArray().slice().sort((a, b) => (b.created || 0) - (a.created || 0)); }
+  function get(id) {
+    const items = getAll();
+    if (!id) return items[0] || null;
+    return items.find((p) => p.client_id === id || p.id === id) || null;
+  }
+  function save(p) {
+    const item = Object.assign({}, p, { client_id: localId(p) });
+    const items = readArray();
+    const at = items.findIndex((x) => x.client_id === item.client_id || (item.id && x.id === item.id));
+    if (at >= 0) items[at] = Object.assign({}, items[at], item);
+    else items.push(item);
+    writeArray(items);
+    return item;
+  }
+  function update(id, patch) {
+    const item = get(id);
+    return item ? save(Object.assign({}, item, patch || {})) : null;
+  }
+  function remove(id) {
+    const items = readArray().filter((p) => p.client_id !== id && p.id !== id);
+    writeArray(items);
+    return items;
+  }
+  function clear() { localStorage.removeItem(KEY); localStorage.removeItem(LEGACY_KEY); }
 
   // ---------- Tarjeta-imagen para redes (1080x1080, canvas) ----------
   function wrapText(x, text, cx, y, maxW, lh) {
@@ -101,8 +144,8 @@
   }
 
   // ---------- Compartir (imagen → texto → portapapeles) ----------
-  async function share() {
-    const p = get();
+  async function share(palmOrId) {
+    const p = typeof palmOrId === 'object' ? palmOrId : get(palmOrId);
     if (!p) return;
     const url = location.origin + location.pathname;
     const text = I18N.t('mypalm.share_text', { ded: p.dedication, time: p.time, url });
@@ -124,5 +167,5 @@
     }
   }
 
-  window.MyPalm = { get, save, clear, share, buildCard };
+  window.MyPalm = { get, getAll, save, update, remove, clear, share, buildCard };
 })();

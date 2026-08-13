@@ -6,9 +6,11 @@
 window.ElxConfig = {
   // Ficheros de datos (servidos por el propio hosting / CDN).
   // Sube el numero al publicar cambios de contenido para evitar cache antigua.
-  SCHEDULE_URL: 'data/schedule.json?v=33',
+  SCHEDULE_URL: 'data/schedule.json?v=38',
+  OFFICIAL_PALMERAS_URL: 'data/official-palmeras.json?v=38',
   STATUS_URL: 'data/status.json',   // se consulta con poca frecuencia, sin cache persistente
   STATUS_POLL_MS: 30000,            // cada cuanto se revisa si hay avisos en vivo
+  PALMERAS_POLL_MS: 10000,          // altas ciudadanas compartidas: refresco entre usuarios
 
   // Idioma por defecto si el navegador no da pista clara.
   DEFAULT_LANG: 'va',   // 'va' = valencià, 'cas' = castellano

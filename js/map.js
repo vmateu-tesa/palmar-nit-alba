@@ -23,6 +23,7 @@
   let lastPublicPalmeras = null;
   let lastOfficialPalmeras = null;
   let officialRenderSig = '';
+  let initialOfficialFrameDone = false;
   let launchMarkers = {};
   let officialMarkers = {};
   let publicPalmMarkers = {};
@@ -70,6 +71,29 @@
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function validCitizenPalm(p) {
+    return p && Number.isFinite(p.lat) && Number.isFinite(p.lng) &&
+      p.lat >= -90 && p.lat <= 90 && p.lng >= -180 && p.lng <= 180 &&
+      String(p.dedication || '').trim().length > 0;
+  }
+
+  function citizenStyle(styleId) {
+    return window.FWStyles ? FWStyles.get(styleId).id : 'dorada';
+  }
+
+  // Los datos ciudadanos nunca se interpolan dentro de JavaScript inline.
+  // Cada popup recibe listeners seguros mediante cierres.
+  function wirePopupActions(popup, actions) {
+    popup.on('open', () => {
+      const root = popup.getElement();
+      if (!root) return;
+      Object.keys(actions).forEach((selector) => {
+        const button = root.querySelector(selector);
+        if (button) button.onclick = actions[selector];
+      });
+    });
   }
 
   function fallback(elId, msg) {
@@ -578,7 +602,7 @@
     return list.find((p) => p.id === id);
   }
   function renderOfficialPalmeras(list) {
-    lastOfficialPalmeras = (list || []).filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
+    lastOfficialPalmeras = (list || []).filter((p) => Number.isFinite(p.lat) && Number.isFinite(p.lng));
     if (!map) return;
     const lang = window.I18N ? I18N.get() : 'cas';
     const first = lastOfficialPalmeras[0] && lastOfficialPalmeras[0].id;
@@ -592,8 +616,10 @@
     declutterOfficial(points, 18);
     const simLbl = window.I18N ? I18N.t('fw.cta') : 'Ver en 3D';
     const camLbl = window.I18N ? I18N.t('fw.camera_cta') : 'Apuntar con la cámara';
-    points.forEach((p) => {
-      const m = new mapboxgl.Marker({ element: officialPalmIcon(p.sponsor_type) }).setLngLat([p._mLng, p._mLat]);
+    points.forEach((p, index) => {
+      const icon = officialPalmIcon(p.sponsor_type);
+      if (!initialOfficialFrameDone) icon.style.setProperty('--palm-delay', Math.min(index, 48) * 18 + 'ms');
+      const m = new mapboxgl.Marker({ element: icon }).setLngLat([p._mLng, p._mLat]);
       officialMarkers[p.id] = m;
       const tag = (window.I18N ? I18N.t('official.tag') : 'Palmera oficial') + ' · ' + officialTypeLabel(p.sponsor_type);
       const loc = officialLocationName(p);
@@ -616,6 +642,25 @@
       if (layerVisibility.official) m.addTo(map);
       layerOfficial.push(m);
     });
+    if (!initialOfficialFrameDone && layerVisibility.official && points.length) {
+      initialOfficialFrameDone = true;
+      // Primera impresión: encuadra todos los puntos municipales de Elche
+      // con profundidad 3D para que el mapa muestre de inmediato el conjunto.
+      const municipal = points.filter((p) => p.sponsor_type === 'municipal');
+      const visible = municipal.length ? municipal : points;
+      const bounds = new mapboxgl.LngLatBounds();
+      visible.forEach((p) => bounds.extend([p._mLng, p._mLat]));
+      requestAnimationFrame(() => {
+        map.fitBounds(bounds, {
+          padding: { top: 92, right: 52, bottom: 148, left: 52 },
+          maxZoom: 14.45,
+          pitch: 63,
+          bearing: -17,
+          duration: 1250,
+          essential: true
+        });
+      });
+    }
   }
   function playOfficialFirework(id) {
     const p = findOfficialPalm(id);
@@ -642,7 +687,7 @@
 
   // ---- Palmeres ciutadanes publiques (Supabase, visibles per a tots els usuaris) ----
   function renderPublicPalmeras(list) {
-    lastPublicPalmeras = (list || []).filter((c) => typeof c.lat === 'number' && typeof c.lng === 'number');
+    lastPublicPalmeras = (list || []).filter(validCitizenPalm);
     if (!map) return;
     clearMarkers(layerPalmeres);
     publicPalmMarkers = {};
@@ -653,19 +698,25 @@
     lastPublicPalmeras.forEach((c) => {
       const m = new mapboxgl.Marker({ element: cpalmIcon() }).setLngLat([c._mLng, c._mLat]);
       const nameLine = c.name ? esc(c.name) + ' · ' : '';
-      const votes = c.votes || 0;
+      const votes = Math.max(0, Number.parseInt(c.votes, 10) || 0);
       const voteBtn = c.id
-        ? '<button class="tl-map-btn fw-cta-btn pp-vote-btn' + (c.voted ? ' is-voted' : '') + '" ' +
-          (c.voted ? 'disabled' : "onclick=\"window.ElxApp && window.ElxApp.voteFor('" + c.id + "')\"") + '>' +
+        ? '<button class="tl-map-btn fw-cta-btn pp-vote-btn js-public-vote' + (c.voted ? ' is-voted' : '') + '" ' +
+          (c.voted ? 'disabled' : '') + '>' +
           (c.voted ? '✓ ' + esc(votedLbl) : '👍 ' + esc(voteLbl)) + ' (' + votes + ')</button>'
         : '';
       const popup = new mapboxgl.Popup({ offset: 11 }).setHTML(
         '<strong>' + esc(c.dedication) + '</strong><br>' + nameLine + (c.time ? esc(c.time) : '') +
         '<div class="pp-fw-actions">' +
-        '<button class="tl-map-btn fw-cta-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + c.lat + ',lng:' + c.lng + ',name:\'' + esc(c.dedication).replace(/'/g, '&#39;') + '\'},\'' + (c.style || 'dorada') + '\')">🎆 ' + esc(simLbl) + '</button>' +
+        '<button class="tl-map-btn fw-cta-btn js-public-sim">🎆 ' + esc(simLbl) + '</button>' +
         voteBtn +
         '</div>'
       );
+      wirePopupActions(popup, {
+        '.js-public-sim': () => playFireworkCustom(
+          { lat: c.lat, lng: c.lng, name: String(c.dedication || '') }, citizenStyle(c.style)
+        ),
+        '.js-public-vote': () => { if (c.id && window.ElxApp) ElxApp.voteFor(c.id); }
+      });
       m.setPopup(popup);
       if (c.id) publicPalmMarkers[c.id] = m;
       if (layerVisibility.palmeres) m.addTo(map);
@@ -679,7 +730,7 @@
     Object.keys(myPalmMarkers).forEach((key) => myPalmMarkers[key].remove());
     myPalmMarkers = {};
     const publicIds = new Set((lastPublicPalmeras || []).map((p) => p.id).filter(Boolean));
-    const localPoints = (list || []).filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
+    const localPoints = (list || []).filter(validCitizenPalm);
     declutter(localPoints, 42);
     localPoints.forEach((p) => {
       // Una palmera sincronizada ya se dibuja como publica; el marcador dorado
@@ -696,11 +747,18 @@
       const popup = new mapboxgl.Popup({ offset: 19 }).setHTML(
         '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>' + nameLine + '13/08 \u00B7 ' + esc(p.time) +
         '<div class="pp-fw-actions">' +
-        '<button class="mp-pop-sim tl-map-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + p.lat + ',lng:' + p.lng + ',name:\'' + esc(p.dedication).replace(/'/g, '&#39;') + '\'},\'' + (p.style || 'dorada') + '\')">\uD83C\uDF86 ' + simLbl + '</button>' +
+        '<button class="mp-pop-sim tl-map-btn">\uD83C\uDF86 ' + esc(simLbl) + '</button>' +
         '</div>' +
-        '<button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share(\'' + esc(key) + '\')">' + shareLbl + '</button> ' +
-        '<button class="mp-pop-del pp-dir-btn" onclick="window.ElxApp && ElxApp.removeMyPalm(\'' + esc(key) + '\')">' + delLbl + '</button>'
+        '<button class="mp-pop-share tl-map-btn">' + esc(shareLbl) + '</button> ' +
+        '<button class="mp-pop-del pp-dir-btn">' + esc(delLbl) + '</button>'
       );
+      wirePopupActions(popup, {
+        '.mp-pop-sim': () => playFireworkCustom(
+          { lat: p.lat, lng: p.lng, name: String(p.dedication || '') }, citizenStyle(p.style)
+        ),
+        '.mp-pop-share': () => { if (window.MyPalm) MyPalm.share(key); },
+        '.mp-pop-del': () => { if (window.ElxApp) ElxApp.removeMyPalm(key); }
+      });
       marker.setPopup(popup);
       myPalmMarkers[key] = marker;
     });

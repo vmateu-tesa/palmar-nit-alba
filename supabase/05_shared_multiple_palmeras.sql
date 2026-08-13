@@ -5,6 +5,7 @@ begin;
 
 create table if not exists public.palmeras (
   id uuid primary key default gen_random_uuid(),
+  client_id text,
   name text,
   email text,
   dedication text not null check (char_length(dedication) between 1 and 120),
@@ -17,6 +18,7 @@ create table if not exists public.palmeras (
 );
 
 alter table public.palmeras add column if not exists email text;
+alter table public.palmeras add column if not exists client_id text;
 alter table public.palmeras add column if not exists status text not null default 'approved';
 alter table public.palmeras alter column status set default 'approved';
 
@@ -29,6 +31,26 @@ begin
   ) then
     alter table public.palmeras add constraint palmeras_email_format
       check (email is null or email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$');
+  end if;
+end $$;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.palmeras'::regclass
+      and conname = 'palmeras_status_allowed'
+  ) then
+    alter table public.palmeras add constraint palmeras_status_allowed
+      check (status in ('pending', 'approved', 'rejected')) not valid;
+  end if;
+  if not exists (
+    select 1 from pg_constraint
+    where conrelid = 'public.palmeras'::regclass
+      and conname = 'palmeras_client_id_length'
+  ) then
+    alter table public.palmeras add constraint palmeras_client_id_length
+      check (client_id is null or char_length(client_id) between 8 and 100) not valid;
   end if;
 end $$;
 
@@ -55,18 +77,29 @@ create policy "palmeras_public_insert"
     and lng between -180 and 180
     and email is not null
     and email ~* '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    and char_length(email) <= 120
+    and (name is null or char_length(name) <= 40)
+    and time ~ '^(2[0-3]|[01][0-9]):[0-5][0-9]$'
+    and style in ('dorada', 'multicolor', 'blanca', 'vermella', 'blava')
+    and (client_id is null or char_length(client_id) between 8 and 100)
   );
 
 -- PostgREST solo puede leer campos publicos; el email queda oculto.
 revoke select on public.palmeras from anon, authenticated;
-grant select (id, name, dedication, time, lat, lng, style, created_at)
+grant select (id, client_id, name, dedication, time, lat, lng, style, created_at)
   on public.palmeras to anon, authenticated;
 revoke insert on public.palmeras from anon, authenticated;
-grant insert (name, email, dedication, time, lat, lng, style)
+grant insert (client_id, name, email, dedication, time, lat, lng, style)
   on public.palmeras to anon, authenticated;
+revoke update, delete, truncate, references, trigger
+  on public.palmeras from anon, authenticated;
 
-create index if not exists palmeras_public_created_idx
-  on public.palmeras (status, created_at desc);
+create unique index if not exists palmeras_client_id_unique
+  on public.palmeras (client_id);
+drop index if exists public.palmeras_public_created_idx;
+create index palmeras_public_created_idx
+  on public.palmeras (created_at desc, id)
+  where status = 'approved';
 
 -- Permite que clientes futuros usen Supabase Realtime; el cliente actual
 -- tambien refresca cada 10 s como respaldo para redes moviles inestables.

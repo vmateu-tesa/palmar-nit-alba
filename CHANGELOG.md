@@ -1,5 +1,13 @@
 # Changelog
 
+## v20 — Entrada 3D municipal y endurecimiento de producción (agosto 2026)
+
+- Nueva primera impresión del mapa: Elche se encuadra automáticamente en 3D para mostrar las 138 palmeras municipales oficiales, con marcadores dorados de mayor jerarquía y aparición escalonada compatible con `prefers-reduced-motion`.
+- Eliminada la interpolación de datos ciudadanos en manejadores JavaScript inline; dedicatorias, nombres y estilos se validan y los botones de los popups usan listeners seguros.
+- Sincronización idempotente mediante `client_id`: los reintentos de red recuperan la misma fila, las altas pendientes se reenvían al reconectar y la interfaz solo confirma “publicada para todos” después de recibir respuesta del backend.
+- Peticiones Supabase con timeout, orden estable y migración RLS reforzada: email privado, estilos/horas acotados, permisos mínimos e índice parcial para el listado público.
+- Documentada la secuencia obligatoria de migración, configuración y comprobación del backend antes de promover a producción. Caché PWA subida a v42.
+
 ## v19 — Palmeras ciudadanas compartidas y múltiples (agosto 2026)
 
 - Cada usuario puede crear tantas palmeras ciudadanas como quiera; el formato local anterior se migra automáticamente sin perder la palmera existente.

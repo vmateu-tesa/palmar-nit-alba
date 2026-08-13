@@ -11,6 +11,8 @@
   let expandedId = null;   // hito desplegado en el programa
   let deferredInstall = null;
   let publicPalmerasRefresh = null;
+  let pendingPalmerasSync = null;
+  const palmPublishes = new Map();
 
   // Saneamiento: todo texto de datos que se inyecta via innerHTML pasa por aqui.
   function esc(s) {
@@ -56,23 +58,6 @@
       box.hidden = true;
       localStorage.setItem('elx_hint_' + box.dataset.hint, '1');
     }));
-  }
-
-  function initWelcome() {
-    const w = $('#welcome');
-    if (!w) return;
-    if (!localStorage.getItem('elx_welcome')) {
-      w.hidden = false;
-      const cta = $('#welcome-cta');
-      if (cta) cta.addEventListener('click', () => {
-        w.hidden = true;
-        w.style.display = 'none';
-        localStorage.setItem('elx_welcome', '1');
-        showHint('map');
-      });
-    } else {
-      showHint('map');
-    }
   }
 
   function renderStatusBanner() {
@@ -235,6 +220,38 @@
       finally { publicPalmerasRefresh = null; }
     })();
     return publicPalmerasRefresh;
+  }
+
+  function publishPalm(p) {
+    if (!p || !p.client_id || !window.ElxPalmerasDB || !ElxPalmerasDB.ready()) {
+      return Promise.reject(new Error('Supabase no configurado'));
+    }
+    if (palmPublishes.has(p.client_id)) return palmPublishes.get(p.client_id);
+    const job = ElxPalmerasDB.create(p).then((remote) => {
+      if (!remote) throw new Error('La API no devolvio la palmera publicada');
+      MyPalm.update(p.client_id, remote);
+      return remote;
+    }).finally(() => palmPublishes.delete(p.client_id));
+    palmPublishes.set(p.client_id, job);
+    return job;
+  }
+
+  function syncPendingPalmeras() {
+    if (pendingPalmerasSync) return pendingPalmerasSync;
+    if (!window.MyPalm || !window.ElxPalmerasDB || !ElxPalmerasDB.ready() || !navigator.onLine) {
+      return Promise.resolve([]);
+    }
+    pendingPalmerasSync = (async () => {
+      const synced = [];
+      const pending = MyPalm.getAll().filter((p) => !p.id && p.client_id && p.email);
+      for (const palm of pending) {
+        try { synced.push(await publishPalm(palm)); }
+        catch (e) { console.warn('[palmeras sync]', e); }
+      }
+      if (synced.length) await refreshPublicPalmeras();
+      return synced;
+    })().finally(() => { pendingPalmerasSync = null; });
+    return pendingPalmerasSync;
   }
 
   function removeMyPalm(id) {
@@ -410,26 +427,38 @@
       const name = ($('#mp-name').value || '').trim();
       const time = $('#mp-time').value || '23:30';
       const finalize = async (lat, lng) => {
-        const p = MyPalm.save({ name, email, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() });
-        ElxMap.renderMyPalms(MyPalm.getAll());
-        close();
-        toast(I18N.t('mypalm.created'));
-        setTimeout(() => {
-          const current = MyPalm.get(p.client_id);
-          if (current && current.id) ElxMap.focusPublicPalm(current.id);
-          else ElxMap.focusMyPalm(p.client_id);
-          MyPalm.share(p.client_id);
-        }, 600);
-        if (window.ElxPalmerasDB && ElxPalmerasDB.ready()) {
-          try {
-            const remote = await ElxPalmerasDB.create(p);
-            if (remote) MyPalm.update(p.client_id, remote);
-            await refreshPublicPalmeras();
-          }
-          catch (e) { console.warn('[palmeras]', e); toast(I18N.t('mypalm.publish_error')); }
+        let p = null;
+        try {
+          p = MyPalm.save({ name, email, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() });
+          ElxMap.renderMyPalms(MyPalm.getAll());
+          close();
+          const publication = (async () => {
+            if (!window.ElxPalmerasDB || !ElxPalmerasDB.ready() || !navigator.onLine) return false;
+            try {
+              await publishPalm(p);
+              await refreshPublicPalmeras();
+              return true;
+            } catch (e) {
+              console.warn('[palmeras]', e);
+              return false;
+            }
+          })();
+          setTimeout(async () => {
+            const current = MyPalm.get(p.client_id);
+            if (current && current.id) ElxMap.focusPublicPalm(current.id);
+            else ElxMap.focusMyPalm(p.client_id);
+            await MyPalm.share(p.client_id);
+            const published = await publication;
+            toast(I18N.t(published ? 'mypalm.created' : 'mypalm.publish_error'));
+          }, 600);
+          await publication;
+        } catch (e) {
+          console.warn('[mypalm]', e);
+          toast(I18N.t('mypalm.publish_error'));
+        } finally {
+          saving = false;
+          saveBtn.disabled = false;
         }
-        saving = false;
-        saveBtn.disabled = false;
       };
       saving = true;
       saveBtn.disabled = true;
@@ -492,7 +521,6 @@
     I18N.applyToDom();
     initNav();
     initHints();
-    initWelcome();
     initTimelineInteractions();
     initMyPalm();
     initLayers();
@@ -513,6 +541,7 @@
     }
 
     refreshPublicPalmeras();
+    syncPendingPalmeras();
     setInterval(refreshPublicPalmeras, (window.ElxConfig && ElxConfig.PALMERAS_POLL_MS) || 10000);
 
     if (schedule && window.TilePrefetch) TilePrefetch.schedule(schedule);
@@ -540,10 +569,12 @@
 
     // Recuperación: al volver del bloqueo del móvil, repintar el programa al instante.
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) { renderTimeline(); refreshPublicPalmeras(); }
+      if (!document.hidden) { renderTimeline(); syncPendingPalmeras(); refreshPublicPalmeras(); }
     });
     // Recuperación: si la primera carga falló sin red, reintentar al recuperarla.
     window.addEventListener('online', async () => {
+      await syncPendingPalmeras();
+      refreshPublicPalmeras();
       if (!DB.getSchedule()) {
         const s = await DB.loadSchedule();
         if (s) { initDemo(s); initMapView(s); renderTimeline(); }
@@ -556,5 +587,5 @@
   }
 
   document.addEventListener('DOMContentLoaded', boot);
-  window.ElxApp = { toast, setView, voteFor, refreshPublicPalmeras, removeMyPalm };
+  window.ElxApp = { toast, setView, voteFor, refreshPublicPalmeras, syncPendingPalmeras, removeMyPalm };
 })();

@@ -5,14 +5,14 @@
    · schedule.json      -> stale-while-revalidate (rápido + se actualiza en segundo plano)
    · status.json          -> siempre red, nunca caché persistente (avisos en vivo)
 */
-const VERSION = 'v33';
+const VERSION = 'v35';
 const CORE_CACHE = 'elx-core-' + VERSION;
 
 const CORE = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './css/styles.css?v=33',
+  './css/styles.css?v=34',
   './css/leaflet.css',
   './css/images/marker-icon.png',
   './css/images/marker-icon-2x.png',
@@ -20,22 +20,23 @@ const CORE = [
   './css/images/layers.png',
   './css/images/layers-2x.png',
   './js/leaflet.js',
-  './js/clock.js?v=33',
-  './js/config.js?v=33',
-  './js/palmeras-db.js?v=33',
-  './js/i18n.js?v=33',
-  './js/fw-styles.js?v=33',
-  './js/map.js?v=33',
-  './js/ar.js?v=33',
-  './js/ar-camera.js?v=33',
-  './js/timeline.js?v=33',
-  './js/data.js?v=33',
-  './js/app.js?v=33',
-  './js/prefetch.js?v=33',
-  './js/alerts.js?v=33',
-  './js/mypalm.js?v=33',
+  './js/clock.js?v=34',
+  './js/config.js?v=34',
+  './js/palmeras-db.js?v=34',
+  './js/i18n.js?v=34',
+  './js/fw-styles.js?v=34',
+  './js/map.js?v=35',
+  './js/ar.js?v=34',
+  './js/ar-camera.js?v=34',
+  './js/timeline.js?v=34',
+  './js/data.js?v=34',
+  './js/app.js?v=34',
+  './js/prefetch.js?v=34',
+  './js/alerts.js?v=34',
+  './js/mypalm.js?v=34',
   './icons/icon.svg',
-  './data/schedule.json?v=33'
+  './data/schedule.json?v=34',
+  './data/official-palmeras.json?v=34'
 ];
 
 self.addEventListener('install', (e) => {

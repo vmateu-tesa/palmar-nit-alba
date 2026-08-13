@@ -1,5 +1,13 @@
 # Changelog
 
+## v18 — Palmeras oficiales 2026 + 3D/AR por palmera (agosto 2026)
+
+- Nuevo dataset `data/official-palmeras.json` con las 312 palmeras del listado oficial PDF publicado en Fiestas en Elche para la Nit de l'Albà 2026.
+- Nueva capa "Palmeras oficiales 2026" en el mapa: cada palmera muestra número, patrocinador/dedicatoria, hora oficial con segundos, lugar de lanzamiento y etiqueta de origen (Ayuntamiento, asociación/colectivo o patrocinio publicado).
+- Cada palmera oficial permite abrir simulación 3D y activar la cámara en modo AR apuntando al lugar seleccionado.
+- Avisos locales opt-in para palmeras oficiales, agrupados por minuto para evitar 312 notificaciones separadas.
+- Caché PWA subida a v34 para servir el nuevo dataset y los cambios de cliente.
+
 ## v15 — El cielo lleno: 110 palmeras de ejemplo por barrios (julio 2026)
 
 - El folleto oficial 2025 ya no está disponible (fiestasenelche.es renovada para 2026, programa "próximamente"). Mientras llega el listado 2026: recreación de ejemplo a escala realista con 110 palmeras distribuidas por los barrios reales de disparo (Centro 30, Carrús 20, Altabix 20, El Pla 15, Raval/Sector V 15, Parque/Estación 10), con familias, peñas y dedicatorias verosímiles y horas del programa real. Etiquetadas como recreación en cada ficha.

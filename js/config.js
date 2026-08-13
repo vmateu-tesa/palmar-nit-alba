@@ -6,7 +6,8 @@
 window.ElxConfig = {
   // Ficheros de datos (servidos por el propio hosting / CDN).
   // Sube el numero al publicar cambios de contenido para evitar cache antigua.
-  SCHEDULE_URL: 'data/schedule.json?v=33',
+  SCHEDULE_URL: 'data/schedule.json?v=34',
+  OFFICIAL_PALMERAS_URL: 'data/official-palmeras.json?v=34',
   STATUS_URL: 'data/status.json',   // se consulta con poca frecuencia, sin cache persistente
   STATUS_POLL_MS: 30000,            // cada cuanto se revisa si hay avisos en vivo
 

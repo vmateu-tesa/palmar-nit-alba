@@ -1,6 +1,6 @@
 {
-  "_README": "v16 - Cifras y novedades verificadas con fuentes oficiales/prensa a 2026-07-16 (ver 'links'): 23 puntos de disparo en el municipio (antes 21), 312 palmeras, 2,7 toneladas de pólvora, 86.000 unidades pirotécnicas (5.199 docenas de cohetes = 62.336 cohetes, 1.080 cohetones imperiales formando la Palmera de la Mare de Déu). Novedad 2026: nuevo punto de disparo en el Paseo de Jaca (Traspalacio) y efectos de color añadidos al Pont d'Altamira. Empresa: Pirotecnia Ferrández. Presupuesto 2026: 193.538 €. Se ha eliminado el listado ficticio de 'palmeras ciudadanas' (era una recreación de ejemplo, no datos reales); el listado oficial de patrocinadores 2026 aún no está publicado (ver citizen_note_*). Coordenadas de referencia verificadas (Basílica) y el resto trianguladas/aproximadas sobre el callejero (provisional=true) pendientes de confirmación municipal exacta — el Ayuntamiento solo publica el mapa detallado en fiestasenelche.es días antes del 13 de agosto.",
-  "version": 17,
+  "_README": "v18 - Puesta al día para el 13/08/2026 con fiestasenelche.es: ya está publicada la página oficial de la Nit de l'Albà 2026 y el PDF de patrocinio/listado oficial de palmeras. Se actualizan notas, enlaces y actos clave del día (Racó FestiElx, Mascletá Exhibición del Pont d'Altamira, Misteri, Gran Carretillà, Nits de Festa y Hort de Baix). Se mantienen las cifras verificadas en julio: 23 puntos de disparo en el municipio, 312 palmeras oficiales, 2,7 toneladas de pólvora, 86.000 unidades pirotécnicas, Pirotecnia Ferrández y novedad 2026 del Paseo de Jaca/Traspalacio. Coordenadas de Basílica verificadas y resto aproximadas/provisionales cuando no hay coordenada municipal exacta publicada.",
+  "version": 18,
   "event": {
     "name": "Nit de l'Albà",
     "city": "Elx",
@@ -45,8 +45,8 @@
       "lat": 38.2656,
       "lng": -0.6988,
       "official": true,
-      "note_va": "Una de les terrasses des d'on es disparen les 312 palmeres patrocinades",
-      "note_cas": "Una de las terrazas desde donde se disparan las 312 palmeras patrocinadas"
+      "note_va": "Una de les terrasses incloses en el llistat oficial de palmeres patrocinades",
+      "note_cas": "Una de las terrazas incluidas en el listado oficial de palmeras patrocinadas"
     },
     {
       "id": "paseo-estacion",
@@ -162,14 +162,14 @@
   "schedule": [
     {
       "id": "inici-oficial",
-      "type_va": "Inici · 312 palmeres des de les terrasses",
-      "type_cas": "Inicio · 312 palmeras desde las terrazas",
+      "type_va": "Inici · palmeres patrocinades des de les terrasses",
+      "type_cas": "Inicio · palmeras patrocinadas desde las terrazas",
       "launch_point": "ajuntament",
       "start": "2026-08-13T23:15:00+02:00",
       "kind": "palmera_foc",
       "highlight": false,
-      "note_va": "Comença l'espectacle: 312 palmeres patrocinades per famílies i empreses es disparen des de terrasses de tota la ciutat, entre elles la de l'Ajuntament.",
-      "note_cas": "Empieza el espectáculo: 312 palmeras patrocinadas por familias y empresas se disparan desde terrazas de toda la ciudad, entre ellas la del Ayuntamiento."
+      "note_va": "Comença l'espectacle: el llistat oficial 2026 recull 312 palmeres, amb dedicatòria, punt i hora; des de les 23:15 s'encadenen les palmeres patrocinades per famílies, empreses i entitats.",
+      "note_cas": "Empieza el espectáculo: el listado oficial 2026 recoge 312 palmeras, con dedicatoria, punto y hora; desde las 23:15 se encadenan las palmeras patrocinadas por familias, empresas y entidades."
     },
     {
       "id": "palmera-imperial",
@@ -385,6 +385,22 @@
       "url": "https://fiestasenelche.es"
     },
     {
+      "id": "fiestasenelche-nit-alba",
+      "url": "https://fiestasenelche.es/nit-de-lalba/"
+    },
+    {
+      "id": "palmeras-listado-2026-pdf",
+      "url": "https://fiestasenelche.es/wp-content/uploads/2026/07/patrocinio-nit-l-alba-2026.pdf"
+    },
+    {
+      "id": "fiestasenelche-programa-hoy",
+      "url": "https://fiestasenelche.es/que-hacer-hoy/"
+    },
+    {
+      "id": "fiestasenelche-programa-completo",
+      "url": "https://fiestasenelche.es/programacion-fiestas-agosto-elche/"
+    },
+    {
       "id": "ajuntament-nota-2025",
       "url": "https://www.elche.es/2025/08/elche-lanzara-27-toneladas-de-polvora-y-cerca-de-86-000-cohetes-en-la-nit-de-lalba/"
     },
@@ -454,8 +470,8 @@
       "provisional": true,
       "name_va": "Racó FestiElx",
       "name_cas": "Racó FestiElx",
-      "desc_va": "Passeig de l'Estació: racó gastronòmic amb una trentena d'establiments, sessions de DJ i el concurs de mascletàs.",
-      "desc_cas": "Paseo de la Estación: racó gastronómico con una treintena de establecimientos, sesiones de DJ y el concurso de mascletàs."
+      "desc_va": "Passeig de l'Estació. 13 d'agost: racó gastronòmic 12:00-17:00 amb Morros DJ; nova sessió 19:00-23:00 i DJ a les 00:01 després de l'Albà.",
+      "desc_cas": "Paseo de la Estación. 13 de agosto: racó gastronómico 12:00-17:00 con Morros DJ; nueva sesión 19:00-23:00 y DJ a las 00:01 tras l'Albà."
     },
     {
       "id": "mascleta-quiles",
@@ -468,14 +484,24 @@
       "desc_cas": "XVI Concurso de Mascletaes, cruce Av. Alcalde Vicente Quiles con Paseo de la Estación. Días 8, 9, 11, 12 y 14 de agosto a las 14:00 (una pirotecnia distinta cada día)."
     },
     {
+      "id": "mascleta-altamira-13",
+      "lat": 38.2684,
+      "lng": -0.6999,
+      "provisional": true,
+      "name_va": "Mascletà Exhibició · Pont d'Altamira",
+      "name_cas": "Mascletá Exhibición · Puente de Altamira",
+      "desc_va": "13 d'agost a les 14:00, a càrrec de Pirotecnia La Alpujarreña. Punt oficial del programa de Festes d'Agost 2026.",
+      "desc_cas": "13 de agosto a las 14:00, a cargo de Pirotecnia La Alpujarreña. Punto oficial del programa de Fiestas de Agosto 2026."
+    },
+    {
       "id": "agora-heliketana",
       "lat": 38.2712,
       "lng": -0.6974,
       "provisional": true,
       "name_va": "Àgora Heliketana",
       "name_cas": "Ágora Heliketana",
-      "desc_va": "Rotonda del Parc Municipal: recinte dels Pobladors d'Elx amb tallers, teatre i la Festa de l'Aigua.",
-      "desc_cas": "Rotonda del Parque Municipal: recinto de los Pobladores de Elche con talleres, teatro y la Fiesta del Agua."
+      "desc_va": "Rotonda del Parc Municipal. 13 d'agost: obertura a les 12:00 i Festa de l'Aigua a les 15:00 dins del recinte dels Pobladors d'Elx.",
+      "desc_cas": "Rotonda del Parque Municipal. 13 de agosto: apertura a las 12:00 y Fiesta del Agua a las 15:00 dentro del recinto de los Pobladores de Elche."
     },
     {
       "id": "hort-de-baix",
@@ -484,8 +510,8 @@
       "provisional": true,
       "name_va": "Hort de Baix · concerts",
       "name_cas": "Hort de Baix · conciertos",
-      "desc_va": "Concerts i actuacions musicals cada nit de festes.",
-      "desc_cas": "Conciertos y actuaciones musicales cada noche de fiestas."
+      "desc_va": "13 d'agost, després de l'Albà: Efecto Pasillo amb portes a les 00:30 i actuació a la 01:00. Entrada gratuïta.",
+      "desc_cas": "13 de agosto, tras l'Albà: Efecto Pasillo con puertas a las 00:30 y actuación a la 01:00. Entrada gratuita."
     },
     {
       "id": "hort-del-monjo",
@@ -531,11 +557,11 @@
       "lng": -0.6862,
       "name_va": "Nits de Festa ELX (pàrquing UMH)",
       "name_cas": "Nits de Festa ELX (parking UMH)",
-      "desc_va": "Barraca Municipal (pàrquing UMH), del 7 al 14 d'agost (portes 21:00, concerts 23:00). Cartell 2026: MVRK + Juicy Bae (7), Siloé + Neverland Bari (8), Sidecars (9), Beret (10), Celtas Cortos (11), Rigoberta Bandini (12), OBK (13, nit de l'Albà), Chimo Bayo + Kuve (14). Alguns concerts són gratuïts fins a omplir aforament, la resta de pagament. Entrades i programa: fiestasenelche.es.",
-      "desc_cas": "Barraca Municipal (parking UMH), del 7 al 14 de agosto (puertas 21:00, conciertos 23:00). Cartel 2026: MVRK + Juicy Bae (7), Siloé + Neverland Bari (8), Sidecars (9), Beret (10), Celtas Cortos (11), Rigoberta Bandini (12), OBK (13, noche de l'Albà), Chimo Bayo + Kuve (14). Algunos conciertos son gratuitos hasta completar aforo, el resto de pago. Entradas y programa: fiestasenelche.es."
+      "desc_va": "Barraca Municipal (pàrquing UMH). Nit del 13 al 14: portes 01:00, OBK a les 02:00 i DJs des de les 03:30. Accés gratuït fins a completar aforament.",
+      "desc_cas": "Barraca Municipal (parking UMH). Noche del 13 al 14: puertas 01:00, OBK a las 02:00 y DJs desde las 03:30. Acceso gratuito hasta completar aforo."
     }
   ],
   "citizen_palmeras": [],
-  "citizen_note_va": "El programa real té 312 palmeres patrocinades per famílies i empreses, disparades des de terrasses de tota la ciutat. El llistat oficial 2026, amb dedicatòries i ordre, encara no s'ha publicat (comprovat el 16/07/2026); es difondrà a fiestasenelche.es i a la Regidoria de Festes dies abans del 13 d'agost.",
-  "citizen_note_cas": "El programa real tiene 312 palmeras patrocinadas por familias y empresas, disparadas desde terrazas de toda la ciudad. El listado oficial 2026, con dedicatorias y orden, todavía no se ha publicado (comprobado el 16/07/2026); se difundirá en fiestasenelche.es y en la Concejalía de Festejos días antes del 13 de agosto."
+  "citizen_note_va": "El llistat oficial 2026 de la Nit de l'Albà ja està publicat a fiestasenelche.es: recull 312 palmeres amb dedicatòria, punt de disparo i hora, des de les 23:15 fins a la Palmera de la Mare de Déu a les 00:00. Esta app manté les palmeres ciutadanes digitals separades de les oficials.",
+  "citizen_note_cas": "El listado oficial 2026 de la Nit de l'Albà ya está publicado en fiestasenelche.es: recoge 312 palmeras con dedicatoria, punto de disparo y hora, desde las 23:15 hasta la Palmera de la Mare de Déu a las 00:00. Esta app mantiene las palmeras ciudadanas digitales separadas de las oficiales."
 }

@@ -176,7 +176,10 @@
     });
     if (window.ElxMap) ElxMap.setNextInfo(nextByPoint);
 
-    if (window.Alerts) Alerts.check(state, labelFor, toast);
+    if (window.Alerts) {
+      Alerts.check(state, labelFor, toast);
+      Alerts.checkOfficialPalmeras(schedule, delay, toast);
+    }
 
     listEl.innerHTML = state.items.map((it) => {
       const isNow = state.current && state.current.id === it.id;

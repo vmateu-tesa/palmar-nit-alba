@@ -24,6 +24,7 @@
   let lastOfficialPalmeras = null;
   let officialRenderSig = '';
   let initialOfficialFrameDone = false;
+  let openingShowStarted = false;
   let launchMarkers = {};
   let officialMarkers = {};
   let publicPalmMarkers = {};
@@ -376,8 +377,9 @@
     return [lng + dLng, lat + dLat];
   }
 
-  let fwToken = 0, fwCard = null, fwPrevCam = null, fwHideTimer = null;
+  let fwToken = 0, fwCard = null, fwPrevCam = null, fwHideTimer = null, fwOpeningStatus = null;
   let fwCanvas = null, fwCtx = null;
+  let openingShowState = { running: false, total: 0, points: 0, launched: 0 };
 
   function ensureFwCard() {
     if (fwCard) return fwCard;
@@ -395,6 +397,51 @@
     map.getContainer().appendChild(fwCanvas);
     fwCtx = fwCanvas.getContext('2d');
     return fwCanvas;
+  }
+
+  function ensureOpeningStatus() {
+    if (fwOpeningStatus) return fwOpeningStatus;
+    fwOpeningStatus = document.createElement('div');
+    fwOpeningStatus.className = 'fw-opening-status';
+    fwOpeningStatus.hidden = true;
+    fwOpeningStatus.setAttribute('role', 'status');
+    fwOpeningStatus.setAttribute('aria-live', 'polite');
+    fwOpeningStatus.innerHTML =
+      '<span class="fw-opening-spark" aria-hidden="true">✦</span>' +
+      '<span><strong class="fw-opening-title"></strong><small class="fw-opening-progress"></small></span>' +
+      '<button class="fw-opening-close" type="button" aria-label=""></button>';
+    fwOpeningStatus.querySelector('.fw-opening-close').addEventListener('click', stopOpeningShow);
+    map.getContainer().appendChild(fwOpeningStatus);
+    return fwOpeningStatus;
+  }
+
+  function paintOpeningStatus(launched, total, points, complete) {
+    const status = ensureOpeningStatus();
+    status.hidden = false;
+    const mapView = map.getContainer().closest('#view-map');
+    if (mapView) mapView.classList.add('is-opening-show');
+    status.classList.toggle('is-complete', !!complete);
+    status.querySelector('.fw-opening-title').textContent = window.I18N ? I18N.t('fw.opening_title') : 'Elx al Cel';
+    status.querySelector('.fw-opening-progress').textContent = window.I18N
+      ? I18N.t(complete ? 'fw.opening_complete' : 'fw.opening_progress', { launched, total, points })
+      : launched + ' / ' + total;
+    const close = status.querySelector('.fw-opening-close');
+    close.textContent = '×';
+    close.setAttribute('aria-label', window.I18N ? I18N.t('fw.opening_skip') : 'Cerrar espectaculo');
+  }
+
+  function hideOpeningStatus() {
+    if (fwOpeningStatus) fwOpeningStatus.hidden = true;
+    const mapView = map && map.getContainer().closest('#view-map');
+    if (mapView) mapView.classList.remove('is-opening-show');
+  }
+
+  function stopOpeningShow() {
+    if (!openingShowState.running) { hideOpeningStatus(); return; }
+    fwToken++;
+    openingShowState.running = false;
+    if (fwCanvas && fwCtx) fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+    hideOpeningStatus();
   }
 
   function metersPerPixel(lat, zoom) {
@@ -446,6 +493,118 @@
     requestAnimationFrame(frame);
   }
 
+  // Espectaculo de apertura: representa las 312 palmeras desde sus 12 puntos
+  // oficiales. Se proyecta una sola vez por carga y se agrupan coordenadas para
+  // limitar map.project() a 12 llamadas por frame incluso en moviles.
+  function runAllOfficialFireworks(points) {
+    if (!map || !window.FWStyles || !points || !points.length || openingShowState.running) return;
+    const token = ++fwToken;
+    const canvas = ensureFwCanvas();
+    const mobile = map.getContainer().clientWidth < 600;
+    const dpr = Math.min(mobile ? 1.15 : 1.35, window.devicePixelRatio || 1);
+    const box = map.getContainer().getBoundingClientRect();
+    canvas.width = Math.round(box.width * dpr);
+    canvas.height = Math.round(box.height * dpr);
+
+    const grouped = new Map();
+    points.forEach((p) => {
+      const key = Number(p.lat).toFixed(6) + '|' + Number(p.lng).toFixed(6);
+      if (!grouped.has(key)) grouped.set(key, { lat: p.lat, lng: p.lng, palms: [] });
+      grouped.get(key).palms.push(p);
+    });
+    const groups = Array.from(grouped.values());
+    const duration = mobile ? 9.2 : 8.2;
+    const quality = mobile ? 0.22 : 0.34;
+    const entries = [];
+    groups.forEach((group, groupIndex) => {
+      group.palms.forEach((p, palmIndex) => {
+        const spread = group.palms.length > 1 ? palmIndex / (group.palms.length - 1) : 0;
+        const delay = 0.18 + spread * duration + (groupIndex % 4) * 0.06;
+        const angle = palmIndex * 2.399963 + groupIndex * 0.7;
+        const radius = 4 + (palmIndex % 6) * 3.2;
+        const style = FWStyles.hashPick(p.id + '-' + (p.sponsor_type || 'official'));
+        entries.push({
+          delay,
+          group,
+          sim: FWStyles.createSim(style.id, {
+            heightM: (mobile ? 72 : 88) + (palmIndex % 5) * (mobile ? 8 : 11),
+            offsetXM: Math.cos(angle) * radius,
+            delayS: delay,
+            particleScale: quality
+          }),
+          done: false
+        });
+      });
+    });
+
+    openingShowState = { running: true, total: entries.length, points: groups.length, launched: 0 };
+    paintOpeningStatus(0, entries.length, groups.length, false);
+    let last = performance.now(), startedAt = last, lastPaint = 0;
+
+    function frame(now) {
+      if (token !== fwToken) {
+        openingShowState.running = false;
+        return;
+      }
+      try {
+        const dt = Math.min(0.05, (now - last) / 1000);
+        const elapsed = (now - startedAt) / 1000;
+        last = now;
+        fwCtx.globalCompositeOperation = 'destination-out';
+        fwCtx.globalAlpha = 1;
+        fwCtx.fillStyle = 'rgba(0,0,0,0.22)';
+        fwCtx.fillRect(0, 0, canvas.width, canvas.height);
+        fwCtx.globalCompositeOperation = 'lighter';
+
+        const projected = new Map();
+        let doneCount = 0, launched = 0;
+        entries.forEach((entry) => {
+          if (elapsed >= entry.delay) launched++;
+          if (!entry.done) entry.done = entry.sim.update(dt);
+          if (entry.done) { doneCount++; return; }
+          let pt = projected.get(entry.group);
+          if (!pt) {
+            pt = map.project([entry.group.lng, entry.group.lat]);
+            projected.set(entry.group, pt);
+          }
+          const pxm = dpr / metersPerPixel(entry.group.lat, map.getZoom());
+          entry.sim.render(fwCtx, pt.x * dpr, pt.y * dpr, pxm);
+        });
+        fwCtx.globalCompositeOperation = 'source-over';
+        openingShowState.launched = launched;
+
+        if (now - lastPaint > 180) {
+          paintOpeningStatus(launched, entries.length, groups.length, false);
+          lastPaint = now;
+        }
+        if (doneCount === entries.length) {
+          openingShowState.running = false;
+          fwCtx.clearRect(0, 0, canvas.width, canvas.height);
+          paintOpeningStatus(entries.length, entries.length, groups.length, true);
+          setTimeout(() => { if (token === fwToken) hideOpeningStatus(); }, 2200);
+          return;
+        }
+      } catch (e) {
+        console.error('[fw-opening]', e);
+        stopOpeningShow();
+        return;
+      }
+      requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  function scheduleOpeningShow(points) {
+    if (openingShowStarted || !points || !points.length) return;
+    openingShowStarted = true;
+    const start = () => setTimeout(() => runAllOfficialFireworks(points), 1450);
+    if (document.hidden) {
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) start(); }, { once: true });
+    } else start();
+  }
+
+  function getOpeningShowState() { return Object.assign({}, openingShowState); }
+
   function playFirework(id) {
     if (!map || !lastSchedule) return;
     const p = (lastSchedule.launch_points || []).find((x) => x.id === id);
@@ -464,6 +623,8 @@
   }
 
   function showFirework(p, style) {
+    if (openingShowState.running) stopOpeningShow();
+    else hideOpeningStatus();
     const token = ++fwToken;
     const safetyLabel = window.I18N ? I18N.t('fw.safety') : '';
     const closeLabel = window.I18N ? I18N.t('fw.close') : '';
@@ -660,6 +821,7 @@
           essential: true
         });
       });
+      scheduleOpeningShow(points);
     }
   }
   function playOfficialFirework(id) {
@@ -817,6 +979,7 @@
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
     renderMyPalm, renderMyPalms, focusMyPalm, focusPublicPalm, getCenter, renderPublicPalmeras, renderOfficialPalmeras,
     playFirework, playFireworkCustom, playOfficialFirework, openOfficialAR, focusOfficialPalm, closeFirework,
+    runAllOfficialFireworks, stopOpeningShow, getOpeningShowState,
     hasLeaflet: hasMapbox // alias for app.js
   };
 })();

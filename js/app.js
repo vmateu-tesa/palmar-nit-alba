@@ -40,6 +40,7 @@
   function setView(name) {
     $$('.view').forEach((v) => v.classList.toggle('is-active', v.dataset.view === name));
     $$('.nav-item').forEach((b) => b.classList.toggle('is-active', b.dataset.nav === name));
+    if (name !== 'map' && window.ElxMap && ElxMap.stopOpeningShow) ElxMap.stopOpeningShow();
     if (name === 'map' && window.ElxMap) ElxMap.refresh();
     if (name === 'ar') { AR.start(); }
     else { AR.stop(); }

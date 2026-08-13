@@ -10,6 +10,7 @@
   let nextStartMs = null;
   let expandedId = null;   // hito desplegado en el programa
   let deferredInstall = null;
+  let publicPalmerasRefresh = null;
 
   // Saneamiento: todo texto de datos que se inyecta via innerHTML pasa por aqui.
   function esc(s) {
@@ -219,15 +220,27 @@
 
   async function refreshPublicPalmeras() {
     if (!window.ElxPalmerasDB || !ElxPalmerasDB.ready() || !window.ElxMap) return;
-    try {
-      const [list, counts, mine] = await Promise.all([
-        ElxPalmerasDB.list(),
-        ElxPalmerasDB.voteCounts().catch(() => ({})),
-        ElxPalmerasDB.myVotes().catch(() => ({}))
-      ]);
-      list.forEach((p) => { p.votes = counts[p.id] || 0; p.voted = !!mine[p.id]; });
-      ElxMap.renderPublicPalmeras(list);
-    } catch (e) { console.warn('[palmeras]', e); }
+    if (publicPalmerasRefresh) return publicPalmerasRefresh;
+    publicPalmerasRefresh = (async () => {
+      try {
+        const [list, counts, mine] = await Promise.all([
+          ElxPalmerasDB.list(),
+          ElxPalmerasDB.voteCounts().catch(() => ({})),
+          ElxPalmerasDB.myVotes().catch(() => ({}))
+        ]);
+        list.forEach((p) => { p.votes = counts[p.id] || 0; p.voted = !!mine[p.id]; });
+        ElxMap.renderPublicPalmeras(list);
+        return list;
+      } catch (e) { console.warn('[palmeras]', e); return []; }
+      finally { publicPalmerasRefresh = null; }
+    })();
+    return publicPalmerasRefresh;
+  }
+
+  function removeMyPalm(id) {
+    if (!window.MyPalm) return;
+    MyPalm.remove(id);
+    ElxMap.renderMyPalms(MyPalm.getAll());
   }
 
   async function voteFor(id) {
@@ -305,6 +318,7 @@
     if (!fab || !modal) return;
     let whereMode = 'gps';
     let gpsPos = null, gpsLookedUp = false;
+    let saving = false;
     const gpsB = $('#mp-gps'), centerB = $('#mp-center'), statusEl = $('#mp-loc-status');
     const paintWhere = () => {
       if (gpsB) gpsB.classList.toggle('is-active', whereMode === 'gps');
@@ -367,13 +381,12 @@
 
     fab.addEventListener('click', () => {
       const existing = MyPalm.get();
-      if (existing) { ElxMap.focusMyPalm(); return; }
       const ded = $('#mp-dedication');
-      if (ded) ded.placeholder = I18N.t('mypalm.ph');
+      if (ded) { ded.value = ''; ded.placeholder = I18N.t('mypalm.ph'); }
       const nameEl = $('#mp-name');
-      if (nameEl) nameEl.placeholder = I18N.t('mypalm.name_ph');
+      if (nameEl) { nameEl.value = (existing && existing.name) || ''; nameEl.placeholder = I18N.t('mypalm.name_ph'); }
       const emailEl = $('#mp-email');
-      if (emailEl) emailEl.placeholder = I18N.t('mypalm.email_ph');
+      if (emailEl) { emailEl.value = (existing && existing.email) || ''; emailEl.placeholder = I18N.t('mypalm.email_ph'); }
       modal.hidden = false;
       gpsPos = null; gpsLookedUp = false;
       whereMode = 'gps'; paintWhere();
@@ -389,6 +402,7 @@
 
     const saveBtn = $('#mp-save');
     if (saveBtn) saveBtn.addEventListener('click', () => {
+      if (saving) return;
       const ded = ($('#mp-dedication').value || '').trim();
       if (!ded) { toast(I18N.t('mypalm.need_ded')); return; }
       const email = ($('#mp-email').value || '').trim();
@@ -396,17 +410,29 @@
       const name = ($('#mp-name').value || '').trim();
       const time = $('#mp-time').value || '23:30';
       const finalize = async (lat, lng) => {
-        const p = { name, email, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() };
-        MyPalm.save(p);
-        ElxMap.renderMyPalm(p);
+        const p = MyPalm.save({ name, email, dedication: ded, time, lat, lng, style: selectedStyle, created: Date.now() });
+        ElxMap.renderMyPalms(MyPalm.getAll());
         close();
         toast(I18N.t('mypalm.created'));
+        setTimeout(() => {
+          const current = MyPalm.get(p.client_id);
+          if (current && current.id) ElxMap.focusPublicPalm(current.id);
+          else ElxMap.focusMyPalm(p.client_id);
+          MyPalm.share(p.client_id);
+        }, 600);
         if (window.ElxPalmerasDB && ElxPalmerasDB.ready()) {
-          try { await ElxPalmerasDB.create(p); refreshPublicPalmeras(); }
+          try {
+            const remote = await ElxPalmerasDB.create(p);
+            if (remote) MyPalm.update(p.client_id, remote);
+            await refreshPublicPalmeras();
+          }
           catch (e) { console.warn('[palmeras]', e); toast(I18N.t('mypalm.publish_error')); }
         }
-        setTimeout(() => { ElxMap.focusMyPalm(); MyPalm.share(); }, 600);
+        saving = false;
+        saveBtn.disabled = false;
       };
+      saving = true;
+      saveBtn.disabled = true;
       const c = ElxMap.getCenter() || { lat: 38.2685, lng: -0.699 };
       if (whereMode === 'gps' && gpsPos) { finalize(gpsPos.lat, gpsPos.lng); return; }
       if (whereMode === 'gps' && !gpsLookedUp && 'geolocation' in navigator) {
@@ -479,7 +505,7 @@
     initDemo(schedule);
     if (schedule) {
       initMapView(schedule);
-      if (window.MyPalm && MyPalm.get()) ElxMap.renderMyPalm(MyPalm.get());
+      if (window.MyPalm) ElxMap.renderMyPalms(MyPalm.getAll());
       AR.setTargets(schedule.launch_points || []);
       renderTimeline();
     } else {
@@ -487,7 +513,7 @@
     }
 
     refreshPublicPalmeras();
-    setInterval(refreshPublicPalmeras, 60000);
+    setInterval(refreshPublicPalmeras, (window.ElxConfig && ElxConfig.PALMERAS_POLL_MS) || 10000);
 
     if (schedule && window.TilePrefetch) TilePrefetch.schedule(schedule);
 
@@ -513,7 +539,9 @@
     }
 
     // Recuperación: al volver del bloqueo del móvil, repintar el programa al instante.
-    document.addEventListener('visibilitychange', () => { if (!document.hidden) renderTimeline(); });
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) { renderTimeline(); refreshPublicPalmeras(); }
+    });
     // Recuperación: si la primera carga falló sin red, reintentar al recuperarla.
     window.addEventListener('online', async () => {
       if (!DB.getSchedule()) {
@@ -528,5 +556,5 @@
   }
 
   document.addEventListener('DOMContentLoaded', boot);
-  window.ElxApp = { toast, setView, voteFor, refreshPublicPalmeras };
+  window.ElxApp = { toast, setView, voteFor, refreshPublicPalmeras, removeMyPalm };
 })();

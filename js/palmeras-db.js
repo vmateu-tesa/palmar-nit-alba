@@ -34,8 +34,8 @@
 
   async function list() {
     if (!ready()) return [];
-    const url = ElxConfig.SUPABASE_URL + '/rest/v1/palmeras?select=id,name,dedication,time,lat,lng,style,created_at&order=created_at.desc&limit=500';
-    const res = await fetch(url, { headers: headers() });
+    const url = ElxConfig.SUPABASE_URL + '/rest/v1/palmeras?select=id,name,dedication,time,lat,lng,style,created_at&order=created_at.desc&limit=1000';
+    const res = await fetch(url, { headers: headers(), cache: 'no-store' });
     if (!res.ok) throw new Error('palmeras list failed: ' + res.status);
     return res.json();
   }
@@ -67,7 +67,7 @@
   async function voteCounts() {
     if (!ready()) return {};
     const url = ElxConfig.SUPABASE_URL + '/rest/v1/palmera_vote_counts?select=palmera_id,votes';
-    const res = await fetch(url, { headers: headers() });
+    const res = await fetch(url, { headers: headers(), cache: 'no-store' });
     if (!res.ok) return {};
     const rows = await res.json();
     const map = {};
@@ -78,7 +78,7 @@
   async function myVotes() {
     if (!ready()) return {};
     const url = ElxConfig.SUPABASE_URL + '/rest/v1/palmera_votes?select=palmera_id&voter_id=eq.' + encodeURIComponent(voterId());
-    const res = await fetch(url, { headers: headers() });
+    const res = await fetch(url, { headers: headers(), cache: 'no-store' });
     if (!res.ok) return {};
     const rows = await res.json();
     const map = {};

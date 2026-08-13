@@ -19,12 +19,13 @@
   let map = null, userMarker = null, userAccuracyCircle = null, geoWatchId = null, meetingMarker = null;
   let nextInfo = {};
   let lastSchedule = null;
-  let myPalmMarker = null;
+  let myPalmMarkers = {};
   let lastPublicPalmeras = null;
   let lastOfficialPalmeras = null;
   let officialRenderSig = '';
   let launchMarkers = {};
   let officialMarkers = {};
+  let publicPalmMarkers = {};
   
   // Layer arrays (Mapbox doesn't have LayerGroups for markers, we keep them in arrays)
   let layerLaunch = [], layerClosures = [], layerPerimeters = [], layerPois = [], layerViewpoints = [], layerFesta = [], layerOfficial = [], layerPalmeres = [];
@@ -644,6 +645,7 @@
     lastPublicPalmeras = (list || []).filter((c) => typeof c.lat === 'number' && typeof c.lng === 'number');
     if (!map) return;
     clearMarkers(layerPalmeres);
+    publicPalmMarkers = {};
     declutter(lastPublicPalmeras, 10);
     const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
     const voteLbl = window.I18N ? I18N.t('vote.cta') : '👍';
@@ -665,36 +667,57 @@
         '</div>'
       );
       m.setPopup(popup);
+      if (c.id) publicPalmMarkers[c.id] = m;
       if (layerVisibility.palmeres) m.addTo(map);
       layerPalmeres.push(m);
     });
+    if (window.MyPalm) renderMyPalms(MyPalm.getAll());
   }
 
-  function renderMyPalm(p) {
+  function renderMyPalms(list) {
     if (!map) return;
-    if (myPalmMarker) { myPalmMarker.remove(); myPalmMarker = null; }
-    if (!p) return;
-    myPalmMarker = new mapboxgl.Marker({ element: myPalmIcon() }).setLngLat([p.lng, p.lat]).addTo(map);
-    const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
-    const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
-    const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
-    const nameLine = p.name ? esc(p.name) + ' \u00B7 ' : '';
+    Object.keys(myPalmMarkers).forEach((key) => myPalmMarkers[key].remove());
+    myPalmMarkers = {};
+    const publicIds = new Set((lastPublicPalmeras || []).map((p) => p.id).filter(Boolean));
+    const localPoints = (list || []).filter((p) => typeof p.lat === 'number' && typeof p.lng === 'number');
+    declutter(localPoints, 42);
+    localPoints.forEach((p) => {
+      // Una palmera sincronizada ya se dibuja como publica; el marcador dorado
+      // queda para altas locales pendientes o cuando aun no llego el listado.
+      if (p.id && publicIds.has(p.id)) return;
+      const key = p.client_id || p.id;
+      if (!key) return;
+      const marker = new mapboxgl.Marker({ element: myPalmIcon() }).setLngLat([p._mLng, p._mLat]).addTo(map);
+      const shareLbl = window.I18N ? I18N.t('mypalm.share_btn') : 'Compartir';
+      const delLbl = window.I18N ? I18N.t('mypalm.delete') : 'Eliminar';
+      const simLbl = window.I18N ? I18N.t('fw.cta') : 'Veure en 3D';
+      const nameLine = p.name ? esc(p.name) + ' \u00B7 ' : '';
 
-    const popup = new mapboxgl.Popup({ offset: 19 }).setHTML(
-      '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>' + nameLine + '13/08 \u00B7 ' + esc(p.time) +
-      '<div class="pp-fw-actions">' +
-      '<button class="mp-pop-sim tl-map-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + p.lat + ',lng:' + p.lng + ',name:\'' + esc(p.dedication).replace(/'/g, '&#39;') + '\'},\'' + (p.style || 'dorada') + '\')">\uD83C\uDF86 ' + simLbl + '</button>' +
-      '</div>' +
-      '<button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share()">' + shareLbl + '</button> ' +
-      '<button class="mp-pop-del pp-dir-btn" onclick="if(window.MyPalm) MyPalm.clear(); window.ElxMap.renderMyPalm(null);">' + delLbl + '</button>'
-    );
-    myPalmMarker.setPopup(popup);
+      const popup = new mapboxgl.Popup({ offset: 19 }).setHTML(
+        '<strong>\uD83C\uDF34 ' + esc(p.dedication) + '</strong><br>' + nameLine + '13/08 \u00B7 ' + esc(p.time) +
+        '<div class="pp-fw-actions">' +
+        '<button class="mp-pop-sim tl-map-btn" onclick="window.ElxMap && window.ElxMap.playFireworkCustom({lat:' + p.lat + ',lng:' + p.lng + ',name:\'' + esc(p.dedication).replace(/'/g, '&#39;') + '\'},\'' + (p.style || 'dorada') + '\')">\uD83C\uDF86 ' + simLbl + '</button>' +
+        '</div>' +
+        '<button class="mp-pop-share tl-map-btn" onclick="window.MyPalm && MyPalm.share(\'' + esc(key) + '\')">' + shareLbl + '</button> ' +
+        '<button class="mp-pop-del pp-dir-btn" onclick="window.ElxApp && ElxApp.removeMyPalm(\'' + esc(key) + '\')">' + delLbl + '</button>'
+      );
+      marker.setPopup(popup);
+      myPalmMarkers[key] = marker;
+    });
   }
-  function focusMyPalm() {
-    if (myPalmMarker && map) {
-      map.flyTo({ center: myPalmMarker.getLngLat(), zoom: 16, duration: 900 });
-      setTimeout(() => { if (myPalmMarker.getPopup()) myPalmMarker.togglePopup(); }, 1000);
+  function renderMyPalm(p) { renderMyPalms(p ? [p] : []); }
+  function focusMyPalm(id) {
+    const marker = (id && myPalmMarkers[id]) || Object.values(myPalmMarkers)[0];
+    if (marker && map) {
+      map.flyTo({ center: marker.getLngLat(), zoom: 16, duration: 900 });
+      setTimeout(() => { if (marker.getPopup()) marker.togglePopup(); }, 1000);
     }
+  }
+  function focusPublicPalm(id) {
+    const marker = publicPalmMarkers[id];
+    if (!marker || !map) return;
+    map.flyTo({ center: marker.getLngLat(), zoom: 16, duration: 900 });
+    setTimeout(() => { if (marker.getPopup()) marker.togglePopup(); }, 1000);
   }
   function getCenter() {
     if (!map) return null;
@@ -734,7 +757,7 @@
     init, renderSchedule, setActiveLaunchPoint,
     startUserLocation, stopUserLocation, centerOnUser, flyTo, refresh,
     setMeetingPoint, shareMeeting, setNextInfo, focusLaunchPoint, setLayerVisible,
-    renderMyPalm, focusMyPalm, getCenter, renderPublicPalmeras, renderOfficialPalmeras,
+    renderMyPalm, renderMyPalms, focusMyPalm, focusPublicPalm, getCenter, renderPublicPalmeras, renderOfficialPalmeras,
     playFirework, playFireworkCustom, playOfficialFirework, openOfficialAR, focusOfficialPalm, closeFirework,
     hasLeaflet: hasMapbox // alias for app.js
   };

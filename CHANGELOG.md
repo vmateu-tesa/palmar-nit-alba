@@ -1,5 +1,13 @@
 # Changelog
 
+## v19 — Palmeras ciudadanas compartidas y múltiples (agosto 2026)
+
+- Cada usuario puede crear tantas palmeras ciudadanas como quiera; el formato local anterior se migra automáticamente sin perder la palmera existente.
+- Las altas se publican en Supabase y el mapa compartido se refresca cada 10 segundos y al volver a la app.
+- Nueva migración RLS `supabase/05_shared_multiple_palmeras.sql`: lectura pública de aprobadas, inserción pública inmediata, email privado e índice para el listado cronológico.
+- Retirados del formulario y de la guía el bloque comercial de patrocinio, el correo y las referencias de precio.
+- Caché PWA subida a v39.
+
 ## v18 — Palmeras oficiales 2026 + 3D/AR por palmera (agosto 2026)
 
 - Nuevo dataset `data/official-palmeras.json` con las 312 palmeras del listado oficial PDF publicado en Fiestas en Elche para la Nit de l'Albà 2026.
@@ -18,13 +26,11 @@
 
 - Botón dorado "Mi palmera" en el mapa: crea una palmera simbólica con dedicatoria, hora y ubicación (GPS o centro del mapa). Se guarda en el dispositivo (sin backend, coherente con la arquitectura static-first) y aparece en el mapa con icono animado.
 - Compartir en RRSS: genera una tarjeta-imagen 1080x1080 en canvas (palmera dorada sobre cielo nocturno, dedicatoria y marca Elx al Cel) y la comparte por Web Share API con imagen; fallbacks a texto y portapapeles.
-- Puente al patrocinio real: el formulario enlaza el patrocinio oficial del Ayuntamiento (desde 150 EUR, patrociniopalmera@elche.es) — la dedicatoria digital como embudo hacia la palmera real.
 - Ficha de la palmera con botones Compartir y Eliminar.
 
 ## v12 — Brújula corregida, patrocinio oficial y apartado de Fiestas (julio 2026)
 
 - Brújula: corregido el rumbo erróneo en Android (el sensor relativo, con norte arbitrario, pisaba las lecturas absolutas); compensación del ángulo de pantalla y suavizado circular anti-temblor.
-- Guía: enlace oficial de patrocinio de palmeras del Ayuntamiento (elche.es/fiestas/patrocinio-de-palmeras-de-la-nit-de-lalba) + correo patrociniopalmera@elche.es; precios reales 150–300 EUR, seis docenas de cohetes y dedicatoria por palmera.
 - Nueva tarjeta "Las Fiestas de Elche (7–15 de agosto)": Moros y Cristianos, charangas, ofrenda, mascletàs diarias, Racó FestiElx, conciertos, Nit de la Roà, procesión y castillo final; enlace a fiestasenelche.es (web oficial donde se publica el programa con la relación completa de palmeras y puntos de lanzamiento).
 
 ## v11 — Puntos de lanzamiento oficiales + contador rediseñado (julio 2026)
@@ -37,7 +43,7 @@
 ## v10 — Mapa vivo: actos de las fiestas y palmeras ciudadanas (julio 2026)
 
 - Nueva capa "Actos de las fiestas" con 9 lugares del programa publicado: Racó FestiElx (Paseo de la Estación), concurso de mascletàs (Av. Alcalde Vicente Quiles), Ágora Heliketana (rotonda Parque Municipal), conciertos del Hort de Baix, Gran Carretillà (Hort del Monjo, 01:00 tras la Nit de l Albà), castillo de fuegos del 15 (puente del Ferrocarril), Nit de la Roà (Basílica), Plaça de Baix y Nits de Festa (parking UMH).
-- Nueva capa "Palmeras ciudadanas": 8 palmeras de familias y peñas (datos de ejemplo, recuperando el espíritu de la versión original) enlazadas con el patrocinio real del Ayuntamiento (fiestas@elche.es).
+- Nueva capa "Palmeras ciudadanas": 8 palmeras de familias y peñas (datos de ejemplo, recuperando el espíritu de la versión original).
 - Guía actualizada: mas de 8.000 palmeras y cohetes en la Nit de l Albà, y cómo patrocinar la tuya.
 - El mapa pasa de 12 a 29 puntos de interés.
 
